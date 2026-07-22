@@ -21,8 +21,23 @@ COPY . .
 # Build all workspaces (shared -> client -> server)
 RUN npm run build
 
+# ── CHECKPOINT 1 ──
+RUN echo "===== BUILDER SERVER =====" && ls -R /usr/src/app/server
+RUN echo "===== BUILDER SERVER DIST =====" && ls -R /usr/src/app/server/dist || true
+RUN echo "===== BUILDER SHARED =====" && ls -R /usr/src/app/shared
+RUN echo "===== BUILDER SHARED DIST =====" && ls -R /usr/src/app/shared/dist || true
+RUN echo "===== BUILDER CLIENT DIST =====" && ls -R /usr/src/app/client/dist || true
+RUN echo "===== BUILDER ENTRY =====" && (test -f /usr/src/app/server/dist/server.js && echo "FOUND server.js" || echo "MISSING server.js")
+
 # Prune development dependencies
 RUN npm prune --production
+
+# ── CHECKPOINT 2 ──
+RUN echo "===== AFTER PRUNE SERVER =====" && ls -R /usr/src/app/server || true
+RUN echo "===== AFTER PRUNE SERVER DIST =====" && ls -R /usr/src/app/server/dist || true
+RUN echo "===== AFTER PRUNE SHARED =====" && ls -R /usr/src/app/shared || true
+RUN echo "===== AFTER PRUNE SHARED DIST =====" && ls -R /usr/src/app/shared/dist || true
+RUN echo "===== AFTER PRUNE ENTRY =====" && (test -f /usr/src/app/server/dist/server.js && echo "FOUND server.js" || echo "MISSING server.js")
 
 # ── Production Stage ────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
@@ -46,6 +61,15 @@ COPY --from=builder /usr/src/app/server/dist ./server/dist
 
 # Copy compiled client frontend static bundle
 COPY --from=builder /usr/src/app/client/dist ./client/dist
+
+# ── CHECKPOINT 3 ──
+RUN echo "===== RUNNER ROOT =====" && ls -R /usr/src/app
+RUN echo "===== RUNNER SERVER =====" && ls -R /usr/src/app/server || true
+RUN echo "===== RUNNER SERVER DIST =====" && ls -R /usr/src/app/server/dist || true
+RUN echo "===== RUNNER SHARED =====" && ls -R /usr/src/app/shared || true
+RUN echo "===== RUNNER CLIENT =====" && ls -R /usr/src/app/client || true
+RUN echo "===== RUNNER NODE_MODULES =====" && (ls /usr/src/app/node_modules | head -50)
+RUN echo "===== RUNNER ENTRY =====" && (test -f /usr/src/app/server/dist/server.js && echo "FOUND server.js" || echo "MISSING server.js")
 
 # Expose API port
 EXPOSE 3000
