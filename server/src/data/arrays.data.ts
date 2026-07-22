@@ -1,0 +1,40 @@
+import { ARRAY_ALGORITHMS_DATA } from './array.data';
+import { DSAAlgorithmEntry } from './dsa.types';
+
+export const ARRAYS_CATEGORY_DATA: DSAAlgorithmEntry[] = ARRAY_ALGORITHMS_DATA.map((item) => ({
+  slug: item.slug,
+  title: item.title,
+  categorySlug: 'array',
+  categoryName: 'Array',
+  topicGroup: item.topicGroup,
+  difficulty: item.difficulty,
+  description: item.description,
+  theory: item.theory,
+  working: item.theory,
+  javaCode: item.javaCode,
+  cppCode: item.cppCode,
+  pythonCode: `def solve():\n    # Python implementation for ${item.title}\n    pass`,
+  pseudoCode: item.pseudoCode,
+  timeComplexity: item.timeComplexity,
+  spaceComplexity: item.spaceComplexity,
+  applications: item.applications,
+  interviewQuestions: item.interviewTips,
+  commonMistakes: ['Off-by-one boundary access', 'Modifying array during iteration'],
+  leetCodeNumber: 1,
+  leetCodeName: item.title,
+  leetCodeDifficulty: item.difficulty === 'easy' ? 'Easy' : item.difficulty === 'medium' ? 'Medium' : 'Hard',
+  leetCodePattern: item.topicGroup,
+  leetCodeUrl: item.practiceProblems[0]?.externalLink || 'https://leetcode.com',
+  sampleInput: item.sampleInput,
+  sampleOutput: item.sampleOutput,
+  quizzes: item.quizzes,
+  practiceProblems: item.practiceProblems.map((p) => ({
+    ...p,
+    explanation: p.solution,
+    starterCode: {
+      java: p.starterCode.java,
+      cpp: p.starterCode.cpp,
+      python: `def solve():\n    pass`,
+    },
+  })),
+}));
