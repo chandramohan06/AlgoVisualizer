@@ -21,6 +21,14 @@ COPY . .
 # Run typescript compilation and bundles creation
 RUN npm run build
 
+RUN echo "========== BUILDER =========="
+RUN ls -R /usr/src/app/server
+RUN ls -R /usr/src/app/server/dist
+RUN ls -R /usr/src/app/shared
+RUN ls -R /usr/src/app/shared/dist
+RUN ls -R /usr/src/app/client
+RUN ls -R /usr/src/app/client/dist
+
 # Prune development dependencies
 RUN npm prune --production
 
@@ -38,6 +46,14 @@ COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/shared ./shared
 COPY --from=builder /usr/src/app/server ./server
 COPY --from=builder /usr/src/app/client/dist ./client/dist
+
+RUN echo "========== RUNNER =========="
+RUN ls -R /usr/src/app/server
+RUN ls -R /usr/src/app/server/dist
+RUN ls -R /usr/src/app/shared
+RUN ls -R /usr/src/app/shared/dist
+RUN ls -R /usr/src/app/client
+RUN ls -R /usr/src/app/client/dist
 
 # Expose port
 EXPOSE 3000
