@@ -1,8 +1,15 @@
 import axios from 'axios';
 import { API_ENDPOINTS } from '@constants/api';
 
+const getBaseUrl = (): string => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  return import.meta.env.DEV ? 'http://localhost:3000' : '';
+};
+
 const api = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: getBaseUrl(),
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 });

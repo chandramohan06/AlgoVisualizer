@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import mongoose from 'mongoose';
+import path from 'path';
 import { env } from './config/env';
 import { apiLimiter } from './middlewares/rateLimit.middleware';
 import { errorMiddleware } from './middlewares/error.middleware';
@@ -11,10 +12,32 @@ import { router } from './routes';
 const app = express();
 
 // ─── Security ───────────────────────────────────────────────────────────────
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  }),
+);
+
+const allowedOrigins = [
+  env.CLIENT_URL,
+  'http://localhost:5173',
+  'http://localhost:3000',
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: env.CLIENT_URL,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        env.CLIENT_URL === '*' ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.onrender.com')
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -31,6 +54,10 @@ if (env.NODE_ENV === 'development') {
 // ─── Body Parsing ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ─── Serve Static Frontend Assets (Production Docker / Render) ───────────────
+const clientDistPath = path.join(__dirname, '../../client/dist');
+app.use(express.static(clientDistPath));
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
 app.use('/api', apiLimiter);
@@ -60,8 +87,8 @@ const healthHandler = (_req: express.Request, res: express.Response) => {
       stateCode: dbState,
     },
     memory: {
-      rssMB: Math.round(memUsage.rss / 1024 / 1024 * 100) / 100,
-      heapUsedMB: Math.round(memUsage.heapUsed / 1024 / 1024 * 100) / 100,
+      rssMB: Math.round((memUsage.rss / 1024 / 1024) * 100) / 100,
+      heapUsedMB: Math.round((memUsage.heapUsed / 1024 / 1024) * 100) / 100,
     },
   });
 };
@@ -73,31 +100,16 @@ app.get('/api/v1/health', healthHandler);
 app.use('/api/v1', router);
 app.use('/api', router);
 
-// ─── Debug: list all registered routes (dev only) ────────────────────────────
-if (env.NODE_ENV === 'development') {
-  app.get('/api/debug/routes', (_req, res) => {
-    const routes: { method: string; path: string }[] = [];
-    const extract = (stack: any[], prefix: string) => {
-      stack.forEach((layer: any) => {
-        if (layer.route) {
-          Object.keys(layer.route.methods).forEach((method) => {
-            routes.push({ method: method.toUpperCase(), path: prefix + layer.route.path });
-          });
-        } else if (layer.name === 'router' && layer.handle?.stack) {
-          const match = layer.regexp?.source?.match(/\\^\\\\\/([^\\\\]+)\\\\\//);
-          const sub = match ? `/${match[1]}` : '';
-          extract(layer.handle.stack, prefix + sub);
-        }
-      });
-    };
-    extract((app as any)._router.stack, '');
-    res.json({ count: routes.length, routes });
+// ─── SPA Fallback Routing ────────────────────────────────────────────────────
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  res.sendFile(path.join(clientDistPath, 'index.html'), (err) => {
+    if (err) {
+      res.status(404).json({ success: false, message: 'Route not found' });
+    }
   });
-}
-
-// ─── 404 Handler ─────────────────────────────────────────────────────────────
-app.use((_req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found' });
 });
 
 // ─── Global Error Handler ────────────────────────────────────────────────────
