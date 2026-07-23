@@ -40,5 +40,8 @@ Thumbs.db
 *.sln
 *.sw?
 
+# TypeScript incremental build cache (must not be committed - breaks Docker builds)
+*.tsbuildinfo
+
 # Testing
 coverage/
