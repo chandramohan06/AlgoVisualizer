@@ -1,3 +1,5 @@
+ARG CACHE_BUST=1
+
 # ── Build Stage ─────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 
