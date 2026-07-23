@@ -84,7 +84,7 @@ export const Login: React.FC<LoginProps> = ({ isAdminLogin = false }) => {
       {/* LEFT SIDE: Binary Tree Visualization */}
       <div className="hidden lg:flex lg:col-span-6 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950/40 relative flex-col justify-between p-12 border-r border-white/5 overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.005)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.005)_1px,transparent_1px)] bg-[size:30px_30px]" />
-        
+
         {/* Animated Binary Search Tree */}
         <div className="absolute inset-0 flex items-center justify-center">
           <svg className="w-[500px] h-[350px] relative opacity-60">
@@ -163,11 +163,10 @@ export const Login: React.FC<LoginProps> = ({ isAdminLogin = false }) => {
               <button
                 type="button"
                 onClick={() => { setActiveTab('student'); setError(''); }}
-                className={`flex-1 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                  activeTab === 'student'
+                className={`flex-1 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${activeTab === 'student'
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
+                  }`}
               >
                 <UserCheck className="w-4 h-4" />
                 <span>👨‍🎓 Student</span>
@@ -175,11 +174,10 @@ export const Login: React.FC<LoginProps> = ({ isAdminLogin = false }) => {
               <button
                 type="button"
                 onClick={() => { setActiveTab('admin'); setError(''); }}
-                className={`flex-1 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                  activeTab === 'admin'
+                className={`flex-1 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${activeTab === 'admin'
                     ? 'bg-amber-600 text-white shadow-lg shadow-amber-500/30'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
+                  }`}
               >
                 <ShieldCheck className="w-4 h-4" />
                 <span>👨‍💼 Admin</span>
@@ -267,11 +265,10 @@ export const Login: React.FC<LoginProps> = ({ isAdminLogin = false }) => {
             <button
               type="submit"
               disabled={loading || success}
-              className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer active:scale-[0.98] ${
-                activeTab === 'admin'
+              className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-xs uppercase tracking-wider shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer active:scale-[0.98] ${activeTab === 'admin'
                   ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-amber-600/20'
                   : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-600/20'
-              }`}
+                }`}
             >
               {success ? 'Success! Redirecting...' : loading ? 'Verifying Credentials...' : `Sign In as ${activeTab === 'admin' ? 'Admin' : 'Student'}`}
               {!loading && !success && <ArrowRight className="w-4 h-4" />}

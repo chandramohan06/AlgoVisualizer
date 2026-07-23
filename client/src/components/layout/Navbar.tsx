@@ -104,7 +104,7 @@ export const Navbar: React.FC = () => {
 
       {/* Right Pane: Stats, Badges, Theme, Notifications & User settings */}
       <div className="flex items-center gap-3">
-        
+
         {/* Daily Streak Counter Badge */}
         <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-orange-500/10 border border-orange-500/20 shadow-sm shadow-orange-500/5">
           <Flame className="w-4 h-4 text-orange-400" />

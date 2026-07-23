@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@store/authStore';
-import { School, Code, Briefcase, Award, Flame, Save, Edit2, ShieldAlert } from 'lucide-react';
+import { useDashboardStats } from '@hooks/useDashboard';
+import {
+  School, Code, Award, Flame, Save, Edit2, ShieldAlert,
+  CheckCircle2, Globe, ExternalLink, Sparkles
+} from 'lucide-react';
 import api from '@services/api';
 import { API_ENDPOINTS } from '@constants/api';
+import { getInitials } from '@utils/index';
+import ContributionHeatmap from '@components/dashboard/ContributionHeatmap';
+import SkillRadarChart from '@components/dashboard/SkillRadarChart';
 
 export const Profile: React.FC = () => {
   const { user, setUser } = useAuthStore();
+  const { data: stats } = useDashboardStats();
+
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -57,232 +67,180 @@ export const Profile: React.FC = () => {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh] text-gray-400">
-        Loading profile details...
+      <div className="flex items-center justify-center min-h-[50vh] text-slate-400 font-mono text-sm">
+        Please sign in to view your profile.
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 space-y-6">
-      {/* Profile Header */}
-      <div className="rounded-2xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-white/5 p-6 flex flex-col md:flex-row items-center gap-6">
-        <div className="relative group">
-          <div className="w-24 h-24 rounded-full bg-indigo-600/20 border-2 border-indigo-500 flex items-center justify-center text-white text-3xl font-bold select-none overflow-hidden">
+    <motion.div
+      className="max-w-7xl mx-auto px-4 md:px-6 py-8 space-y-8"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* ── Banner Header Card ── */}
+      <div className="glass-premium rounded-3xl p-6 md:p-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full pointer-events-none opacity-20 blur-3xl"
+          style={{ background: 'radial-gradient(circle, #6366f1 0%, transparent 70%)' }} />
+
+        <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 relative z-10">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
+            {/* Avatar */}
             {user.avatar ? (
-              <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="w-24 h-24 rounded-2xl object-cover border-2 border-indigo-500/40 shadow-2xl shrink-0"
+              />
             ) : (
-              user.name.charAt(0).toUpperCase()
+              <div className="w-24 h-24 rounded-2xl flex items-center justify-center text-2xl font-black text-white shrink-0 shadow-2xl"
+                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', border: '2px solid rgba(99,102,241,0.4)' }}>
+                {getInitials(user.name)}
+              </div>
             )}
+
+            {/* Name + Details */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">
+                <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">{user.name}</h1>
+                <span className="badge badge-indigo text-xs">Level {stats?.level ?? 1}</span>
+                <span className="badge badge-emerald text-xs">Verified Student</span>
+              </div>
+              <p className="text-xs text-slate-400 font-mono">
+                {user.email} &bull; Joined {new Date().getFullYear()}
+              </p>
+              <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+                {user.bio || 'Algorithm enthusiast mastering Data Structures, Dynamic Programming, and System Design.'}
+              </p>
+
+              {/* Badges / Links */}
+              <div className="flex items-center justify-center md:justify-start gap-3 pt-2 flex-wrap text-xs">
+                {user.college && (
+                  <span className="flex items-center gap-1.5 text-slate-400 font-medium">
+                    <School className="w-3.5 h-3.5 text-indigo-400" /> {user.college}
+                  </span>
+                )}
+                {user.github && (
+                  <a href={user.github} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-slate-400 hover:text-white transition-colors">
+                    <Globe className="w-3.5 h-3.5" /> GitHub <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                )}
+                {user.linkedin && (
+                  <a href={user.linkedin} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-slate-400 hover:text-white transition-colors">
+                    <Globe className="w-3.5 h-3.5 text-blue-400" /> LinkedIn <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                )}
+              </div>
+            </div>
           </div>
+
+          {/* Edit Profile Button */}
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="btn-ghost shrink-0 cursor-pointer"
+          >
+            <Edit2 className="w-4 h-4" />
+            {isEditing ? 'Cancel Edit' : 'Edit Profile'}
+          </button>
         </div>
 
-        <div className="flex-1 text-center md:text-left space-y-2">
-          <div className="flex flex-col md:flex-row md:items-center gap-2 justify-center md:justify-start">
-            <h1 className="text-2xl font-bold text-white">{user.name}</h1>
-            <span className="inline-flex self-center px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/30 text-[10px] uppercase font-bold text-indigo-400 tracking-wider">
-              {user.role}
-            </span>
-          </div>
-          <p className="text-sm text-gray-400 max-w-md">{user.bio || 'No bio written yet.'}</p>
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs text-gray-500">
-            {user.college && (
-              <span className="flex items-center gap-1.5">
-                <School className="w-3.5 h-3.5 text-gray-400" />
-                {user.college}
-              </span>
-            )}
-            <span className="flex items-center gap-1.5">
-              <Flame className="w-3.5 h-3.5 text-orange-400" />
-              {user.streak || 0} Day Streak
-            </span>
-          </div>
+        {/* Stats Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/5 relative z-10">
+          {[
+            { label: 'Total XP', value: `${stats?.totalXP ?? 0} XP`, icon: Sparkles, color: 'text-indigo-400' },
+            { label: 'Learning Streak', value: `${stats?.streak ?? 0} Days`, icon: Flame, color: 'text-orange-400' },
+            { label: 'Algorithms Done', value: `${stats?.completedCount ?? 0}/${stats?.totalAlgorithms ?? 85}`, icon: Code, color: 'text-emerald-400' },
+            { label: 'Global Rank', value: stats?.rank ? `#${stats.rank}` : 'Top 5%', icon: Award, color: 'text-purple-400' },
+          ].map(({ label, value, icon: Icon, color }) => (
+            <div key={label} className="bg-black/30 p-3.5 rounded-xl border border-white/5">
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <Icon className={`w-3.5 h-3.5 ${color}`} /> {label}
+              </div>
+              <div className="text-base font-black font-mono text-white mt-1">{value}</div>
+            </div>
+          ))}
         </div>
-
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-200 transition-all flex items-center gap-2 self-start md:self-center"
-        >
-          <Edit2 className="w-3.5 h-3.5" />
-          {isEditing ? 'Cancel Edit' : 'Edit Profile'}
-        </button>
       </div>
 
-      {/* Profile Form / View */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-6">
-          {errorMsg && (
-            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4" />
-              {errorMsg}
+      {/* ── Alerts ── */}
+      <AnimatePresence>
+        {successMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2"
+          >
+            <CheckCircle2 className="w-4 h-4 shrink-0" /> {successMsg}
+          </motion.div>
+        )}
+        {errorMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2"
+          >
+            <ShieldAlert className="w-4 h-4 shrink-0" /> {errorMsg}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Edit Form or Deep Analytics ── */}
+      {isEditing ? (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-card rounded-2xl p-6 md:p-8 space-y-6">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <Edit2 className="w-5 h-5 text-indigo-400" /> Update Account Information
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-400 uppercase font-mono">Full Name</label>
+                <input type="text" name="name" value={formData.name} onChange={handleChange} required className="input-premium" />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-400 uppercase font-mono">College / Institute</label>
+                <input type="text" name="college" value={formData.college} onChange={handleChange} className="input-premium" />
+              </div>
             </div>
-          )}
-          {successMsg && (
-            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
-              {successMsg}
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-400 uppercase font-mono">Bio &amp; Goals</label>
+              <textarea name="bio" rows={3} value={formData.bio} onChange={handleChange} className="input-premium resize-none" />
             </div>
-          )}
 
-          {isEditing ? (
-            <form onSubmit={handleSubmit} className="rounded-2xl bg-white/[0.02] border border-white/5 p-6 space-y-4">
-              <h2 className="text-base font-semibold text-white">Edit Profile Details</h2>
-
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase">Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0e0e17] border border-white/5 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors"
-                />
+                <label className="text-xs font-bold text-slate-400 uppercase font-mono">GitHub Profile URL</label>
+                <input type="url" name="github" value={formData.github} onChange={handleChange} placeholder="https://github.com/username" className="input-premium" />
               </div>
-
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase">Bio</label>
-                <textarea
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleChange}
-                  rows={3}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0e0e17] border border-white/5 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors"
-                  placeholder="Tell us about yourself..."
-                />
+                <label className="text-xs font-bold text-slate-400 uppercase font-mono">LinkedIn Profile URL</label>
+                <input type="url" name="linkedin" value={formData.linkedin} onChange={handleChange} placeholder="https://linkedin.com/in/username" className="input-premium" />
               </div>
-
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase">College / University</label>
-                <input
-                  type="text"
-                  name="college"
-                  value={formData.college}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0e0e17] border border-white/5 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors"
-                  placeholder="e.g. Stanford University"
-                />
+                <label className="text-xs font-bold text-slate-400 uppercase font-mono">LeetCode Profile URL</label>
+                <input type="url" name="leetcode" value={formData.leetcode} onChange={handleChange} placeholder="https://leetcode.com/username" className="input-premium" />
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-400 uppercase">GitHub Profile URL</label>
-                  <input
-                    type="url"
-                    name="github"
-                    value={formData.github}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#0e0e17] border border-white/5 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors"
-                    placeholder="https://github.com/yourusername"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-400 uppercase">LinkedIn Profile URL</label>
-                  <input
-                    type="url"
-                    name="linkedin"
-                    value={formData.linkedin}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#0e0e17] border border-white/5 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors"
-                    placeholder="https://linkedin.com/in/yourusername"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-gray-400 uppercase">LeetCode Username</label>
-                <input
-                  type="text"
-                  name="leetcode"
-                  value={formData.leetcode}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0e0e17] border border-white/5 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors"
-                  placeholder="e.g. leetcode_user"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2"
-              >
-                <Save className="w-4 h-4" />
-                {isSubmitting ? 'Saving Changes...' : 'Save Profile'}
+            <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+              <button type="button" onClick={() => setIsEditing(false)} className="btn-ghost">Cancel</button>
+              <button type="submit" disabled={isSubmitting} className="btn-primary cursor-pointer">
+                <Save className="w-4 h-4" /> {isSubmitting ? 'Saving Changes...' : 'Save Profile'}
               </button>
-            </form>
-          ) : (
-            <div className="rounded-2xl bg-white/[0.02] border border-white/5 p-6 space-y-6">
-              <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Credentials</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-3.5 rounded-xl bg-white/[0.01] border border-white/5">
-                    <span className="text-[10px] text-gray-500 block uppercase font-bold">Email Address</span>
-                    <span className="text-sm text-gray-300 font-medium">{user.email}</span>
-                  </div>
-                  <div className="p-3.5 rounded-xl bg-white/[0.01] border border-white/5">
-                    <span className="text-[10px] text-gray-500 block uppercase font-bold">Verification Status</span>
-                    <span className={`text-xs font-bold ${user.isEmailVerified ? 'text-emerald-400' : 'text-amber-400'}`}>
-                      {user.isEmailVerified ? 'Verified Email' : 'Pending Verification'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Social Profiles</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.01] border border-white/5">
-                    <span className="flex items-center gap-2 text-xs text-gray-300">
-                      <Code className="w-4 h-4 text-gray-400" />
-                      GitHub
-                    </span>
-                    {user.github ? (
-                      <a href={user.github} target="_blank" rel="noreferrer" className="text-xs text-indigo-400 hover:underline">
-                        View Profile
-                      </a>
-                    ) : (
-                      <span className="text-xs text-gray-500">Not linked</span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-white/[0.01] border border-white/5">
-                    <span className="flex items-center gap-2 text-xs text-gray-300">
-                      <Briefcase className="w-4 h-4 text-gray-400" />
-                      LinkedIn
-                    </span>
-                    {user.linkedin ? (
-                      <a href={user.linkedin} target="_blank" rel="noreferrer" className="text-xs text-indigo-400 hover:underline">
-                        View Profile
-                      </a>
-                    ) : (
-                      <span className="text-xs text-gray-500">Not linked</span>
-                    )}
-                  </div>
-                </div>
-              </div>
             </div>
-          )}
-        </div>
-
-        {/* Right side stats preview */}
-        <div className="space-y-6">
-          <div className="rounded-2xl bg-white/[0.02] border border-white/5 p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-gray-100 flex items-center gap-2">
-              <Award className="w-4 h-4 text-indigo-400" />
-              Achievements Summary
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-xs text-gray-400">
-                <span>Streak Bonus</span>
-                <span className="font-bold text-orange-400">{user.streak || 0} Days</span>
-              </div>
-              <div className="flex items-center justify-between text-xs text-gray-400">
-                <span>LeetCode Handle</span>
-                <span className="font-bold text-gray-300">{user.leetcode || 'None'}</span>
-              </div>
-            </div>
+          </form>
+        </motion.div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <ContributionHeatmap />
+          </div>
+          <div>
+            <SkillRadarChart />
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </motion.div>
   );
 };
 
