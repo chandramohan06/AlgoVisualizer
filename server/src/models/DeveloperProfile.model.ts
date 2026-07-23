@@ -146,6 +146,89 @@ export interface IDeveloperProfile extends Document {
   updatedAt: Date;
 }
 
+const EducationSchema = new Schema({
+  institute: { type: String, default: '' },
+  degree: { type: String, default: '' },
+  branch: { type: String, default: '' },
+  university: { type: String, default: '' },
+  startYear: { type: String, default: '' },
+  endYear: { type: String, default: '' },
+  cgpa: { type: String, default: '' },
+  currentSemester: { type: String, default: '' },
+}, { _id: false });
+
+const SkillSchema = new Schema({
+  name: { type: String, required: true },
+  category: { type: String, default: 'Programming' },
+  level: { type: Number, default: 80 },
+  icon: { type: String, default: '' },
+  tag: { type: String, default: '' },
+}, { _id: false });
+
+const ProjectSchema = new Schema({
+  title: { type: String, required: true },
+  description: { type: String, default: '' },
+  techStack: { type: String, default: '' },
+  githubLink: { type: String, default: '' },
+  liveDemo: { type: String, default: '' },
+  startDate: { type: String, default: '' },
+  endDate: { type: String, default: '' },
+  images: [{ type: String }],
+}, { _id: false });
+
+const CertificationSchema = new Schema({
+  title: { type: String, required: true },
+  organization: { type: String, default: '' },
+  date: { type: String, default: '' },
+  certificateLink: { type: String, default: '' },
+  credentialId: { type: String, default: '' },
+}, { _id: false });
+
+const TrainingSchema = new Schema({
+  title: { type: String, required: true },
+  organization: { type: String, default: '' },
+  duration: { type: String, default: '' },
+  description: { type: String, default: '' },
+}, { _id: false });
+
+const ProjectMetricSchema = new Schema({
+  label: { type: String, required: true },
+  value: { type: String, default: '' },
+  sub: { type: String, default: '' },
+  icon: { type: String, default: '' },
+  color: { type: String, default: '' },
+}, { _id: false });
+
+const TimelineItemSchema = new Schema({
+  year: { type: String, required: true },
+  title: { type: String, required: true },
+  subtitle: { type: String, default: '' },
+  description: { type: String, default: '' },
+  badge: { type: String, default: '' },
+  category: { type: String, default: '' },
+}, { _id: false });
+
+const AchievementSchema = new Schema({
+  title: { type: String, required: true },
+  description: { type: String, default: '' },
+  organization: { type: String, default: '' },
+  date: { type: String, default: '' },
+  certificateLink: { type: String, default: '' },
+  credentialId: { type: String, default: '' },
+  image: { type: String, default: '' },
+}, { _id: false });
+
+const CodingProfileSchema = new Schema({
+  platform: { type: String, required: true },
+  username: { type: String, default: '' },
+  profileUrl: { type: String, default: '' },
+  solvedCount: { type: String, default: '' },
+  rating: { type: String, default: '' },
+  rank: { type: String, default: '' },
+  description: { type: String, default: '' },
+  logo: { type: String, default: '' },
+}, { _id: false });
+
 const DeveloperProfileSchema: Schema = new Schema(
   {
     fullName: { type: String, required: true, default: 'Chandra Mohan Kumar Singh' },
@@ -185,110 +268,134 @@ const DeveloperProfileSchema: Schema = new Schema(
     aboutProject: { type: String, default: 'AlgoVisualizer is an interactive full-stack SaaS platform for step-by-step data structure and algorithm visualization with real-time state tracking.' },
     whyIBuiltAlgoVisualizer: { type: String, default: 'I engineered AlgoVisualizer to help students visualize complex data structures and algorithms step-by-step in real time.' },
     careerGoal: { type: String, default: 'To design, build, and scale high-impact software systems and developer platforms.' },
-    education: [
-      {
-        institute: 'Lovely Professional University',
-        degree: 'B.Tech',
-        branch: 'Computer Science Engineering',
-        university: 'Lovely Professional University',
-        startYear: '2021',
-        endYear: '2025',
-        cgpa: '8.5',
-        currentSemester: 'Final Year',
-      },
-    ],
-    skills: [
-      { name: 'Java', category: 'Programming', level: 90, tag: 'Core & OOP', icon: 'Cpu' },
-      { name: 'Python', category: 'Programming', level: 88, tag: 'Advanced', icon: 'Code' },
-      { name: 'C++', category: 'Programming', level: 85, tag: 'STL & Data Structures', icon: 'Terminal' },
-      { name: 'MySQL', category: 'Database', level: 85, tag: 'Relational DB', icon: 'Database' },
-      { name: 'NoSQL', category: 'Database', level: 80, tag: 'MongoDB', icon: 'Database' },
-      { name: 'Java Swing', category: 'Frontend', level: 80, tag: 'GUI Framework', icon: 'Palette' },
-      { name: 'Bootstrap', category: 'Frontend', level: 85, tag: 'UI Framework', icon: 'Palette' },
-      { name: 'JDBC', category: 'Backend', level: 80, tag: 'Java Connectivity', icon: 'Server' },
-      { name: 'Git', category: 'DevOps', level: 88, tag: 'Version Control', icon: 'Box' },
-      { name: 'GitHub', category: 'DevOps', level: 90, tag: 'Code Collaboration', icon: 'Globe' },
-      { name: 'VS Code', category: 'Tools', level: 95, tag: 'IDE', icon: 'FileCode' },
-      { name: 'Power BI', category: 'Data & Analytics', level: 75, tag: 'Data Visualization', icon: 'Activity' },
-      { name: 'Problem Solving', category: 'Soft Skills', level: 90, tag: 'Core Competency', icon: 'Sparkles' },
-      { name: 'Communication', category: 'Soft Skills', level: 85, tag: 'Professional', icon: 'MessageSquare' },
-      { name: 'Teamwork', category: 'Soft Skills', level: 90, tag: 'Collaboration', icon: 'ShieldCheck' },
-      { name: 'Adaptability', category: 'Soft Skills', level: 90, tag: 'Fast Learner', icon: 'Zap' },
-    ],
-    projects: [
-      {
-        title: 'AlgoVisualizer',
-        description: 'Interactive full-stack web platform for step-by-step data structure and algorithm visualization with real-time state tracking.',
-        techStack: 'React, TypeScript, Node.js, Express, MongoDB, Tailwind CSS',
-        githubLink: 'https://github.com/chandramohan06/AlgoVisualizer',
-        liveDemo: '',
-        startDate: '2024',
-        endDate: 'Present',
-      },
-      {
-        title: 'Mobile Sales Analysis',
-        description: 'Data analytics project analyzing mobile sales trends, customer purchasing behavior, and revenue patterns using SQL & Power BI.',
-        techStack: 'Python, MySQL, Power BI',
-        githubLink: '',
-        liveDemo: '',
-        startDate: '2023',
-        endDate: '2023',
-      },
-      {
-        title: 'Real-Time Process Monitoring System',
-        description: 'System monitoring tool for tracking real-time CPU, memory utilization, and running background processes with graphical display.',
-        techStack: 'Java, Java Swing, Operating Systems',
-        githubLink: '',
-        liveDemo: '',
-        startDate: '2023',
-        endDate: '2023',
-      },
-    ],
-    certifications: [
-      {
-        title: 'Python for Data Science',
-        organization: 'Certification Provider',
-        date: '2023',
-        certificateLink: '',
-      },
-      {
-        title: 'Data Structure and Algorithm',
-        organization: 'Certification Provider',
-        date: '2023',
-        certificateLink: '',
-      },
-      {
-        title: 'Programming in C++',
-        organization: 'Certification Provider',
-        date: '2022',
-        certificateLink: '',
-      },
-    ],
-    trainings: [
-      {
-        title: 'Board Infinity DSA Training',
-        organization: 'Board Infinity',
-        duration: '2023',
-        description: 'Comprehensive training in Data Structures, Algorithms, and Algorithmic Problem Solving.',
-      },
-    ],
-    projectMetrics: [
-      { label: 'Algorithms Visualized', value: '85+', sub: 'Interactive step-by-step', color: 'text-indigo-400' },
-      { label: 'Practice Problems', value: '250', sub: 'Easy & Medium DSA questions', color: 'text-emerald-400' },
-      { label: 'API Response Time', value: '< 50ms', sub: 'Non-blocking async backend', color: 'text-amber-400' },
-      { label: 'Tech Stack', value: 'React + Node', sub: 'MongoDB Atlas + Docker', color: 'text-purple-400' },
-    ],
-    timeline: [
-      { year: '2021', title: 'Enrolled at Lovely Professional University', subtitle: 'B.Tech in Computer Science Engineering', description: 'Started computer science engineering journey learning programming fundamentals in C++ and Java.', badge: 'Education', category: 'Academics' },
-      { year: '2022', title: 'C++ & DSA Foundations', subtitle: 'Core Problem Solving', description: 'Mastered C++ programming and completed Programming in C++ certification.', badge: 'Certification', category: 'Skills' },
-      { year: '2023', title: 'Data Science, Systems & DSA Training', subtitle: 'Board Infinity & Projects', description: 'Completed Board Infinity DSA Training, Python for Data Science certification, Mobile Sales Analysis, and Real-Time Process Monitoring System.', badge: 'Training', category: 'Projects & Training' },
-      { year: '2024 - 2025', title: 'AlgoVisualizer SaaS Platform', subtitle: 'Full-Stack Architecture', description: 'Engineered AlgoVisualizer SaaS platform with 85+ interactive algorithm visualizers and practice problem sandbox.', badge: 'Product', category: 'Engineering' },
-    ],
-    achievements: [],
-    codingProfiles: [
-      { platform: 'GitHub', username: 'chandramohan06', profileUrl: 'https://github.com/chandramohan06', solvedCount: '', rating: '', description: 'Open source projects & AlgoVisualizer SaaS codebase' },
-      { platform: 'LinkedIn', username: 'chandramohan06', profileUrl: 'https://linkedin.com/in/chandramohan06', solvedCount: '', rating: '', description: 'Professional engineering network' },
-    ],
+    education: {
+      type: [EducationSchema],
+      default: [
+        {
+          institute: 'Lovely Professional University',
+          degree: 'B.Tech',
+          branch: 'Computer Science Engineering',
+          university: 'Lovely Professional University',
+          startYear: '2021',
+          endYear: '2025',
+          cgpa: '8.5',
+          currentSemester: 'Final Year',
+        },
+      ],
+    },
+    skills: {
+      type: [SkillSchema],
+      default: [
+        { name: 'Java', category: 'Programming', level: 90, tag: 'Core & OOP', icon: 'Cpu' },
+        { name: 'Python', category: 'Programming', level: 88, tag: 'Advanced', icon: 'Code' },
+        { name: 'C++', category: 'Programming', level: 85, tag: 'STL & Data Structures', icon: 'Terminal' },
+        { name: 'MySQL', category: 'Database', level: 85, tag: 'Relational DB', icon: 'Database' },
+        { name: 'NoSQL', category: 'Database', level: 80, tag: 'MongoDB', icon: 'Database' },
+        { name: 'Java Swing', category: 'Frontend', level: 80, tag: 'GUI Framework', icon: 'Palette' },
+        { name: 'Bootstrap', category: 'Frontend', level: 85, tag: 'UI Framework', icon: 'Palette' },
+        { name: 'JDBC', category: 'Backend', level: 80, tag: 'Java Connectivity', icon: 'Server' },
+        { name: 'Git', category: 'DevOps', level: 88, tag: 'Version Control', icon: 'Box' },
+        { name: 'GitHub', category: 'DevOps', level: 90, tag: 'Code Collaboration', icon: 'Globe' },
+        { name: 'VS Code', category: 'Tools', level: 95, tag: 'IDE', icon: 'FileCode' },
+        { name: 'Power BI', category: 'Data & Analytics', level: 75, tag: 'Data Visualization', icon: 'Activity' },
+        { name: 'Problem Solving', category: 'Soft Skills', level: 90, tag: 'Core Competency', icon: 'Sparkles' },
+        { name: 'Communication', category: 'Soft Skills', level: 85, tag: 'Professional', icon: 'MessageSquare' },
+        { name: 'Teamwork', category: 'Soft Skills', level: 90, tag: 'Collaboration', icon: 'ShieldCheck' },
+        { name: 'Adaptability', category: 'Soft Skills', level: 90, tag: 'Fast Learner', icon: 'Zap' },
+      ],
+    },
+    projects: {
+      type: [ProjectSchema],
+      default: [
+        {
+          title: 'AlgoVisualizer',
+          description: 'Interactive full-stack web platform for step-by-step data structure and algorithm visualization with real-time state tracking.',
+          techStack: 'React, TypeScript, Node.js, Express, MongoDB, Tailwind CSS',
+          githubLink: 'https://github.com/chandramohan06/AlgoVisualizer',
+          liveDemo: '',
+          startDate: '2024',
+          endDate: 'Present',
+        },
+        {
+          title: 'Mobile Sales Analysis',
+          description: 'Data analytics project analyzing mobile sales trends, customer purchasing behavior, and revenue patterns using SQL & Power BI.',
+          techStack: 'Python, MySQL, Power BI',
+          githubLink: '',
+          liveDemo: '',
+          startDate: '2023',
+          endDate: '2023',
+        },
+        {
+          title: 'Real-Time Process Monitoring System',
+          description: 'System monitoring tool for tracking real-time CPU, memory utilization, and running background processes with graphical display.',
+          techStack: 'Java, Java Swing, Operating Systems',
+          githubLink: '',
+          liveDemo: '',
+          startDate: '2023',
+          endDate: '2023',
+        },
+      ],
+    },
+    certifications: {
+      type: [CertificationSchema],
+      default: [
+        {
+          title: 'Python for Data Science',
+          organization: 'Certification Provider',
+          date: '2023',
+          certificateLink: '',
+        },
+        {
+          title: 'Data Structure and Algorithm',
+          organization: 'Certification Provider',
+          date: '2023',
+          certificateLink: '',
+        },
+        {
+          title: 'Programming in C++',
+          organization: 'Certification Provider',
+          date: '2022',
+          certificateLink: '',
+        },
+      ],
+    },
+    trainings: {
+      type: [TrainingSchema],
+      default: [
+        {
+          title: 'Board Infinity DSA Training',
+          organization: 'Board Infinity',
+          duration: '2023',
+          description: 'Comprehensive training in Data Structures, Algorithms, and Algorithmic Problem Solving.',
+        },
+      ],
+    },
+    projectMetrics: {
+      type: [ProjectMetricSchema],
+      default: [
+        { label: 'Algorithms Visualized', value: '85+', sub: 'Interactive step-by-step', color: 'text-indigo-400' },
+        { label: 'Practice Problems', value: '250', sub: 'Easy & Medium DSA questions', color: 'text-emerald-400' },
+        { label: 'API Response Time', value: '< 50ms', sub: 'Non-blocking async backend', color: 'text-amber-400' },
+        { label: 'Tech Stack', value: 'React + Node', sub: 'MongoDB Atlas + Docker', color: 'text-purple-400' },
+      ],
+    },
+    timeline: {
+      type: [TimelineItemSchema],
+      default: [
+        { year: '2021', title: 'Enrolled at Lovely Professional University', subtitle: 'B.Tech in Computer Science Engineering', description: 'Started computer science engineering journey learning programming fundamentals in C++ and Java.', badge: 'Education', category: 'Academics' },
+        { year: '2022', title: 'C++ & DSA Foundations', subtitle: 'Core Problem Solving', description: 'Mastered C++ programming and completed Programming in C++ certification.', badge: 'Certification', category: 'Skills' },
+        { year: '2023', title: 'Data Science, Systems & DSA Training', subtitle: 'Board Infinity & Projects', description: 'Completed Board Infinity DSA Training, Python for Data Science certification, Mobile Sales Analysis, and Real-Time Process Monitoring System.', badge: 'Training', category: 'Projects & Training' },
+        { year: '2024 - 2025', title: 'AlgoVisualizer SaaS Platform', subtitle: 'Full-Stack Architecture', description: 'Engineered AlgoVisualizer SaaS platform with 85+ interactive algorithm visualizers and practice problem sandbox.', badge: 'Product', category: 'Engineering' },
+      ],
+    },
+    achievements: { type: [AchievementSchema], default: [] },
+    codingProfiles: {
+      type: [CodingProfileSchema],
+      default: [
+        { platform: 'GitHub', username: 'chandramohan06', profileUrl: 'https://github.com/chandramohan06', solvedCount: '', rating: '', description: 'Open source projects & AlgoVisualizer SaaS codebase' },
+        { platform: 'LinkedIn', username: 'chandramohan06', profileUrl: 'https://linkedin.com/in/chandramohan06', solvedCount: '', rating: '', description: 'Professional engineering network' },
+      ],
+    },
     algorithmsVisualized: { type: String, default: '85+' },
     practiceProblems: { type: String, default: '250' },
     projectsCount: { type: String, default: '3+' },
@@ -309,5 +416,6 @@ export const DeveloperProfile = mongoose.model<IDeveloperProfile>(
   'DeveloperProfile',
   DeveloperProfileSchema
 );
+
 
 
