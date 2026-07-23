@@ -51,7 +51,7 @@ export const Sidebar: React.FC = () => {
         'flex items-center gap-3 px-6 h-20 border-b border-white/5 shrink-0',
         sidebarCollapsed && 'justify-center px-3'
       )}>
-        <motion.div 
+        <motion.div
           whileHover={{ scale: 1.05 }}
           className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0 shadow-md shadow-blue-500/10 cursor-pointer"
         >

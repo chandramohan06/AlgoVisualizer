@@ -8,12 +8,21 @@ import * as EmailService from './email.service';
 import { ILoginDto, IRegisterDto } from '@algovisualizer/shared';
 
 export const register = async (dto: IRegisterDto) => {
+  const t0 = performance.now();
+
+  // ── 1. Duplicate check ────────────────────────────────────────────────
   const existing = await User.findOne({ email: dto.email });
   if (existing) throw new AppError('Email already registered', 409);
+  console.log(`[register] duplicate-check: ${(performance.now() - t0).toFixed(0)}ms`);
 
-  const passwordHash = await bcrypt.hash(dto.password, 12);
-  const emailVerifyToken = crypto.randomBytes(32).toString('hex');
+  // ── 2. Hash password ──────────────────────────────────────────────────
+  const [passwordHash, emailVerifyToken] = await Promise.all([
+    bcrypt.hash(dto.password, 12),
+    Promise.resolve(crypto.randomBytes(32).toString('hex')),
+  ]);
+  console.log(`[register] bcrypt+token: ${(performance.now() - t0).toFixed(0)}ms`);
 
+  // ── 3. Persist user + leaderboard entry (parallel) ────────────────────
   const user = await User.create({
     name: dto.name,
     email: dto.email,
@@ -21,13 +30,27 @@ export const register = async (dto: IRegisterDto) => {
     emailVerifyToken,
   });
 
-  // Create leaderboard entry
-  await Leaderboard.create({ userId: user._id });
+  // Leaderboard entry is non-critical — run in parallel, don't block response
+  Leaderboard.create({ userId: user._id }).catch((err: Error) =>
+    console.error('[register] leaderboard-create failed:', err.message)
+  );
+  console.log(`[register] user-created: ${(performance.now() - t0).toFixed(0)}ms`);
 
-  await EmailService.sendVerificationEmail(user.email, user.name, emailVerifyToken);
+  // ── 4. Fire verification email in background — NEVER block response ───
+  //    Root cause of the 2-minute delay: previously `await`-ing sendMail()
+  //    causes the HTTP response to wait for the full SMTP round-trip.
+  setImmediate(() => {
+    EmailService.sendVerificationEmail(user.email, user.name, emailVerifyToken)
+      .then(() => console.log(`[register] email sent to ${user.email}`))
+      .catch((err: Error) => console.error('[register] email send failed (non-fatal):', err.message));
+  });
 
+  console.log(`[register] TOTAL (before email): ${(performance.now() - t0).toFixed(0)}ms`);
+
+  // ── 5. Return immediately ─────────────────────────────────────────────
   return { userId: user._id, email: user.email, emailVerifyToken };
 };
+
 
 export const login = async (dto: ILoginDto) => {
   const user = await User.findOne({ email: dto.email }).select('+passwordHash +refreshToken');

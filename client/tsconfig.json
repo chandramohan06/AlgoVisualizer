@@ -31,7 +31,8 @@
       "@assets/*": ["src/assets/*"],
       "@animations/*": ["src/animations/*"],
       "@algorithms/*": ["src/algorithms/*"],
-      "@layouts/*": ["src/layouts/*"]
+      "@layouts/*": ["src/layouts/*"],
+      "@styles/*": ["src/styles/*"]
     }
   },
   "references": [

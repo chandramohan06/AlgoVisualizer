@@ -21,6 +21,7 @@ export default defineConfig({
       '@animations': path.resolve(__dirname, './src/animations'),
       '@algorithms': path.resolve(__dirname, './src/algorithms'),
       '@layouts': path.resolve(__dirname, './src/layouts'),
+      '@styles': path.resolve(__dirname, './src/styles'),
       '@shared': path.resolve(__dirname, '../shared/src'),
     },
   },
