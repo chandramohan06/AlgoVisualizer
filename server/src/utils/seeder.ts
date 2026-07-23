@@ -4,11 +4,18 @@ import { Algorithm } from '../models/Algorithm.model';
 import { QuizQuestion } from '../models/QuizQuestion.model';
 import { PracticeProblem } from '../models/PracticeProblem.model';
 import { User } from '../models/User.model';
+import { DeveloperProfile } from '../models/DeveloperProfile.model';
 import { Difficulty, QuestionType, Role } from '@algovisualizer/shared';
 import bcrypt from 'bcryptjs';
 
 export const seedDatabase = async (): Promise<void> => {
   try {
+    // 0. Ensure Developer Founder Profile exists
+    const devProfileCount = await DeveloperProfile.countDocuments();
+    if (devProfileCount === 0) {
+      await DeveloperProfile.create({});
+      console.log('✅  Founder Developer Profile initialized in MongoDBAtlas');
+    }
     // 1. Ensure default Admin User exists and is correct
     const adminPasswordHash = await bcrypt.hash('admin1234', 10);
     const adminUser = await User.findOneAndUpdate(

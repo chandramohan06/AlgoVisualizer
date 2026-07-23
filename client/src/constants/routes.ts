@@ -101,6 +101,7 @@ export const ROUTES = {
   ADMIN: '/admin',
   ADMIN_STUDENTS: '/admin/students',
   ADMIN_STUDENT_DETAIL: '/admin/students/:id',
+  ADMIN_DEVELOPER_MANAGER: '/admin/developer-manager',
   ADMIN_ALGORITHMS: '/admin/algorithms',
   ADMIN_ALGORITHMS_NEW: '/admin/algorithms/new',
   ADMIN_ALGORITHMS_EDIT: '/admin/algorithms/:id/edit',

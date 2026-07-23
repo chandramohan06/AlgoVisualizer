@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, FolderOpen, BookOpen, Brain, Trophy, FileSpreadsheet, ShieldAlert,
-  Users, BarChart3, Settings,
+  Users, BarChart3, Settings, UserCheck,
   LogOut, Sun, Moon, Bell, ChevronRight, Menu, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,6 +20,7 @@ interface NavItem {
 
 const adminNavItems: NavItem[] = [
   { name: 'Dashboard', path: ROUTES.ADMIN, icon: LayoutDashboard },
+  { name: 'Founder Profile', path: '/admin/developer-manager', icon: UserCheck },
   { name: 'Students', path: '/admin/students', icon: Users },
   { name: 'Categories', path: '/admin/categories', icon: FolderOpen },
   { name: 'Algorithms', path: '/admin/algorithms', icon: BookOpen },

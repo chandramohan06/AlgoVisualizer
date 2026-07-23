@@ -9,6 +9,7 @@ import achievementRoutes from './achievement.routes';
 import progressRoutes from './progress.routes';
 import adminRoutes from './admin.routes';
 import practiceRoutes from './practice.routes';
+import developerProfileRoutes from './developerProfile.routes';
 
 export const router = Router();
 
@@ -23,3 +24,4 @@ router.use('/leaderboard', leaderboardRoutes);
 router.use('/achievements', achievementRoutes);
 router.use('/progress', progressRoutes);
 router.use('/admin', adminRoutes);
+router.use('/developer-profile', developerProfileRoutes);

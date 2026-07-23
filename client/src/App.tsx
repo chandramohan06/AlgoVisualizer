@@ -107,6 +107,7 @@ import AdminAnalytics from '@pages/admin/Analytics';
 import AdminReports from '@pages/admin/AdminReports';
 import AdminAuditLogs from '@pages/admin/AdminAuditLogs';
 import AdminSettings from '@pages/admin/Settings';
+import AdminDeveloperManager from '@pages/admin/AdminDeveloperManager';
 
 import NotFound from '@pages/common/NotFound';
 import Forbidden from '@pages/common/Forbidden';
@@ -251,6 +252,7 @@ const AppContent: React.FC = () => {
           <Route path="/admin/reports" element={<AdminReports />} />
           <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
           <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path={ROUTES.ADMIN_DEVELOPER_MANAGER} element={<AdminDeveloperManager />} />
         </Route>
 
         {/* Fallback */}

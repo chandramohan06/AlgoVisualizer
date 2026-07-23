@@ -23,8 +23,12 @@ export const API_ENDPOINTS = {
   USER_ACHIEVEMENTS: `${API_BASE}/users/achievements`,
   USER_NOTES: `${API_BASE}/users/notes`,
   USER_QUIZ_HISTORY: `${API_BASE}/users/quiz-history`,
-  USER_STREAK: `${API_BASE}/users/streak`,
   USER_PUBLIC_PROFILE: (userId: string) => `${API_BASE}/users/${userId}`,
+
+  // Developer Profile
+  DEVELOPER_PROFILE: `${API_BASE}/developer-profile`,
+  DEVELOPER_PROFILE_PHOTO: `${API_BASE}/developer-profile/photo`,
+  DEVELOPER_PROFILE_RESUME: `${API_BASE}/developer-profile/resume`,
 
   // Progress
   PROGRESS: `${API_BASE}/progress`,
