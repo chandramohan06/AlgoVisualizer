@@ -1,7 +1,10 @@
-ARG CACHE_BUST=1
+ARG CACHE_BUST=2
+
 
 # ── Build Stage ─────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
+ARG CACHE_BUST
+RUN echo "CACHE_BUST=${CACHE_BUST}"
 
 WORKDIR /usr/src/app
 
