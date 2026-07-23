@@ -26,6 +26,7 @@ export const ROUTES = {
   NOTE_DETAIL: '/notes/:id',
   PROFILE: '/profile',
   PUBLIC_PROFILE: '/profile/:userId',
+  DEVELOPER: '/developer',
   SETTINGS: '/settings',
 
   // Question Details Page

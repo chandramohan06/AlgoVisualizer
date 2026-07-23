@@ -26,6 +26,7 @@ import Notes from '@pages/student/Notes';
 import Leaderboard from '@pages/student/Leaderboard';
 import Achievements from '@pages/student/Achievements';
 import Profile from '@pages/student/Profile';
+import AboutDeveloper from '@pages/student/AboutDeveloper';
 import Settings from '@pages/student/Settings';
 import PracticeList from '@pages/student/PracticeList';
 import ProblemIDE from '@pages/student/ProblemIDE';
@@ -164,6 +165,7 @@ const AppContent: React.FC = () => {
           <Route path={ROUTES.LEADERBOARD} element={<Leaderboard />} />
           <Route path={ROUTES.ACHIEVEMENTS} element={<Achievements />} />
           <Route path={ROUTES.PROFILE} element={<Profile />} />
+          <Route path={ROUTES.DEVELOPER} element={<AboutDeveloper />} />
           <Route path={ROUTES.SETTINGS} element={<Settings />} />
           <Route path="/practice/question/:slug" element={<ProblemIDE />} />
           <Route path="/question/:id" element={<ProblemIDE />} />

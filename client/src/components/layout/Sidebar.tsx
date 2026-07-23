@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Code2, Brain, Compass, StickyNote,
   Trophy, Award, User, Settings, LogOut, Play,
-  ChevronLeft, Sparkles, X
+  ChevronLeft, Sparkles, X, UserCheck
 } from 'lucide-react';
 import { cn } from '@utils/index';
 import { useAuthStore } from '@store/authStore';
@@ -21,7 +21,7 @@ interface NavItem {
 const mainNav: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.DASHBOARD },
   { label: 'DSA Roadmap', icon: Compass, path: ROUTES.ALGORITHMS, badge: 'A2Z' },
-  { label: 'Practice Problems', icon: Code2, path: ROUTES.PRACTICE, badge: '100 Qs' },
+  { label: 'Practice Problems', icon: Code2, path: ROUTES.PRACTICE, badge: '250 Qs' },
   { label: 'Visualization', icon: Play, path: '/visualizations', badge: 'Interactive' },
   { label: 'Quiz', icon: Brain, path: ROUTES.QUIZ, badge: 'Test' },
   { label: 'Notes', icon: StickyNote, path: ROUTES.NOTES },
@@ -30,6 +30,7 @@ const mainNav: NavItem[] = [
 ];
 
 const bottomNav: NavItem[] = [
+  { label: 'About Developer', icon: UserCheck, path: ROUTES.DEVELOPER, badge: 'Founder' },
   { label: 'Profile', icon: User, path: ROUTES.PROFILE },
   { label: 'Settings', icon: Settings, path: ROUTES.SETTINGS },
 ];
