@@ -109,6 +109,28 @@ export const Sidebar: React.FC = () => {
 
       {/* Bottom Profile and Settings */}
       <div className="py-4 px-4 space-y-1.5">
+        {user?.role === 'admin' && (
+          <NavLink
+            to="/admin/developer-manager"
+            onClick={() => setSidebarOpen(false)}
+            className={({ isActive }) =>
+              cn(
+                'group flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20',
+                sidebarCollapsed && 'justify-center px-2',
+                isActive && 'bg-amber-500/25 border-amber-400 text-amber-300'
+              )
+            }
+          >
+            <UserCheck className="w-4.5 h-4.5 shrink-0 text-amber-400" />
+            {!sidebarCollapsed && <span className="truncate">Founder Profile CMS</span>}
+            {!sidebarCollapsed && (
+              <span className="ml-auto text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded uppercase">
+                ADMIN
+              </span>
+            )}
+          </NavLink>
+        )}
+
         {bottomNav.map((item) => (
           <NavLink
             key={item.path}

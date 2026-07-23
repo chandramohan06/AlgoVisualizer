@@ -20,7 +20,7 @@ interface NavItem {
 
 const adminNavItems: NavItem[] = [
   { name: 'Dashboard', path: ROUTES.ADMIN, icon: LayoutDashboard },
-  { name: 'Founder Profile', path: '/admin/developer-manager', icon: UserCheck },
+  { name: 'Founder Profile Manager', path: '/admin/developer-manager', icon: UserCheck },
   { name: 'Students', path: '/admin/students', icon: Users },
   { name: 'Categories', path: '/admin/categories', icon: FolderOpen },
   { name: 'Algorithms', path: '/admin/algorithms', icon: BookOpen },
