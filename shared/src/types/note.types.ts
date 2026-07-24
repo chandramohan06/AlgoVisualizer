@@ -23,6 +23,34 @@ export interface ISpaceComplexity {
   description?: string;
 }
 
+export interface IJavaMethod {
+  name: string;
+  purpose?: string;
+  syntax: string;
+  parameters: string;
+  returnType: string;
+  timeComplexity: string;
+  example: string;
+  notes?: string;
+}
+
+export interface IOperation {
+  name: string;
+  description: string;
+  timeComplexity: string;
+  spaceComplexity: string;
+}
+
+export interface ITypeItem {
+  name: string;
+  description: string;
+}
+
+export interface ICompanyQuestions {
+  company: string;
+  questions: string[];
+}
+
 export interface INote {
   _id: string;
   title: string;
@@ -34,6 +62,12 @@ export interface INote {
   definition: string;
   introduction?: string;
   whyUsed?: string;
+  characteristics?: string[];
+  types?: ITypeItem[];
+  operations?: IOperation[];
+  javaMethods?: IJavaMethod[];
+  internalWorking?: string;
+  memoryRepresentation?: string;
   working: string;
   algorithm: string;
   flow: string;
@@ -50,13 +84,16 @@ export interface INote {
   example: string;
   output: string;
   interviewQuestions: IInterviewQuestion[];
+  companyWiseQuestions?: ICompanyQuestions[];
   commonMistakes: string[];
+  bestPractices?: string[];
   relatedProblems: IRelatedProblem[];
   quizIds?: string[];
   visualizationId?: string;
   videoUrl?: string;
   pdfUrl?: string;
   images?: string[];
+  diagrams?: string[];
   tags: string[];
   estimatedReadTime: number;
   revisionNotes?: string;
@@ -98,6 +135,12 @@ export interface ICreateNoteDto {
   definition: string;
   introduction?: string;
   whyUsed?: string;
+  characteristics?: string[];
+  types?: ITypeItem[];
+  operations?: IOperation[];
+  javaMethods?: IJavaMethod[];
+  internalWorking?: string;
+  memoryRepresentation?: string;
   working: string;
   algorithm: string;
   flow: string;
@@ -114,13 +157,16 @@ export interface ICreateNoteDto {
   example: string;
   output: string;
   interviewQuestions: IInterviewQuestion[];
+  companyWiseQuestions?: ICompanyQuestions[];
   commonMistakes: string[];
+  bestPractices?: string[];
   relatedProblems: IRelatedProblem[];
   quizIds?: string[];
   visualizationId?: string;
   videoUrl?: string;
   pdfUrl?: string;
   images?: string[];
+  diagrams?: string[];
   tags: string[];
   estimatedReadTime?: number;
   revisionNotes?: string;
@@ -143,4 +189,3 @@ export interface INoteQueryFilter {
   published?: boolean | string;
   sort?: string;
 }
-

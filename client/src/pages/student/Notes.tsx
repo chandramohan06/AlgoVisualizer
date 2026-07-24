@@ -25,12 +25,16 @@ import {
   CheckCircle,
   HelpCircle,
   AlertTriangle,
-  Lightbulb,
   ExternalLink,
   Layers,
-  Flame,
   FileText,
   Check,
+  Building2,
+  Zap,
+  ListChecks,
+  Table,
+  Terminal,
+  ShieldCheck,
 } from 'lucide-react';
 import { Skeleton } from '@components/common/Skeleton';
 
@@ -81,8 +85,11 @@ export const Notes: React.FC = () => {
   const [filterCompleted, setFilterCompleted] = useState<boolean>(false);
 
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'algorithm' | 'complexity' | 'code' | 'interview' | 'revision'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'methods' | 'algorithm' | 'complexity' | 'code' | 'interview' | 'revision'
+  >('overview');
   const [copiedLink, setCopiedLink] = useState(false);
+  const [iqSearchTerm, setIqSearchTerm] = useState('');
 
   // Fetch Notes
   const filterQuery: INoteQueryFilter = {
@@ -140,7 +147,7 @@ export const Notes: React.FC = () => {
     const shareUrl = `${window.location.origin}/notes?slug=${activeNote.slug}`;
     if (navigator.share) {
       navigator.share({
-        title: `${activeNote.title} - AlgoVisualizer`,
+        title: `${activeNote.title} - AlgoVisualizer Knowledge Base`,
         text: activeNote.description,
         url: shareUrl,
       });
@@ -171,18 +178,18 @@ export const Notes: React.FC = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
     >
-      {/* ── Page Title Header ── */}
+      {/* ── Page Header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-2">
-            <Sparkles className="w-3.5 h-3.5" /> Core Learning Library
+            <Sparkles className="w-3.5 h-3.5" /> Placement &amp; Technical Interview Preparation Library
           </div>
           <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-3">
             <BookOpen className="w-8 h-8 text-indigo-400" />
-            DSA Knowledge Base &amp; Notes
+            DSA &amp; Java Placement Knowledge Base
           </h1>
           <p className="text-xs md:text-sm text-slate-400 mt-1">
-            Complete, interview-ready study material for every major Data Structure &amp; Algorithm with multi-language code snippets.
+            26-Section In-Depth Study Guides, Java Class Methods Documentation, 30–50 Technical Q&amp;A per topic, and Company-tagged Questions.
           </p>
         </div>
 
@@ -226,11 +233,10 @@ export const Notes: React.FC = () => {
         ))}
       </div>
 
-      {/* ── Main Layout Grid: Left Sidebar (List & Search) + Right Notes Viewer ── */}
+      {/* ── Main Layout Grid: Left Sidebar + Right Detail Panel ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Search & Notes List (4 Cols) */}
         <div className="lg:col-span-4 space-y-4">
-          {/* Search Box */}
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
@@ -242,7 +248,6 @@ export const Notes: React.FC = () => {
             />
           </div>
 
-          {/* Quick Filter Bar */}
           <div className="flex items-center justify-between gap-2 text-xs">
             <select
               value={selectedDifficulty}
@@ -282,7 +287,7 @@ export const Notes: React.FC = () => {
             </div>
           </div>
 
-          {/* Notes List Scrollable */}
+          {/* Notes Scrollable List */}
           <div className="glass-card rounded-2xl p-2 space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto">
             {isLoading ? (
               <Skeleton className="h-20 rounded-xl" count={5} />
@@ -334,11 +339,11 @@ export const Notes: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Note Content Viewer (8 Cols) */}
+        {/* Right Column: Comprehensive 26-Section Note Detail (8 Cols) */}
         <div className="lg:col-span-8">
           {activeNote ? (
             <div className="glass-card rounded-2xl p-6 space-y-6">
-              {/* Note Header & Action Buttons */}
+              {/* Header & Interactive Action Buttons */}
               <div className="space-y-4 border-b border-white/10 pb-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
@@ -364,14 +369,13 @@ export const Notes: React.FC = () => {
                   {activeNote.description}
                 </p>
 
-                {/* ── Interactive Action Buttons Bar ── */}
+                {/* ── Interactive Action Buttons ── */}
                 <div className="flex flex-wrap items-center gap-2 pt-2">
-                  {/* Bookmark Button */}
                   <button
                     onClick={() => bookmarkMutation.mutate(activeNote._id)}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                       activeNote.isBookmarked
-                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-md shadow-amber-500/10'
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
                         : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:text-white'
                     }`}
                   >
@@ -379,12 +383,11 @@ export const Notes: React.FC = () => {
                     {activeNote.isBookmarked ? 'Bookmarked' : 'Bookmark'}
                   </button>
 
-                  {/* Mark Completed Button */}
                   <button
                     onClick={() => completeMutation.mutate(activeNote._id)}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                       activeNote.isCompleted
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-md shadow-emerald-500/10'
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                         : 'bg-white/5 text-slate-300 border-white/10 hover:bg-white/10 hover:text-white'
                     }`}
                   >
@@ -392,7 +395,6 @@ export const Notes: React.FC = () => {
                     {activeNote.isCompleted ? 'Completed' : 'Mark Completed'}
                   </button>
 
-                  {/* Visualize Algorithm */}
                   <button
                     onClick={() =>
                       navigate(
@@ -401,13 +403,12 @@ export const Notes: React.FC = () => {
                           : '/visualizations'
                       )
                     }
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-500 shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-500 shadow-md transition-all cursor-pointer"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
                     Visualize Algorithm
                   </button>
 
-                  {/* Practice Problems */}
                   <button
                     onClick={() => navigate('/practice')}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600/30 transition-all cursor-pointer"
@@ -416,7 +417,6 @@ export const Notes: React.FC = () => {
                     Practice Problems
                   </button>
 
-                  {/* Attempt Quiz */}
                   <button
                     onClick={() => navigate('/quiz')}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30 transition-all cursor-pointer"
@@ -425,31 +425,25 @@ export const Notes: React.FC = () => {
                     Attempt Quiz
                   </button>
 
-                  {/* PDF Download */}
                   <button
                     onClick={() => downloadPDF(activeNote)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
-                    title="Download PDF"
                   >
                     <Download className="w-3.5 h-3.5" />
                     PDF
                   </button>
 
-                  {/* Print Notes */}
                   <button
                     onClick={() => printNote(activeNote)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
-                    title="Print Note"
                   >
                     <Printer className="w-3.5 h-3.5" />
                     Print
                   </button>
 
-                  {/* Share Link */}
                   <button
                     onClick={handleShare}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 text-slate-300 border border-white/10 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
-                    title="Share Note"
                   >
                     {copiedLink ? (
                       <>
@@ -466,73 +460,75 @@ export const Notes: React.FC = () => {
                 </div>
               </div>
 
-              {/* ── Content Section Tabs ── */}
+              {/* ── 7 Content Navigation Tabs ── */}
               <div className="flex items-center gap-2 border-b border-white/10 overflow-x-auto no-scrollbar pb-1">
                 <button
                   onClick={() => setActiveTab('overview')}
-                  className={`px-4 py-2 text-xs font-bold transition-all border-b-2 cursor-pointer ${
-                    activeTab === 'overview'
-                      ? 'border-indigo-500 text-indigo-400'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                  className={`px-3 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap cursor-pointer ${
+                    activeTab === 'overview' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Overview &amp; Working
+                  1. Overview &amp; Types
                 </button>
+
+                <button
+                  onClick={() => setActiveTab('methods')}
+                  className={`px-3 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap cursor-pointer ${
+                    activeTab === 'methods' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  2. Operations &amp; Java Methods
+                </button>
+
                 <button
                   onClick={() => setActiveTab('algorithm')}
-                  className={`px-4 py-2 text-xs font-bold transition-all border-b-2 cursor-pointer ${
-                    activeTab === 'algorithm'
-                      ? 'border-indigo-500 text-indigo-400'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                  className={`px-3 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap cursor-pointer ${
+                    activeTab === 'algorithm' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Algorithm &amp; Dry Run
+                  3. Algorithm &amp; Dry Run
                 </button>
+
                 <button
                   onClick={() => setActiveTab('complexity')}
-                  className={`px-4 py-2 text-xs font-bold transition-all border-b-2 cursor-pointer ${
-                    activeTab === 'complexity'
-                      ? 'border-indigo-500 text-indigo-400'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                  className={`px-3 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap cursor-pointer ${
+                    activeTab === 'complexity' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Complexity &amp; Pros/Cons
+                  4. Complexities &amp; Best Practices
                 </button>
+
                 <button
                   onClick={() => setActiveTab('code')}
-                  className={`px-4 py-2 text-xs font-bold transition-all border-b-2 cursor-pointer ${
-                    activeTab === 'code'
-                      ? 'border-indigo-500 text-indigo-400'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                  className={`px-3 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap cursor-pointer ${
+                    activeTab === 'code' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Code Implementations
+                  5. Multi-Language Code
                 </button>
+
                 <button
                   onClick={() => setActiveTab('interview')}
-                  className={`px-4 py-2 text-xs font-bold transition-all border-b-2 cursor-pointer ${
-                    activeTab === 'interview'
-                      ? 'border-indigo-500 text-indigo-400'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                  className={`px-3 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap cursor-pointer ${
+                    activeTab === 'interview' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Interview &amp; Problems
+                  6. Interview Questions &amp; Companies
                 </button>
+
                 <button
                   onClick={() => setActiveTab('revision')}
-                  className={`px-4 py-2 text-xs font-bold transition-all border-b-2 cursor-pointer ${
-                    activeTab === 'revision'
-                      ? 'border-indigo-500 text-indigo-400'
-                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                  className={`px-3 py-2 text-xs font-bold transition-all border-b-2 whitespace-nowrap cursor-pointer ${
+                    activeTab === 'revision' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Revision &amp; Cheat Sheet
+                  7. Revision &amp; Cheat Sheet
                 </button>
               </div>
 
-              {/* ── Active Tab Content Area ── */}
+              {/* ── Tab Content Containers ── */}
               <div className="space-y-6">
-                {/* 1. Overview Tab */}
+                {/* TAB 1: OVERVIEW, CHARACTERISTICS, TYPES, INTERNAL WORKING, MEMORY REPRESENTATION */}
                 {activeTab === 'overview' && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
                     {/* Definition */}
@@ -543,69 +539,191 @@ export const Notes: React.FC = () => {
                       <p className="text-xs md:text-sm text-slate-200 leading-relaxed">{activeNote.definition}</p>
                     </div>
 
-                    {/* Introduction */}
-                    {activeNote.introduction && (
+                    {/* Characteristics */}
+                    {activeNote.characteristics && activeNote.characteristics.length > 0 && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                          <Layers className="w-4 h-4 text-cyan-400" /> 2. Introduction
+                        <h4 className="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+                          <ListChecks className="w-4 h-4" /> 2. Core Characteristics
                         </h4>
-                        <p className="text-xs md:text-sm text-slate-300 leading-relaxed bg-black/20 p-4 rounded-xl border border-white/5">
-                          {activeNote.introduction}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {activeNote.characteristics.map((char, i) => (
+                            <div key={i} className="p-3 bg-black/20 rounded-xl border border-white/5 text-xs text-slate-200 flex items-start gap-2">
+                              <span className="text-cyan-400 font-bold">•</span>
+                              <span>{char}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Types */}
+                    {activeNote.types && activeNote.types.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                          <Layers className="w-4 h-4" /> 3. Types &amp; Variations
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {activeNote.types.map((typeItem, i) => (
+                            <div key={i} className="glass-card p-3 rounded-xl border border-white/10 space-y-1">
+                              <div className="text-xs font-bold text-amber-300">{typeItem.name}</div>
+                              <div className="text-[11px] text-slate-400 leading-snug">{typeItem.description}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Internal Working */}
+                    {activeNote.internalWorking && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
+                          <Zap className="w-4 h-4" /> 6. Internal Working Mechanism
+                        </h4>
+                        <p className="text-xs md:text-sm text-slate-300 leading-relaxed bg-black/30 p-4 rounded-xl border border-white/10">
+                          {activeNote.internalWorking}
                         </p>
                       </div>
                     )}
 
-                    {/* Why It Is Used */}
-                    {activeNote.whyUsed && (
+                    {/* Memory Representation */}
+                    {activeNote.memoryRepresentation && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                          <Lightbulb className="w-4 h-4 text-amber-400" /> 3. Why It Is Used
+                        <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                          <Table className="w-4 h-4" /> 7. Memory Representation &amp; Layout
                         </h4>
-                        <p className="text-xs md:text-sm text-slate-300 leading-relaxed bg-black/20 p-4 rounded-xl border border-white/5">
-                          {activeNote.whyUsed}
+                        <p className="text-xs md:text-sm font-mono text-indigo-200 bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/20">
+                          {activeNote.memoryRepresentation}
                         </p>
                       </div>
                     )}
-
-                    {/* Working Principle */}
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                        <Flame className="w-4 h-4 text-rose-400" /> 4. Working Principle
-                      </h4>
-                      <p className="text-xs md:text-sm text-slate-300 leading-relaxed bg-black/20 p-4 rounded-xl border border-white/5">
-                        {activeNote.working}
-                      </p>
-                    </div>
                   </motion.div>
                 )}
 
-                {/* 2. Algorithm & Flow Tab */}
+                {/* TAB 2: OPERATIONS & DEDICATED JAVA METHODS DOCUMENTATION */}
+                {activeTab === 'methods' && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                    {/* Operations Table */}
+                    {activeNote.operations && activeNote.operations.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-emerald-400" /> 4. Standard Operations
+                        </h4>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse border border-white/10 rounded-xl overflow-hidden">
+                            <thead>
+                              <tr className="bg-slate-900/80 text-[11px] font-mono text-slate-400">
+                                <th className="p-3 border-b border-white/10">Operation</th>
+                                <th className="p-3 border-b border-white/10">Description</th>
+                                <th className="p-3 border-b border-white/10">Time Complexity</th>
+                                <th className="p-3 border-b border-white/10">Space Complexity</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5 text-xs font-sans">
+                              {activeNote.operations.map((op, idx) => (
+                                <tr key={idx} className="hover:bg-white/[0.02]">
+                                  <td className="p-3 font-bold text-emerald-300 font-mono">{op.name}</td>
+                                  <td className="p-3 text-slate-300">{op.description}</td>
+                                  <td className="p-3 font-mono text-amber-400">{op.timeComplexity}</td>
+                                  <td className="p-3 font-mono text-purple-400">{op.spaceComplexity}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Dedicated Java Class Methods Documentation Table */}
+                    {activeNote.javaMethods && activeNote.javaMethods.length > 0 && (
+                      <div className="space-y-3 pt-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-xs font-bold text-purple-300 uppercase tracking-wider flex items-center gap-2">
+                            <Terminal className="w-4 h-4 text-purple-400" /> 5. Java Class Methods Documentation
+                          </h4>
+                          <span className="text-[10px] font-mono text-slate-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+                            java.util API Reference
+                          </span>
+                        </div>
+
+                        <div className="space-y-4">
+                          {activeNote.javaMethods.map((m, idx) => (
+                            <div key={idx} className="glass-card p-4 rounded-xl border border-purple-500/20 space-y-3">
+                              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2">
+                                <div className="text-sm font-black text-purple-300 font-mono">{m.name}</div>
+                                <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded">
+                                  {m.timeComplexity}
+                                </span>
+                              </div>
+
+                              {m.purpose && (
+                                <p className="text-xs text-slate-200">
+                                  <strong>Purpose:</strong> {m.purpose}
+                                </p>
+                              )}
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs font-mono">
+                                <div className="bg-black/30 p-2.5 rounded-lg border border-white/5">
+                                  <span className="text-slate-400 block text-[10px]">Syntax:</span>
+                                  <code className="text-emerald-400">{m.syntax}</code>
+                                </div>
+
+                                <div className="bg-black/30 p-2.5 rounded-lg border border-white/5">
+                                  <span className="text-slate-400 block text-[10px]">Return Type:</span>
+                                  <code className="text-cyan-400">{m.returnType}</code>
+                                </div>
+                              </div>
+
+                              <div className="text-xs font-mono bg-black/30 p-2.5 rounded-lg border border-white/5">
+                                <span className="text-slate-400 block text-[10px]">Parameters:</span>
+                                <span className="text-slate-200">{m.parameters}</span>
+                              </div>
+
+                              {m.example && (
+                                <div className="space-y-1">
+                                  <span className="text-[10px] font-mono text-slate-400 uppercase">Usage Example:</span>
+                                  <pre className="text-xs font-mono text-slate-200 bg-[#0a0d14] p-3 rounded-lg border border-white/10 whitespace-pre-wrap">
+                                    {m.example}
+                                  </pre>
+                                </div>
+                              )}
+
+                              {m.notes && (
+                                <p className="text-[11px] text-amber-300/90 italic">
+                                  Note: {m.notes}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+
+                {/* TAB 3: ALGORITHM, FLOW, DRY RUN & VISUALIZATIONS */}
                 {activeTab === 'algorithm' && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-                    {/* Step-by-Step Algorithm */}
                     <div className="space-y-2">
                       <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                        <Code className="w-4 h-4 text-emerald-400" /> 5. Step-by-Step Algorithm
+                        <Code className="w-4 h-4 text-emerald-400" /> 13. Step-by-Step Algorithm
                       </h4>
                       <pre className="text-xs font-mono text-slate-200 whitespace-pre-wrap bg-[#0a0d14] p-4 rounded-xl border border-white/10 leading-relaxed">
                         {activeNote.algorithm}
                       </pre>
                     </div>
 
-                    {/* Flow Explanation */}
                     <div className="space-y-2">
                       <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                        <ChevronRight className="w-4 h-4 text-indigo-400" /> 6. Flow Explanation
+                        <ChevronRight className="w-4 h-4 text-indigo-400" /> 14. Flow Explanation
                       </h4>
                       <p className="text-xs md:text-sm text-slate-300 leading-relaxed bg-black/20 p-4 rounded-xl border border-white/5">
                         {activeNote.flow}
                       </p>
                     </div>
 
-                    {/* Dry Run */}
                     <div className="space-y-2">
                       <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-amber-400" /> 7. Step-by-Step Dry Run
+                        <Sparkles className="w-4 h-4 text-amber-400" /> 16. Step-by-Step Dry Run Trace
                       </h4>
                       <pre className="text-xs font-mono text-amber-300/90 whitespace-pre-wrap bg-amber-500/5 p-4 rounded-xl border border-amber-500/20 leading-relaxed">
                         {activeNote.dryRun}
@@ -614,15 +732,14 @@ export const Notes: React.FC = () => {
                   </motion.div>
                 )}
 
-                {/* 3. Complexity & Pros/Cons Tab */}
+                {/* TAB 4: COMPLEXITIES, ADVANTAGES, DISADVANTAGES, APPLICATIONS & BEST PRACTICES */}
                 {activeTab === 'complexity' && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-                    {/* Time & Space Complexity Cards */}
+                    {/* Time & Space Complexity */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Time Complexity */}
                       <div className="glass-card p-4 rounded-xl border border-indigo-500/30 space-y-2">
                         <h4 className="text-xs font-bold text-indigo-300 uppercase tracking-wider">
-                          8. Time Complexity
+                          8. Time Complexity Breakdown
                         </h4>
                         <div className="grid grid-cols-3 gap-2 font-mono text-xs text-center py-2">
                           <div className="bg-black/30 p-2 rounded-lg border border-white/5">
@@ -643,10 +760,9 @@ export const Notes: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Space Complexity */}
                       <div className="glass-card p-4 rounded-xl border border-purple-500/30 space-y-2">
                         <h4 className="text-xs font-bold text-purple-300 uppercase tracking-wider">
-                          9. Space Complexity
+                          9. Space Complexity Breakdown
                         </h4>
                         <div className="grid grid-cols-2 gap-2 font-mono text-xs text-center py-2">
                           <div className="bg-black/30 p-2 rounded-lg border border-white/5">
@@ -666,7 +782,6 @@ export const Notes: React.FC = () => {
 
                     {/* Advantages & Disadvantages */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Advantages */}
                       {activeNote.advantages && activeNote.advantages.length > 0 && (
                         <div className="glass-card p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 space-y-2">
                           <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">
@@ -683,7 +798,6 @@ export const Notes: React.FC = () => {
                         </div>
                       )}
 
-                      {/* Disadvantages */}
                       {activeNote.disadvantages && activeNote.disadvantages.length > 0 && (
                         <div className="glass-card p-4 rounded-xl border border-rose-500/20 bg-rose-500/5 space-y-2">
                           <h4 className="text-xs font-bold text-rose-400 uppercase tracking-wider">
@@ -705,7 +819,7 @@ export const Notes: React.FC = () => {
                     {activeNote.applications && activeNote.applications.length > 0 && (
                       <div className="glass-card p-4 rounded-xl border border-indigo-500/20 space-y-2">
                         <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">
-                          12. Applications
+                          12. Real-World Applications
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {activeNote.applications.map((app, i) => (
@@ -716,17 +830,33 @@ export const Notes: React.FC = () => {
                         </div>
                       </div>
                     )}
+
+                    {/* Best Practices */}
+                    {activeNote.bestPractices && activeNote.bestPractices.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4" /> 23. Production Best Practices
+                        </h4>
+                        <div className="space-y-2">
+                          {activeNote.bestPractices.map((bp, i) => (
+                            <div key={i} className="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-xl text-xs text-slate-200 flex items-start gap-2">
+                              <span className="text-emerald-400 font-bold">✓</span>
+                              <span>{bp}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 )}
 
-                {/* 4. Code Implementations Tab */}
+                {/* TAB 5: MULTI-LANGUAGE CODE IMPLEMENTATIONS */}
                 {activeTab === 'code' && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
                     <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                      13-15. Multi-Language Implementations
+                      13-15. Production Code Implementations (Java, C++, Python, JS)
                     </h4>
 
-                    {/* Code Component */}
                     <SyntaxHighlighter
                       javaCode={activeNote.javaCode}
                       cppCode={activeNote.cppCode}
@@ -734,7 +864,6 @@ export const Notes: React.FC = () => {
                       jsCode={activeNote.jsCode}
                     />
 
-                    {/* Example & Output */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {activeNote.example && (
                         <div className="space-y-1.5">
@@ -757,46 +886,82 @@ export const Notes: React.FC = () => {
                   </motion.div>
                 )}
 
-                {/* 5. Interview Questions & Related Problems Tab */}
+                {/* TAB 6: 30-50 TECHNICAL INTERVIEW QUESTIONS & COMPANY-WISE TAGS */}
                 {activeTab === 'interview' && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-                    {/* Interview Questions */}
-                    {activeNote.interviewQuestions && activeNote.interviewQuestions.length > 0 && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                    {/* Search inside Interview Questions */}
+                    <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
+                      <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                        <HelpCircle className="w-4 h-4" /> 19. Technical Interview Questions ({activeNote.interviewQuestions.length} Questions)
+                      </h4>
+
+                      <input
+                        type="text"
+                        placeholder="Search interview questions..."
+                        value={iqSearchTerm}
+                        onChange={(e) => setIqSearchTerm(e.target.value)}
+                        className="bg-[#121624] border border-white/10 text-slate-200 rounded-lg px-3 py-1.5 text-xs w-56 focus:outline-none focus:border-indigo-500"
+                      />
+                    </div>
+
+                    {/* Company Wise Questions Grid */}
+                    {activeNote.companyWiseQuestions && activeNote.companyWiseQuestions.length > 0 && (
                       <div className="space-y-3">
-                        <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
-                          <HelpCircle className="w-4 h-4" /> 18. Common Interview Questions
+                        <h4 className="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+                          <Building2 className="w-4 h-4" /> 21. Company-Wise Asked Problems
                         </h4>
-                        <div className="space-y-3">
-                          {activeNote.interviewQuestions.map((iq, idx) => (
-                            <div key={idx} className="glass-card p-4 rounded-xl border border-white/10 space-y-2">
-                              <div className="flex items-start justify-between gap-2">
-                                <h5 className="text-xs font-bold text-slate-200">
-                                  Q{idx + 1}: {iq.question}
-                                </h5>
-                                {iq.companyTags && iq.companyTags.length > 0 && (
-                                  <div className="flex items-center gap-1 shrink-0">
-                                    {iq.companyTags.map((comp) => (
-                                      <span key={comp} className="px-2 py-0.5 text-[9px] font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded">
-                                        {comp}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          {activeNote.companyWiseQuestions.map((compItem, i) => (
+                            <div key={i} className="glass-card p-3 rounded-xl border border-white/10 space-y-2">
+                              <div className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
+                                <Building2 className="w-3.5 h-3.5 text-cyan-400" />
+                                {compItem.company}
                               </div>
-                              <p className="text-xs text-slate-300 bg-black/20 p-3 rounded-lg border border-white/5 leading-relaxed font-sans">
-                                <strong>Answer:</strong> {iq.answer}
-                              </p>
+                              <ul className="space-y-1 text-[11px] text-slate-300 font-sans">
+                                {compItem.questions.map((q, idx) => (
+                                  <li key={idx}>• {q}</li>
+                                ))}
+                              </ul>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
 
-                    {/* Common Mistakes */}
+                    {/* Interview Questions Accordion/Cards */}
+                    {activeNote.interviewQuestions && activeNote.interviewQuestions.length > 0 && (
+                      <div className="space-y-3">
+                        {activeNote.interviewQuestions
+                          .filter((q) => q.question.toLowerCase().includes(iqSearchTerm.toLowerCase()) || q.answer.toLowerCase().includes(iqSearchTerm.toLowerCase()))
+                          .map((iq, idx) => (
+                            <div key={idx} className="glass-card p-4 rounded-xl border border-white/10 space-y-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <h5 className="text-xs font-bold text-slate-200">
+                                  {iq.question}
+                                </h5>
+                                {iq.companyTags && iq.companyTags.length > 0 && (
+                                  <div className="flex flex-wrap items-center gap-1 shrink-0">
+                                    {iq.companyTags.map((comp) => (
+                                      <span key={comp} className="px-2 py-0.5 text-[9px] font-mono font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded">
+                                        {comp}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              <p className="text-xs text-slate-300 bg-black/30 p-3 rounded-lg border border-white/5 leading-relaxed font-sans">
+                                <strong>Detailed Answer:</strong> {iq.answer}
+                              </p>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+
+                    {/* Common Pitfalls & Mistakes */}
                     {activeNote.commonMistakes && activeNote.commonMistakes.length > 0 && (
-                      <div className="space-y-2">
+                      <div className="space-y-2 pt-2">
                         <h4 className="text-xs font-bold text-rose-400 uppercase tracking-wider flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4" /> 19. Common Pitfalls &amp; Mistakes
+                          <AlertTriangle className="w-4 h-4" /> 22. Common Pitfalls &amp; Mistakes
                         </h4>
                         <ul className="space-y-2">
                           {activeNote.commonMistakes.map((mistake, i) => (
@@ -809,11 +974,11 @@ export const Notes: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Related Problems */}
+                    {/* Frequently Asked Coding Problems */}
                     {activeNote.relatedProblems && activeNote.relatedProblems.length > 0 && (
-                      <div className="space-y-2">
+                      <div className="space-y-2 pt-2">
                         <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
-                          <Code className="w-4 h-4" /> 20. Recommended Practice Problems
+                          <Code className="w-4 h-4" /> 20. Frequently Asked Coding Problems
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {activeNote.relatedProblems.map((prob, i) => (
@@ -837,14 +1002,14 @@ export const Notes: React.FC = () => {
                   </motion.div>
                 )}
 
-                {/* 6. Revision & Cheat Sheet Tab */}
+                {/* TAB 7: REVISION NOTES, CHEAT SHEET & REFERENCES */}
                 {activeTab === 'revision' && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
                     {/* Revision Notes */}
                     {activeNote.revisionNotes && (
                       <div className="space-y-2">
                         <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
-                          <Sparkles className="w-4 h-4" /> 21. Quick Revision Notes
+                          <Sparkles className="w-4 h-4" /> 25. Placement Revision Summary
                         </h4>
                         <p className="text-xs md:text-sm text-slate-200 bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-xl leading-relaxed">
                           {activeNote.revisionNotes}
@@ -856,7 +1021,7 @@ export const Notes: React.FC = () => {
                     {activeNote.cheatSheet && (
                       <div className="space-y-2">
                         <h4 className="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
-                          <FileText className="w-4 h-4" /> 22. Cheat Sheet Summary
+                          <FileText className="w-4 h-4" /> 24. Cheat Sheet &amp; Complexity Table
                         </h4>
                         <pre className="text-xs font-mono text-cyan-300 bg-[#0a0d14] p-4 rounded-xl border border-white/10 whitespace-pre-wrap leading-relaxed">
                           {activeNote.cheatSheet}
@@ -868,7 +1033,7 @@ export const Notes: React.FC = () => {
                     {activeNote.references && activeNote.references.length > 0 && (
                       <div className="space-y-2">
                         <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                          23. References &amp; Readings
+                          26. Standard Documentation &amp; References
                         </h4>
                         <ul className="space-y-1 text-xs text-slate-400 font-mono">
                           {activeNote.references.map((ref, i) => (
@@ -884,9 +1049,9 @@ export const Notes: React.FC = () => {
           ) : (
             <div className="glass-card rounded-2xl p-12 text-center text-slate-500 space-y-3">
               <BookOpen className="w-10 h-10 text-slate-600 mx-auto" />
-              <h3 className="text-base font-bold text-white">Select a Topic</h3>
+              <h3 className="text-base font-bold text-white">Select a DSA Topic</h3>
               <p className="text-xs max-w-sm mx-auto">
-                Choose a Data Structure or Algorithm from the left navigation panel to read complete study material.
+                Select a topic from the left panel to inspect its 26-section placement preparation guide.
               </p>
             </div>
           )}

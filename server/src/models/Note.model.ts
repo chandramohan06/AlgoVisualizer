@@ -1,5 +1,14 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { IInterviewQuestion, IRelatedProblem, ITimeComplexity, ISpaceComplexity } from '@algovisualizer/shared';
+import {
+  IInterviewQuestion,
+  IRelatedProblem,
+  ITimeComplexity,
+  ISpaceComplexity,
+  IJavaMethod,
+  IOperation,
+  ITypeItem,
+  ICompanyQuestions,
+} from '@algovisualizer/shared';
 
 export interface INoteDocument extends Document {
   title: string;
@@ -11,6 +20,12 @@ export interface INoteDocument extends Document {
   definition: string;
   introduction?: string;
   whyUsed?: string;
+  characteristics?: string[];
+  types?: ITypeItem[];
+  operations?: IOperation[];
+  javaMethods?: IJavaMethod[];
+  internalWorking?: string;
+  memoryRepresentation?: string;
   working: string;
   algorithm: string;
   flow: string;
@@ -27,13 +42,16 @@ export interface INoteDocument extends Document {
   example: string;
   output: string;
   interviewQuestions: IInterviewQuestion[];
+  companyWiseQuestions?: ICompanyQuestions[];
   commonMistakes: string[];
+  bestPractices?: string[];
   relatedProblems: IRelatedProblem[];
   quizIds?: Types.ObjectId[];
   visualizationId?: string;
   videoUrl?: string;
   pdfUrl?: string;
   images?: string[];
+  diagrams?: string[];
   tags: string[];
   estimatedReadTime: number;
   revisionNotes?: string;
@@ -58,6 +76,35 @@ const NoteSchema = new Schema<INoteDocument>(
     definition: { type: String, required: true, trim: true },
     introduction: { type: String, default: '' },
     whyUsed: { type: String, default: '' },
+    characteristics: [{ type: String, trim: true }],
+    types: [
+      {
+        name: { type: String, required: true },
+        description: { type: String, required: true },
+      },
+    ],
+    operations: [
+      {
+        name: { type: String, required: true },
+        description: { type: String, default: '' },
+        timeComplexity: { type: String, default: 'O(1)' },
+        spaceComplexity: { type: String, default: 'O(1)' },
+      },
+    ],
+    javaMethods: [
+      {
+        name: { type: String, required: true },
+        purpose: { type: String, default: '' },
+        syntax: { type: String, required: true },
+        parameters: { type: String, default: '' },
+        returnType: { type: String, default: '' },
+        timeComplexity: { type: String, default: 'O(1)' },
+        example: { type: String, default: '' },
+        notes: { type: String, default: '' },
+      },
+    ],
+    internalWorking: { type: String, default: '' },
+    memoryRepresentation: { type: String, default: '' },
     working: { type: String, required: true, default: '' },
     algorithm: { type: String, required: true, default: '' },
     flow: { type: String, required: true, default: '' },
@@ -89,7 +136,14 @@ const NoteSchema = new Schema<INoteDocument>(
         companyTags: [{ type: String, trim: true }],
       },
     ],
+    companyWiseQuestions: [
+      {
+        company: { type: String, required: true },
+        questions: [{ type: String }],
+      },
+    ],
     commonMistakes: [{ type: String, trim: true }],
+    bestPractices: [{ type: String, trim: true }],
     relatedProblems: [
       {
         title: { type: String, required: true },
@@ -102,6 +156,7 @@ const NoteSchema = new Schema<INoteDocument>(
     videoUrl: { type: String, default: '' },
     pdfUrl: { type: String, default: '' },
     images: [{ type: String }],
+    diagrams: [{ type: String }],
     tags: [{ type: String, trim: true, index: true }],
     estimatedReadTime: { type: Number, default: 5 },
     revisionNotes: { type: String, default: '' },
