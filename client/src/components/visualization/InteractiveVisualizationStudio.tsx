@@ -284,10 +284,10 @@ export const InteractiveVisualizationStudio: React.FC = () => {
                 setCurrentStepIndex(0);
                 setIsPlaying(false);
               }}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+              className="p-2.5 sm:p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center active:scale-95"
               title="Reset Animation"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
+              <RotateCcw className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             </button>
 
             <button
@@ -296,21 +296,21 @@ export const InteractiveVisualizationStudio: React.FC = () => {
                 setIsPlaying(false);
               }}
               disabled={currentStepIndex === 0}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-40 transition-colors cursor-pointer"
+              className="p-2.5 sm:p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-40 transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center active:scale-95"
               title="Step Backward"
             >
-              <SkipBack className="w-3.5 h-3.5" />
+              <SkipBack className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             </button>
 
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className={`px-3.5 py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-4 sm:px-3.5 py-2 sm:py-1.5 rounded-lg font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer min-h-[44px] active:scale-95 ${
                 isPlaying
                   ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30'
                   : 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
               }`}
             >
-              {isPlaying ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+              {isPlaying ? <Pause className="w-4 h-4 sm:w-3.5 sm:h-3.5 fill-current" /> : <Play className="w-4 h-4 sm:w-3.5 sm:h-3.5 fill-current" />}
               <span>{isPlaying ? 'Pause' : 'Play'}</span>
             </button>
 
@@ -320,10 +320,10 @@ export const InteractiveVisualizationStudio: React.FC = () => {
                 setIsPlaying(false);
               }}
               disabled={currentStepIndex >= steps.length - 1}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-40 transition-colors cursor-pointer"
+              className="p-2.5 sm:p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-40 transition-colors cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center active:scale-95"
               title="Step Forward"
             >
-              <SkipForward className="w-3.5 h-3.5" />
+              <SkipForward className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
             </button>
           </div>
 

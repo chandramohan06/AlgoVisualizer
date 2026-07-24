@@ -340,7 +340,7 @@ export const QuizPage: React.FC = () => {
                           <div
                             key={optIdx}
                             onClick={() => setMcqAnswers((prev) => ({ ...prev, [qId]: optVal }))}
-                            className={`p-3 rounded-xl border text-xs font-mono cursor-pointer transition-all ${
+                            className={`p-3.5 rounded-xl border text-xs font-mono cursor-pointer transition-all active:scale-[0.98] min-h-[48px] flex items-center ${
                               isSelected
                                 ? 'bg-purple-600/20 border-purple-500 text-white font-bold shadow-md shadow-purple-500/10'
                                 : 'bg-white/[0.02] border-white/5 text-slate-300 hover:bg-white/5'

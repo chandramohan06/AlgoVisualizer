@@ -114,6 +114,8 @@ import NotFound from '@pages/common/NotFound';
 import Forbidden from '@pages/common/Forbidden';
 import ErrorBoundary from '@components/common/ErrorBoundary';
 
+import ScrollToTop from '@components/common/ScrollToTop';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -144,6 +146,7 @@ const AppContent: React.FC = () => {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         {/* Public Routes */}
         <Route path={ROUTES.HOME} element={<LandingPage />} />
