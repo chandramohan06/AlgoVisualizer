@@ -118,6 +118,8 @@ import PWAInstallPrompt from '@components/common/PWAInstallPrompt';
 import NetworkStatusIndicator from '@components/common/NetworkStatusIndicator';
 import { DashboardSkeleton } from '@components/common/Skeleton';
 
+import { initNativeListeners } from '@services/nativeService';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -137,6 +139,7 @@ const AppContent: React.FC = () => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     document.documentElement.classList.toggle('light', theme === 'light');
     checkAuth();
+    initNativeListeners();
   }, [theme, checkAuth]);
 
   if (isLoading) {
