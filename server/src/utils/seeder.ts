@@ -78,6 +78,14 @@ export const seedDatabase = async (): Promise<void> => {
     );
     console.log('✅  Test user seeded: chandramohankumarsingh06@gmail.com');
 
+    // Ensure DSA Knowledge Base Notes exist
+    const { Note } = await import('../models/Note.model');
+    const noteCount = await Note.countDocuments();
+    if (noteCount === 0) {
+      const { seedNotesDatabase } = await import('../scripts/seedNotes');
+      await seedNotesDatabase();
+      console.log('✅  DSA Knowledge Base Notes auto-seeded in MongoDB');
+    }
     const categoryCount = await Category.countDocuments();
     const arrayCategoryExists = await Category.findOne({ slug: 'array' });
     

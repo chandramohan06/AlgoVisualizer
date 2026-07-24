@@ -42,6 +42,33 @@ export const authenticate = async (
   }
 };
 
+export const optionalAuthenticate = async (
+  req: AuthRequest,
+  _res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET) as {
+        _id: string;
+        role: string;
+        email: string;
+      };
+
+      const user = await User.findById(decoded._id).select('-passwordHash -refreshToken');
+      if (user && !user.isBanned) {
+        req.user = { _id: String(user._id), role: user.role, email: user.email };
+      }
+    }
+    next();
+  } catch {
+    // Silently continue for optional auth
+    next();
+  }
+};
+
 export const authorize = (...roles: (Role | string)[]) => {
   return (req: AuthRequest, _res: Response, next: NextFunction): void => {
     if (!req.user) {

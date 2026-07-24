@@ -1,20 +1,19 @@
 import { Router } from 'express';
-import { authenticate, authorize } from '../middlewares/auth.middleware';
+import { authenticate, optionalAuthenticate, authorize } from '../middlewares/auth.middleware';
 import { Role } from '@algovisualizer/shared';
 import * as NoteController from '../controllers/note.controller';
 
 const router = Router();
 
-// Require authentication for note interactions
-router.use(authenticate);
+// Public / Student Read Routes (Optional Auth for bookmark state)
+router.get('/', optionalAuthenticate, NoteController.getAll);
+router.get('/dashboard', authenticate, NoteController.getDashboardNotes);
+router.get('/:idOrSlug', optionalAuthenticate, NoteController.getBySlugOrId);
 
-// Student & Common Routes
-router.get('/', NoteController.getAll);
-router.get('/dashboard', NoteController.getDashboardNotes);
-router.get('/:idOrSlug', NoteController.getBySlugOrId);
-router.post('/:id/bookmark', NoteController.toggleBookmark);
-router.post('/:id/complete', NoteController.toggleComplete);
-router.post('/:id/read-time', NoteController.recordReadTime);
+// User Interaction Routes (Require Auth)
+router.post('/:id/bookmark', authenticate, NoteController.toggleBookmark);
+router.post('/:id/complete', authenticate, NoteController.toggleComplete);
+router.post('/:id/read-time', authenticate, NoteController.recordReadTime);
 
 // Admin CMS Protected Routes
 router.post('/', authorize(Role.ADMIN), NoteController.create);
