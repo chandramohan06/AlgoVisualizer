@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '@store/authStore';
@@ -9,118 +9,120 @@ import { ROUTES } from '@constants/routes';
 import { StudentLayout } from '@layouts/StudentLayout';
 import { AdminLayout } from '@layouts/AdminLayout';
 
-// Public & Auth Pages
+// Core Public Pages
 import LandingPage from '@pages/landing/LandingPage';
 import Login from '@pages/auth/Login';
 import Signup from '@pages/auth/Signup';
 
-// Student Pages (4 Independent Modules)
-import Dashboard from '@pages/student/Dashboard/Dashboard';
-import Algorithms from '@pages/student/Algorithms';          // Module 1: Algorithms (Learn & Visualize)
-import Visualization from '@pages/student/Visualization';      // Dedicated Algorithm Visualizations Library
-import QuizPage from '@pages/student/QuizPage';               // Module 3: Custom Quiz Engine
-import RoadmapsPage from '@pages/student/RoadmapsPage';       // Module 4: Pattern Roadmaps
+// Lazy Loaded Student Modules
+const Dashboard = lazy(() => import('@pages/student/Dashboard/Dashboard'));
+const Algorithms = lazy(() => import('@pages/student/Algorithms'));
+const Visualization = lazy(() => import('@pages/student/Visualization'));
+const QuizPage = lazy(() => import('@pages/student/QuizPage'));
+const RoadmapsPage = lazy(() => import('@pages/student/RoadmapsPage'));
 
-// Student Extras
-import Notes from '@pages/student/Notes';
-import Leaderboard from '@pages/student/Leaderboard';
-import Achievements from '@pages/student/Achievements';
-import Profile from '@pages/student/Profile';
-import AboutDeveloper from '@pages/student/AboutDeveloper';
-import Settings from '@pages/student/Settings';
-import PracticeList from '@pages/student/PracticeList';
-import ProblemIDE from '@pages/student/ProblemIDE';
+// Lazy Loaded Student Extras
+const Notes = lazy(() => import('@pages/student/Notes'));
+const Leaderboard = lazy(() => import('@pages/student/Leaderboard'));
+const Achievements = lazy(() => import('@pages/student/Achievements'));
+const Profile = lazy(() => import('@pages/student/Profile'));
+const AboutDeveloper = lazy(() => import('@pages/student/AboutDeveloper'));
+const Settings = lazy(() => import('@pages/student/Settings'));
+const PracticeList = lazy(() => import('@pages/student/PracticeList'));
+const ProblemIDE = lazy(() => import('@pages/student/ProblemIDE'));
 
-// Visualizer Engine
-import GenericVisualizer from '@pages/student/Visualizer/GenericVisualizer';
-import VisualizerDemo from '@pages/student/Visualizer/VisualizerDemo';
-import BubbleSort from '@pages/student/Visualizer/BubbleSort';
-import SelectionSort from '@pages/student/Visualizer/SelectionSort';
-import InsertionSort from '@pages/student/Visualizer/InsertionSort';
-import MergeSort from '@pages/student/Visualizer/MergeSort';
-import QuickSort from '@pages/student/Visualizer/QuickSort';
-import HeapSort from '@pages/student/Visualizer/HeapSort';
-import CountingSort from '@pages/student/Visualizer/CountingSort';
-import RadixSort from '@pages/student/Visualizer/RadixSort';
+// Lazy Loaded Visualizers
+const GenericVisualizer = lazy(() => import('@pages/student/Visualizer/GenericVisualizer'));
+const VisualizerDemo = lazy(() => import('@pages/student/Visualizer/VisualizerDemo'));
+const BubbleSort = lazy(() => import('@pages/student/Visualizer/BubbleSort'));
+const SelectionSort = lazy(() => import('@pages/student/Visualizer/SelectionSort'));
+const InsertionSort = lazy(() => import('@pages/student/Visualizer/InsertionSort'));
+const MergeSort = lazy(() => import('@pages/student/Visualizer/MergeSort'));
+const QuickSort = lazy(() => import('@pages/student/Visualizer/QuickSort'));
+const HeapSort = lazy(() => import('@pages/student/Visualizer/HeapSort'));
+const CountingSort = lazy(() => import('@pages/student/Visualizer/CountingSort'));
+const RadixSort = lazy(() => import('@pages/student/Visualizer/RadixSort'));
 
 // Searching Visualizers
-import LinearSearch from '@pages/student/Visualizer/LinearSearch';
-import BinarySearch from '@pages/student/Visualizer/BinarySearch';
-import JumpSearch from '@pages/student/Visualizer/JumpSearch';
-import InterpolationSearch from '@pages/student/Visualizer/InterpolationSearch';
-import ExponentialSearch from '@pages/student/Visualizer/ExponentialSearch';
+const LinearSearch = lazy(() => import('@pages/student/Visualizer/LinearSearch'));
+const BinarySearch = lazy(() => import('@pages/student/Visualizer/BinarySearch'));
+const JumpSearch = lazy(() => import('@pages/student/Visualizer/JumpSearch'));
+const InterpolationSearch = lazy(() => import('@pages/student/Visualizer/InterpolationSearch'));
+const ExponentialSearch = lazy(() => import('@pages/student/Visualizer/ExponentialSearch'));
 
 // Graph Visualizers
-import BFS from '@pages/student/Visualizer/BFS';
-import DFS from '@pages/student/Visualizer/DFS';
-import Dijkstra from '@pages/student/Visualizer/Dijkstra';
-import BellmanFord from '@pages/student/Visualizer/BellmanFord';
-import FloydWarshall from '@pages/student/Visualizer/FloydWarshall';
-import PrimMST from '@pages/student/Visualizer/PrimMST';
-import KruskalMST from '@pages/student/Visualizer/KruskalMST';
-import TopologicalSort from '@pages/student/Visualizer/TopologicalSort';
-import CycleDetection from '@pages/student/Visualizer/CycleDetection';
-import UnionFind from '@pages/student/Visualizer/UnionFind';
+const BFS = lazy(() => import('@pages/student/Visualizer/BFS'));
+const DFS = lazy(() => import('@pages/student/Visualizer/DFS'));
+const Dijkstra = lazy(() => import('@pages/student/Visualizer/Dijkstra'));
+const BellmanFord = lazy(() => import('@pages/student/Visualizer/BellmanFord'));
+const FloydWarshall = lazy(() => import('@pages/student/Visualizer/FloydWarshall'));
+const PrimMST = lazy(() => import('@pages/student/Visualizer/PrimMST'));
+const KruskalMST = lazy(() => import('@pages/student/Visualizer/KruskalMST'));
+const TopologicalSort = lazy(() => import('@pages/student/Visualizer/TopologicalSort'));
+const CycleDetection = lazy(() => import('@pages/student/Visualizer/CycleDetection'));
+const UnionFind = lazy(() => import('@pages/student/Visualizer/UnionFind'));
 
 // Linear Visualizers
-import Stack from '@pages/student/Visualizer/Stack';
-import Queue from '@pages/student/Visualizer/Queue';
-import CircularQueue from '@pages/student/Visualizer/CircularQueue';
-import Deque from '@pages/student/Visualizer/Deque';
-import PriorityQueue from '@pages/student/Visualizer/PriorityQueue';
+const Stack = lazy(() => import('@pages/student/Visualizer/Stack'));
+const Queue = lazy(() => import('@pages/student/Visualizer/Queue'));
+const CircularQueue = lazy(() => import('@pages/student/Visualizer/CircularQueue'));
+const Deque = lazy(() => import('@pages/student/Visualizer/Deque'));
+const PriorityQueue = lazy(() => import('@pages/student/Visualizer/PriorityQueue'));
 
 // Recursion Visualizers
-import Factorial from '@pages/student/Visualizer/Factorial';
-import Fibonacci from '@pages/student/Visualizer/Fibonacci';
-import TowerOfHanoi from '@pages/student/Visualizer/TowerOfHanoi';
-import MergeSortTree from '@pages/student/Visualizer/MergeSortTree';
+const Factorial = lazy(() => import('@pages/student/Visualizer/Factorial'));
+const Fibonacci = lazy(() => import('@pages/student/Visualizer/Fibonacci'));
+const TowerOfHanoi = lazy(() => import('@pages/student/Visualizer/TowerOfHanoi'));
+const MergeSortTree = lazy(() => import('@pages/student/Visualizer/MergeSortTree'));
 
 // Backtracking Visualizers
-import NQueens from '@pages/student/Visualizer/NQueens';
-import Sudoku from '@pages/student/Visualizer/Sudoku';
-import RatInAMaze from '@pages/student/Visualizer/RatInAMaze';
-import GenerateParentheses from '@pages/student/Visualizer/GenerateParentheses';
+const NQueens = lazy(() => import('@pages/student/Visualizer/NQueens'));
+const Sudoku = lazy(() => import('@pages/student/Visualizer/Sudoku'));
+const RatInAMaze = lazy(() => import('@pages/student/Visualizer/RatInAMaze'));
+const GenerateParentheses = lazy(() => import('@pages/student/Visualizer/GenerateParentheses'));
 
 // DP Visualizers
-import FibonacciMemo from '@pages/student/Visualizer/FibonacciMemo';
-import FibonacciTab from '@pages/student/Visualizer/FibonacciTab';
-import Knapsack from '@pages/student/Visualizer/Knapsack';
-import LCS from '@pages/student/Visualizer/LCS';
-import LIS from '@pages/student/Visualizer/LIS';
-import CoinChange from '@pages/student/Visualizer/CoinChange';
-import EditDistance from '@pages/student/Visualizer/EditDistance';
+const FibonacciMemo = lazy(() => import('@pages/student/Visualizer/FibonacciMemo'));
+const FibonacciTab = lazy(() => import('@pages/student/Visualizer/FibonacciTab'));
+const Knapsack = lazy(() => import('@pages/student/Visualizer/Knapsack'));
+const LCS = lazy(() => import('@pages/student/Visualizer/LCS'));
+const LIS = lazy(() => import('@pages/student/Visualizer/LIS'));
+const CoinChange = lazy(() => import('@pages/student/Visualizer/CoinChange'));
+const EditDistance = lazy(() => import('@pages/student/Visualizer/EditDistance'));
 
 // Greedy Visualizers
-import ActivitySelection from '@pages/student/Visualizer/ActivitySelection';
-import FractionalKnapsack from '@pages/student/Visualizer/FractionalKnapsack';
-import HuffmanCoding from '@pages/student/Visualizer/HuffmanCoding';
-import JobScheduling from '@pages/student/Visualizer/JobScheduling';
+const ActivitySelection = lazy(() => import('@pages/student/Visualizer/ActivitySelection'));
+const FractionalKnapsack = lazy(() => import('@pages/student/Visualizer/FractionalKnapsack'));
+const HuffmanCoding = lazy(() => import('@pages/student/Visualizer/HuffmanCoding'));
+const JobScheduling = lazy(() => import('@pages/student/Visualizer/JobScheduling'));
 
-// Admin Pages
-import AdminDashboard from '@pages/admin/Dashboard';
-import NoteCMS from '@pages/admin/NoteCMS';
-import CategoryManager from '@pages/admin/CategoryManager';
-import AlgorithmManager from '@pages/admin/AlgorithmManager';
-import QuizManager from '@pages/admin/QuizManager';
-import UserManager from '@pages/admin/UserManager';
-import LeaderboardAdmin from '@pages/admin/LeaderboardAdmin';
-import AdminAnalytics from '@pages/admin/Analytics';
-import AdminReports from '@pages/admin/AdminReports';
-import AdminAuditLogs from '@pages/admin/AdminAuditLogs';
-import AdminSettings from '@pages/admin/Settings';
-import AdminDeveloperManager from '@pages/admin/AdminDeveloperManager';
+// Lazy Loaded Admin Pages
+const AdminDashboard = lazy(() => import('@pages/admin/Dashboard'));
+const NoteCMS = lazy(() => import('@pages/admin/NoteCMS'));
+const CategoryManager = lazy(() => import('@pages/admin/CategoryManager'));
+const AlgorithmManager = lazy(() => import('@pages/admin/AlgorithmManager'));
+const QuizManager = lazy(() => import('@pages/admin/QuizManager'));
+const UserManager = lazy(() => import('@pages/admin/UserManager'));
+const LeaderboardAdmin = lazy(() => import('@pages/admin/LeaderboardAdmin'));
+const AdminAnalytics = lazy(() => import('@pages/admin/Analytics'));
+const AdminReports = lazy(() => import('@pages/admin/AdminReports'));
+const AdminAuditLogs = lazy(() => import('@pages/admin/AdminAuditLogs'));
+const AdminSettings = lazy(() => import('@pages/admin/Settings'));
+const AdminDeveloperManager = lazy(() => import('@pages/admin/AdminDeveloperManager'));
 
 import NotFound from '@pages/common/NotFound';
 import Forbidden from '@pages/common/Forbidden';
 import ErrorBoundary from '@components/common/ErrorBoundary';
-
 import ScrollToTop from '@components/common/ScrollToTop';
+import { DashboardSkeleton } from '@components/common/Skeleton';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
     },
   },
 });
@@ -136,134 +138,131 @@ const AppContent: React.FC = () => {
   }, [theme, checkAuth]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center">
-        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <span className="text-sm font-semibold text-gray-400">Loading AlgoVisualizer...</span>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <Routes>
-        {/* Public Routes */}
-        <Route path={ROUTES.HOME} element={<LandingPage />} />
-        <Route path={ROUTES.LOGIN} element={<Login />} />
-        <Route path={ROUTES.SIGNUP} element={<Signup />} />
-        <Route path={ROUTES.STUDENT_LOGIN} element={<Login />} />
-        <Route path={ROUTES.STUDENT_SIGNUP} element={<Signup />} />
-        <Route path={ROUTES.ADMIN_LOGIN} element={<Login isAdminLogin={true} />} />
+      <Suspense fallback={<DashboardSkeleton />}>
+        <Routes>
+          {/* Public Routes */}
+          <Route path={ROUTES.HOME} element={<LandingPage />} />
+          <Route path={ROUTES.LOGIN} element={<Login />} />
+          <Route path={ROUTES.SIGNUP} element={<Signup />} />
+          <Route path={ROUTES.STUDENT_LOGIN} element={<Login />} />
+          <Route path={ROUTES.STUDENT_SIGNUP} element={<Signup />} />
+          <Route path={ROUTES.ADMIN_LOGIN} element={<Login isAdminLogin={true} />} />
 
-        {/* Student Routes — 4 Core Independent Learning Modules */}
-        <Route element={<StudentLayout />}>
-          <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
-          <Route path={ROUTES.ALGORITHMS} element={<Algorithms />} />
-          <Route path={ROUTES.PRACTICE} element={<PracticeList />} />
-          <Route path="/visualizations" element={<Visualization />} />
-          <Route path={ROUTES.QUIZ} element={<QuizPage />} />
-          <Route path={ROUTES.ROADMAPS} element={<RoadmapsPage />} />
-          
-          {/* Extras */}
-          <Route path={ROUTES.NOTES} element={<Notes />} />
-          <Route path={ROUTES.LEADERBOARD} element={<Leaderboard />} />
-          <Route path={ROUTES.ACHIEVEMENTS} element={<Achievements />} />
-          <Route path={ROUTES.PROFILE} element={<Profile />} />
-          <Route path={ROUTES.DEVELOPER} element={<AboutDeveloper />} />
-          <Route path={ROUTES.SETTINGS} element={<Settings />} />
-          <Route path="/practice/question/:slug" element={<ProblemIDE />} />
-          <Route path="/question/:id" element={<ProblemIDE />} />
-        </Route>
+          {/* Student Routes — 4 Core Independent Learning Modules */}
+          <Route element={<StudentLayout />}>
+            <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
+            <Route path={ROUTES.ALGORITHMS} element={<Algorithms />} />
+            <Route path={ROUTES.PRACTICE} element={<PracticeList />} />
+            <Route path="/visualizations" element={<Visualization />} />
+            <Route path={ROUTES.QUIZ} element={<QuizPage />} />
+            <Route path={ROUTES.ROADMAPS} element={<RoadmapsPage />} />
+            
+            {/* Extras */}
+            <Route path={ROUTES.NOTES} element={<Notes />} />
+            <Route path={ROUTES.LEADERBOARD} element={<Leaderboard />} />
+            <Route path={ROUTES.ACHIEVEMENTS} element={<Achievements />} />
+            <Route path={ROUTES.PROFILE} element={<Profile />} />
+            <Route path={ROUTES.DEVELOPER} element={<AboutDeveloper />} />
+            <Route path={ROUTES.SETTINGS} element={<Settings />} />
+            <Route path="/practice/question/:slug" element={<ProblemIDE />} />
+            <Route path="/question/:id" element={<ProblemIDE />} />
+          </Route>
 
-        {/* Dynamic Universal Visualizer Route */}
-        <Route path={ROUTES.VISUALIZER_DYNAMIC} element={<GenericVisualizer />} />
+          {/* Dynamic Universal Visualizer Route */}
+          <Route path={ROUTES.VISUALIZER_DYNAMIC} element={<GenericVisualizer />} />
 
-        {/* Visualizer Engine Demo */}
-        <Route path={ROUTES.VISUALIZER_DEMO} element={<VisualizerDemo />} />
-        <Route path={ROUTES.BUBBLE_SORT} element={<BubbleSort />} />
-        <Route path={ROUTES.SELECTION_SORT} element={<SelectionSort />} />
-        <Route path={ROUTES.INSERTION_SORT} element={<InsertionSort />} />
-        <Route path={ROUTES.MERGE_SORT} element={<MergeSort />} />
-        <Route path={ROUTES.QUICK_SORT} element={<QuickSort />} />
-        <Route path={ROUTES.HEAP_SORT} element={<HeapSort />} />
-        <Route path={ROUTES.COUNTING_SORT} element={<CountingSort />} />
-        <Route path={ROUTES.RADIX_SORT} element={<RadixSort />} />
+          {/* Visualizer Engine Demo */}
+          <Route path={ROUTES.VISUALIZER_DEMO} element={<VisualizerDemo />} />
+          <Route path={ROUTES.BUBBLE_SORT} element={<BubbleSort />} />
+          <Route path={ROUTES.SELECTION_SORT} element={<SelectionSort />} />
+          <Route path={ROUTES.INSERTION_SORT} element={<InsertionSort />} />
+          <Route path={ROUTES.MERGE_SORT} element={<MergeSort />} />
+          <Route path={ROUTES.QUICK_SORT} element={<QuickSort />} />
+          <Route path={ROUTES.HEAP_SORT} element={<HeapSort />} />
+          <Route path={ROUTES.COUNTING_SORT} element={<CountingSort />} />
+          <Route path={ROUTES.RADIX_SORT} element={<RadixSort />} />
 
-        {/* Searching Visualizers */}
-        <Route path={ROUTES.LINEAR_SEARCH} element={<LinearSearch />} />
-        <Route path={ROUTES.BINARY_SEARCH} element={<BinarySearch />} />
-        <Route path={ROUTES.JUMP_SEARCH} element={<JumpSearch />} />
-        <Route path={ROUTES.INTERPOLATION_SEARCH} element={<InterpolationSearch />} />
-        <Route path={ROUTES.EXPONENTIAL_SEARCH} element={<ExponentialSearch />} />
+          {/* Searching Visualizers */}
+          <Route path={ROUTES.LINEAR_SEARCH} element={<LinearSearch />} />
+          <Route path={ROUTES.BINARY_SEARCH} element={<BinarySearch />} />
+          <Route path={ROUTES.JUMP_SEARCH} element={<JumpSearch />} />
+          <Route path={ROUTES.INTERPOLATION_SEARCH} element={<InterpolationSearch />} />
+          <Route path={ROUTES.EXPONENTIAL_SEARCH} element={<ExponentialSearch />} />
 
-        {/* Graph Visualizers */}
-        <Route path={ROUTES.BFS} element={<BFS />} />
-        <Route path={ROUTES.DFS} element={<DFS />} />
-        <Route path={ROUTES.DIJKSTRA} element={<Dijkstra />} />
-        <Route path={ROUTES.BELLMAN_FORD} element={<BellmanFord />} />
-        <Route path={ROUTES.FLOYD_WARSHALL} element={<FloydWarshall />} />
-        <Route path={ROUTES.PRIM_MST} element={<PrimMST />} />
-        <Route path={ROUTES.KRUSKAL_MST} element={<KruskalMST />} />
-        <Route path={ROUTES.TOPOLOGICAL_SORT} element={<TopologicalSort />} />
-        <Route path={ROUTES.CYCLE_DETECTION} element={<CycleDetection />} />
-        <Route path={ROUTES.UNION_FIND} element={<UnionFind />} />
+          {/* Graph Visualizers */}
+          <Route path={ROUTES.BFS} element={<BFS />} />
+          <Route path={ROUTES.DFS} element={<DFS />} />
+          <Route path={ROUTES.DIJKSTRA} element={<Dijkstra />} />
+          <Route path={ROUTES.BELLMAN_FORD} element={<BellmanFord />} />
+          <Route path={ROUTES.FLOYD_WARSHALL} element={<FloydWarshall />} />
+          <Route path={ROUTES.PRIM_MST} element={<PrimMST />} />
+          <Route path={ROUTES.KRUSKAL_MST} element={<KruskalMST />} />
+          <Route path={ROUTES.TOPOLOGICAL_SORT} element={<TopologicalSort />} />
+          <Route path={ROUTES.CYCLE_DETECTION} element={<CycleDetection />} />
+          <Route path={ROUTES.UNION_FIND} element={<UnionFind />} />
 
-        {/* Linear Visualizers */}
-        <Route path={ROUTES.STACK} element={<Stack />} />
-        <Route path={ROUTES.QUEUE} element={<Queue />} />
-        <Route path={ROUTES.CIRCULAR_QUEUE} element={<CircularQueue />} />
-        <Route path={ROUTES.DEQUE} element={<Deque />} />
-        <Route path={ROUTES.PRIORITY_QUEUE} element={<PriorityQueue />} />
+          {/* Linear Visualizers */}
+          <Route path={ROUTES.STACK} element={<Stack />} />
+          <Route path={ROUTES.QUEUE} element={<Queue />} />
+          <Route path={ROUTES.CIRCULAR_QUEUE} element={<CircularQueue />} />
+          <Route path={ROUTES.DEQUE} element={<Deque />} />
+          <Route path={ROUTES.PRIORITY_QUEUE} element={<PriorityQueue />} />
 
-        {/* Recursion Visualizers */}
-        <Route path={ROUTES.RECURSION_FACTORIAL} element={<Factorial />} />
-        <Route path={ROUTES.RECURSION_FIBONACCI} element={<Fibonacci />} />
-        <Route path={ROUTES.RECURSION_TOWER_OF_HANOI} element={<TowerOfHanoi />} />
-        <Route path={ROUTES.RECURSION_MERGE_SORT_TREE} element={<MergeSortTree />} />
+          {/* Recursion Visualizers */}
+          <Route path={ROUTES.RECURSION_FACTORIAL} element={<Factorial />} />
+          <Route path={ROUTES.RECURSION_FIBONACCI} element={<Fibonacci />} />
+          <Route path={ROUTES.RECURSION_TOWER_OF_HANOI} element={<TowerOfHanoi />} />
+          <Route path={ROUTES.RECURSION_MERGE_SORT_TREE} element={<MergeSortTree />} />
 
-        {/* Backtracking Visualizers */}
-        <Route path={ROUTES.BACKTRACKING_N_QUEENS} element={<NQueens />} />
-        <Route path={ROUTES.BACKTRACKING_SUDOKU} element={<Sudoku />} />
-        <Route path={ROUTES.BACKTRACKING_RAT_IN_A_MAZE} element={<RatInAMaze />} />
-        <Route path={ROUTES.BACKTRACKING_GENERATE_PARENTHESES} element={<GenerateParentheses />} />
+          {/* Backtracking Visualizers */}
+          <Route path={ROUTES.BACKTRACKING_N_QUEENS} element={<NQueens />} />
+          <Route path={ROUTES.BACKTRACKING_SUDOKU} element={<Sudoku />} />
+          <Route path={ROUTES.BACKTRACKING_RAT_IN_A_MAZE} element={<RatInAMaze />} />
+          <Route path={ROUTES.BACKTRACKING_GENERATE_PARENTHESES} element={<GenerateParentheses />} />
 
-        {/* Dynamic Programming Visualizers */}
-        <Route path={ROUTES.DP_FIBONACCI_MEMO} element={<FibonacciMemo />} />
-        <Route path={ROUTES.DP_FIBONACCI_TAB} element={<FibonacciTab />} />
-        <Route path={ROUTES.DP_KNAPSACK} element={<Knapsack />} />
-        <Route path={ROUTES.DP_LCS} element={<LCS />} />
-        <Route path={ROUTES.DP_LIS} element={<LIS />} />
-        <Route path={ROUTES.DP_COIN_CHANGE} element={<CoinChange />} />
-        <Route path={ROUTES.DP_EDIT_DISTANCE} element={<EditDistance />} />
+          {/* Dynamic Programming Visualizers */}
+          <Route path={ROUTES.DP_FIBONACCI_MEMO} element={<FibonacciMemo />} />
+          <Route path={ROUTES.DP_FIBONACCI_TAB} element={<FibonacciTab />} />
+          <Route path={ROUTES.DP_KNAPSACK} element={<Knapsack />} />
+          <Route path={ROUTES.DP_LCS} element={<LCS />} />
+          <Route path={ROUTES.DP_LIS} element={<LIS />} />
+          <Route path={ROUTES.DP_COIN_CHANGE} element={<CoinChange />} />
+          <Route path={ROUTES.DP_EDIT_DISTANCE} element={<EditDistance />} />
 
-        {/* Greedy Visualizers */}
-        <Route path={ROUTES.GREEDY_ACTIVITY_SELECTION} element={<ActivitySelection />} />
-        <Route path={ROUTES.GREEDY_FRACTIONAL_KNAPSACK} element={<FractionalKnapsack />} />
-        <Route path={ROUTES.GREEDY_HUFFMAN_CODING} element={<HuffmanCoding />} />
-        <Route path={ROUTES.GREEDY_JOB_SCHEDULING} element={<JobScheduling />} />
+          {/* Greedy Visualizers */}
+          <Route path={ROUTES.GREEDY_ACTIVITY_SELECTION} element={<ActivitySelection />} />
+          <Route path={ROUTES.GREEDY_FRACTIONAL_KNAPSACK} element={<FractionalKnapsack />} />
+          <Route path={ROUTES.GREEDY_HUFFMAN_CODING} element={<HuffmanCoding />} />
+          <Route path={ROUTES.GREEDY_JOB_SCHEDULING} element={<JobScheduling />} />
 
-        {/* Admin Routes */}
-        <Route element={<AdminLayout />}>
-          <Route path={ROUTES.ADMIN} element={<AdminDashboard />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/notes" element={<NoteCMS />} />
-          <Route path="/admin/categories" element={<CategoryManager />} />
-          <Route path="/admin/algorithms" element={<AlgorithmManager />} />
-          <Route path="/admin/quiz" element={<QuizManager />} />
-          <Route path="/admin/students" element={<UserManager />} />
-          <Route path="/admin/leaderboard" element={<LeaderboardAdmin />} />
-          <Route path="/admin/analytics" element={<AdminAnalytics />} />
-          <Route path="/admin/reports" element={<AdminReports />} />
-          <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
-          <Route path={ROUTES.ADMIN_DEVELOPER_MANAGER} element={<AdminDeveloperManager />} />
-        </Route>
+          {/* Admin Routes */}
+          <Route element={<AdminLayout />}>
+            <Route path={ROUTES.ADMIN} element={<AdminDashboard />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/notes" element={<NoteCMS />} />
+            <Route path="/admin/categories" element={<CategoryManager />} />
+            <Route path="/admin/algorithms" element={<AlgorithmManager />} />
+            <Route path="/admin/quiz" element={<QuizManager />} />
+            <Route path="/admin/students" element={<UserManager />} />
+            <Route path="/admin/leaderboard" element={<LeaderboardAdmin />} />
+            <Route path="/admin/analytics" element={<AdminAnalytics />} />
+            <Route path="/admin/reports" element={<AdminReports />} />
+            <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path={ROUTES.ADMIN_DEVELOPER_MANAGER} element={<AdminDeveloperManager />} />
+          </Route>
 
-        {/* Fallback */}
-        <Route path="/403" element={<Forbidden />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          {/* Fallback */}
+          <Route path="/403" element={<Forbidden />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 };
