@@ -97,4 +97,9 @@ export const dashboardService = {
     const { data } = await api.get(API_ENDPOINTS.USER_BOOKMARKS);
     return data.data;
   },
+
+  getFullStats: async () => {
+    const { data } = await api.get(API_ENDPOINTS.PROGRESS_DASHBOARD_FULL);
+    return data.data;
+  },
 };

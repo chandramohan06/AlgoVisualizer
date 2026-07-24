@@ -20,3 +20,8 @@ export const getRecentActivity = asyncHandler(async (req: AuthRequest, res: Resp
   sendSuccess({ res, data });
 });
 
+export const getDashboardFullStats = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const data = await ProgressService.getDashboardFullStats(req.user!._id);
+  sendSuccess({ res, data });
+});
+

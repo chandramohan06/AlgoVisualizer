@@ -33,6 +33,7 @@ export const API_ENDPOINTS = {
   // Progress
   PROGRESS: `${API_BASE}/progress`,
   PROGRESS_SUMMARY: `${API_BASE}/progress/summary`,
+  PROGRESS_DASHBOARD_FULL: `${API_BASE}/progress/dashboard-full`,
 
   // Practice
   PRACTICE_CATEGORIES: `${API_BASE}/practice/categories`,

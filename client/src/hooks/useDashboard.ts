@@ -121,3 +121,10 @@ export const useDailyGoal = () =>
     queryFn: USE_MOCK ? () => Promise.resolve(MOCK_DAILY_GOAL) : dashboardService.getDailyGoal,
     staleTime: 2 * 60 * 1000,
   });
+
+export const useFullDashboardStats = () =>
+  useQuery({
+    queryKey: ['dashboard', 'fullStats'],
+    queryFn: dashboardService.getFullStats,
+    staleTime: 2 * 60 * 1000,
+  });
