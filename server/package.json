@@ -9,6 +9,7 @@
     "seed:dsa": "ts-node --transpile-only -r dotenv/config src/scripts/seedMasterDSA.ts",
     "seed:quiz": "ts-node --transpile-only -r dotenv/config src/scripts/seedQuizData.ts",
     "seed:quiz:force": "ts-node --transpile-only -r dotenv/config src/scripts/seedQuizData.ts --force",
+    "seed:notes": "ts-node --transpile-only -r dotenv/config src/scripts/seedNotes.ts",
     "build": "tsc -b",
     "test": "ts-node -r dotenv/config src/tests/auth.test.ts",
     "start": "node dist/server.js",

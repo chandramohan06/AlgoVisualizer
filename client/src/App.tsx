@@ -98,6 +98,7 @@ import JobScheduling from '@pages/student/Visualizer/JobScheduling';
 
 // Admin Pages
 import AdminDashboard from '@pages/admin/Dashboard';
+import NoteCMS from '@pages/admin/NoteCMS';
 import CategoryManager from '@pages/admin/CategoryManager';
 import AlgorithmManager from '@pages/admin/AlgorithmManager';
 import QuizManager from '@pages/admin/QuizManager';
@@ -243,6 +244,7 @@ const AppContent: React.FC = () => {
         <Route element={<AdminLayout />}>
           <Route path={ROUTES.ADMIN} element={<AdminDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/notes" element={<NoteCMS />} />
           <Route path="/admin/categories" element={<CategoryManager />} />
           <Route path="/admin/algorithms" element={<AlgorithmManager />} />
           <Route path="/admin/quiz" element={<QuizManager />} />

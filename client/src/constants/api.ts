@@ -66,10 +66,16 @@ export const API_ENDPOINTS = {
   QUIZ_HISTORY: `${API_BASE}/quiz/history`,
   QUIZ_ATTEMPT_BY_ID: (id: string) => `${API_BASE}/quiz/${id}`,
 
-  // Notes
+  // Notes & Knowledge Base
   NOTES: `${API_BASE}/notes`,
   NOTE_BY_ID: (id: string) => `${API_BASE}/notes/${id}`,
   NOTE_BOOKMARK: (id: string) => `${API_BASE}/notes/${id}/bookmark`,
+  NOTE_COMPLETE: (id: string) => `${API_BASE}/notes/${id}/complete`,
+  NOTE_READ_TIME: (id: string) => `${API_BASE}/notes/${id}/read-time`,
+  NOTE_PUBLISH: (id: string) => `${API_BASE}/notes/${id}/publish`,
+  NOTE_DUPLICATE: (id: string) => `${API_BASE}/notes/${id}/duplicate`,
+  NOTE_REORDER: `${API_BASE}/notes/reorder`,
+  NOTE_DASHBOARD: `${API_BASE}/notes/dashboard`,
 
   // Leaderboard
   LEADERBOARD_GLOBAL: `${API_BASE}/leaderboard/global`,

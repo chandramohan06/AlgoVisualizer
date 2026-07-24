@@ -23,6 +23,7 @@ import { XPTimelineChart } from '@components/dashboard/XPTimelineChart';
 import { InterviewReadinessCard } from '@components/dashboard/InterviewReadinessCard';
 import { TopicMasteryList } from '@components/dashboard/TopicMasteryList';
 import { DailyStreakCalendar } from '@components/dashboard/DailyStreakCalendar';
+import { NotesWidget } from '@components/dashboard/NotesWidget';
 
 import { DashboardSkeleton } from '@components/common/Skeleton';
 
@@ -110,6 +111,7 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         {/* Left column */}
         <div className="xl:col-span-2 space-y-5">
+          <NotesWidget />
           <Suspense fallback={<WidgetSkeleton height={220} />}>
             <ContinueLearningCard />
           </Suspense>
