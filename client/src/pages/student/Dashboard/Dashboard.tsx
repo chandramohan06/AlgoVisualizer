@@ -585,38 +585,38 @@ export const Dashboard: React.FC = () => {
             <span className="text-xs font-mono text-slate-400">Direct Shortcuts</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <button onClick={() => navigate('/notes')} className="p-3.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-left space-y-1 cursor-pointer transition-all">
+          <div className="flex sm:grid sm:grid-cols-3 gap-3 overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
+            <button onClick={() => navigate('/notes')} className="min-w-[130px] shrink-0 sm:shrink p-3.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-left space-y-1 cursor-pointer transition-all active:scale-95">
               <BookOpen className="w-5 h-5 text-indigo-400" />
               <div className="text-xs font-bold text-white">Open Notes</div>
               <div className="text-[10px] text-slate-400">26-Section Guides</div>
             </button>
 
-            <button onClick={() => navigate('/practice')} className="p-3.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-left space-y-1 cursor-pointer transition-all">
+            <button onClick={() => navigate('/practice')} className="min-w-[130px] shrink-0 sm:shrink p-3.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-left space-y-1 cursor-pointer transition-all active:scale-95">
               <Code2 className="w-5 h-5 text-emerald-400" />
               <div className="text-xs font-bold text-white">Practice IDE</div>
               <div className="text-[10px] text-slate-400">Solve Problems</div>
             </button>
 
-            <button onClick={() => navigate('/visualizations')} className="p-3.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-left space-y-1 cursor-pointer transition-all">
+            <button onClick={() => navigate('/visualizations')} className="min-w-[130px] shrink-0 sm:shrink p-3.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-left space-y-1 cursor-pointer transition-all active:scale-95">
               <Play className="w-5 h-5 text-cyan-400" />
               <div className="text-xs font-bold text-white">Visualizer</div>
               <div className="text-[10px] text-slate-400">Animated Engine</div>
             </button>
 
-            <button onClick={() => navigate('/quiz')} className="p-3.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-left space-y-1 cursor-pointer transition-all">
+            <button onClick={() => navigate('/quiz')} className="min-w-[130px] shrink-0 sm:shrink p-3.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-left space-y-1 cursor-pointer transition-all active:scale-95">
               <Brain className="w-5 h-5 text-purple-400" />
               <div className="text-xs font-bold text-white">Attempt Quiz</div>
               <div className="text-[10px] text-slate-400">Test Knowledge</div>
             </button>
 
-            <button onClick={() => navigate('/roadmap')} className="p-3.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-left space-y-1 cursor-pointer transition-all">
+            <button onClick={() => navigate('/roadmap')} className="min-w-[130px] shrink-0 sm:shrink p-3.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-left space-y-1 cursor-pointer transition-all active:scale-95">
               <Compass className="w-5 h-5 text-amber-400" />
               <div className="text-xs font-bold text-white">DSA Roadmap</div>
               <div className="text-[10px] text-slate-400">Step-by-Step</div>
             </button>
 
-            <button onClick={() => navigate('/leaderboard')} className="p-3.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-left space-y-1 cursor-pointer transition-all">
+            <button onClick={() => navigate('/leaderboard')} className="min-w-[130px] shrink-0 sm:shrink p-3.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-left space-y-1 cursor-pointer transition-all active:scale-95">
               <Trophy className="w-5 h-5 text-rose-400" />
               <div className="text-xs font-bold text-white">Leaderboard</div>
               <div className="text-[10px] text-slate-400">Global Ranks</div>

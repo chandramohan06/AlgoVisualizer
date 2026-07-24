@@ -187,6 +187,26 @@ export const Notes: React.FC = () => {
   const [filterCompleted, setFilterCompleted] = useState<boolean>(false);
 
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+
+  // Per-Note Scroll Position Memory
+  useEffect(() => {
+    if (!activeNoteId) return;
+    const savedPos = localStorage.getItem(`note_reading_pos_${activeNoteId}`);
+    if (savedPos) {
+      setTimeout(() => {
+        window.scrollTo({ top: parseInt(savedPos, 10), behavior: 'smooth' });
+      }, 150);
+    }
+  }, [activeNoteId]);
+
+  useEffect(() => {
+    if (!activeNoteId) return;
+    const handleScroll = () => {
+      localStorage.setItem(`note_reading_pos_${activeNoteId}`, String(window.scrollY));
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [activeNoteId]);
   const [activeTab, setActiveTab] = useState<
     'overview' | 'methods' | 'algorithm' | 'complexity' | 'code' | 'interview' | 'revision'
   >('overview');
@@ -428,7 +448,7 @@ export const Notes: React.FC = () => {
 
   // ── RENDER TOOLBAR READ CONTROLS ──
   const renderReadingToolbar = () => (
-    <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 bg-black/40 border border-white/10 rounded-xl text-xs backdrop-blur-md">
+    <div className="sticky top-20 z-20 flex flex-wrap items-center justify-between gap-2 p-2.5 bg-[#09090b]/90 border border-white/10 rounded-xl text-xs backdrop-blur-xl shadow-lg">
       {/* Mode Controls */}
       <div className="flex items-center gap-1">
         <button
