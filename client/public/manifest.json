@@ -1,0 +1,62 @@
+{
+  "name": "AlgoVisualizer - DSA Learning Platform",
+  "short_name": "AlgoVisualizer",
+  "description": "Production-grade Data Structures & Algorithms Knowledge Base, Code Practice IDE, Quiz Engine, and Interactive Visualizer Studio.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#09090b",
+  "background_color": "#09090b",
+  "categories": ["education", "developer", "utilities"],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Student Dashboard",
+      "short_name": "Dashboard",
+      "description": "Open Learning Command Center",
+      "url": "/dashboard",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "DSA Notes Base",
+      "short_name": "Notes",
+      "description": "Read 26-Section DSA Study Material",
+      "url": "/notes",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Practice IDE",
+      "short_name": "Practice",
+      "description": "Solve LeetCode/GFG Problems",
+      "url": "/practice",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Visualizer Studio",
+      "short_name": "Visualizer",
+      "description": "Interactive Animation Engine",
+      "url": "/visualizations",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -114,6 +114,8 @@ import NotFound from '@pages/common/NotFound';
 import Forbidden from '@pages/common/Forbidden';
 import ErrorBoundary from '@components/common/ErrorBoundary';
 import ScrollToTop from '@components/common/ScrollToTop';
+import PWAInstallPrompt from '@components/common/PWAInstallPrompt';
+import NetworkStatusIndicator from '@components/common/NetworkStatusIndicator';
 import { DashboardSkeleton } from '@components/common/Skeleton';
 
 const queryClient = new QueryClient({
@@ -144,6 +146,8 @@ const AppContent: React.FC = () => {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <NetworkStatusIndicator />
+      <PWAInstallPrompt />
       <Suspense fallback={<DashboardSkeleton />}>
         <Routes>
           {/* Public Routes */}
