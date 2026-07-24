@@ -597,7 +597,7 @@ export const Notes: React.FC = () => {
             {activeNote.description}
           </p>
 
-          {/* Interactive Action Buttons */}
+          {/* Interactive Reading Action Buttons */}
           <div className="flex flex-wrap items-center gap-2 pt-2">
             <button
               onClick={() => bookmarkMutation.mutate(activeNote._id)}
@@ -621,36 +621,6 @@ export const Notes: React.FC = () => {
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               {activeNote.isCompleted ? 'Completed' : 'Mark Completed'}
-            </button>
-
-            <button
-              onClick={() =>
-                navigate(
-                  activeNote.visualizationId
-                    ? `/visualizer/${activeNote.visualizationId}`
-                    : '/visualizations'
-                )
-              }
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-500 shadow-md transition-all cursor-pointer"
-            >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              Visualize Algorithm
-            </button>
-
-            <button
-              onClick={() => navigate('/practice')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600/30 transition-all cursor-pointer"
-            >
-              <Code className="w-3.5 h-3.5" />
-              Practice Problems
-            </button>
-
-            <button
-              onClick={() => navigate('/quiz')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-purple-600/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/30 transition-all cursor-pointer"
-            >
-              <FileQuestion className="w-3.5 h-3.5" />
-              Attempt Quiz
             </button>
 
             <button
@@ -1253,6 +1223,96 @@ export const Notes: React.FC = () => {
               )}
             </motion.div>
           )}
+        </div>
+
+        {/* ── Related Learning Resources Cards ── */}
+        <div className="pt-6 border-t border-white/10 space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-indigo-400" /> Related Learning Resources
+            </h4>
+            <span className="text-[10px] text-slate-400 font-mono">Interactive Modules</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Card 1: Visualization */}
+            <div
+              onClick={() =>
+                navigate(
+                  activeNote.visualizationId
+                    ? `/visualizer/${activeNote.visualizationId}`
+                    : '/visualizations'
+                )
+              }
+              className="glass-card p-4 rounded-xl border border-indigo-500/20 hover:border-indigo-500/50 bg-indigo-500/5 hover:bg-indigo-500/10 cursor-pointer transition-all space-y-3 group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-400 group-hover:scale-110 transition-transform">
+                  <Play className="w-5 h-5 fill-current" />
+                </div>
+                <ChevronRight className="w-4 h-4 text-indigo-400 group-hover:translate-x-1 transition-transform" />
+              </div>
+              <div>
+                <h5 className="text-xs font-bold text-white group-hover:text-indigo-300">
+                  Interactive Visualization
+                </h5>
+                <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                  Step through algorithm execution with animation, data controls, and execution pointer.
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-400 font-mono">
+                Visualize Algorithm &rarr;
+              </span>
+            </div>
+
+            {/* Card 2: Practice Problems */}
+            <div
+              onClick={() => navigate('/practice')}
+              className="glass-card p-4 rounded-xl border border-emerald-500/20 hover:border-emerald-500/50 bg-emerald-500/5 hover:bg-emerald-500/10 cursor-pointer transition-all space-y-3 group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 group-hover:scale-110 transition-transform">
+                  <Code className="w-5 h-5" />
+                </div>
+                <ChevronRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+              </div>
+              <div>
+                <h5 className="text-xs font-bold text-white group-hover:text-emerald-300">
+                  Practice Coding Problems
+                </h5>
+                <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                  Solve curated LeetCode/GFG coding problems for {activeNote.title} in the IDE.
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 font-mono">
+                Solve Problems &rarr;
+              </span>
+            </div>
+
+            {/* Card 3: Attempt Quiz */}
+            <div
+              onClick={() => navigate('/quiz')}
+              className="glass-card p-4 rounded-xl border border-purple-500/20 hover:border-purple-500/50 bg-purple-500/5 hover:bg-purple-500/10 cursor-pointer transition-all space-y-3 group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400 group-hover:scale-110 transition-transform">
+                  <FileQuestion className="w-5 h-5" />
+                </div>
+                <ChevronRight className="w-4 h-4 text-purple-400 group-hover:translate-x-1 transition-transform" />
+              </div>
+              <div>
+                <h5 className="text-xs font-bold text-white group-hover:text-purple-300">
+                  Test Your Knowledge
+                </h5>
+                <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                  Take an interactive timed quiz with instant explanations and score analytics.
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-400 font-mono">
+                Attempt Quiz &rarr;
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     );
