@@ -135,7 +135,7 @@ export const Notes: React.FC = () => {
   const [isResizing, setIsResizing] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const startResizing = useCallback((e: React.MouseEvent) => {
+  const startResizing = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     setIsResizing(true);
   }, []);
@@ -149,17 +149,33 @@ export const Notes: React.FC = () => {
       setPrefs((prev) => ({ ...prev, sidebarWidth: clampedWidth }));
     };
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isResizing || !containerRef.current || !e.touches[0]) return;
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const newWidth = e.touches[0].clientX - containerRect.left;
+      const clampedWidth = Math.max(250, Math.min(500, newWidth));
+      setPrefs((prev) => ({ ...prev, sidebarWidth: clampedWidth }));
+    };
+
     const handleMouseUp = () => {
+      if (isResizing) setIsResizing(false);
+    };
+
+    const handleTouchEnd = () => {
       if (isResizing) setIsResizing(false);
     };
 
     if (isResizing) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchend', handleTouchEnd);
     }
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [isResizing]);
 
@@ -1437,6 +1453,7 @@ export const Notes: React.FC = () => {
           {prefs.readerMode === 'split' && (
             <div
               onMouseDown={startResizing}
+              onTouchStart={startResizing}
               className={`hidden lg:flex w-3 cursor-col-resize items-center justify-center group hover:bg-indigo-500/20 rounded-full transition-all relative ${
                 isResizing ? 'bg-indigo-500/40' : ''
               }`}

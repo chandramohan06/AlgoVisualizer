@@ -3,6 +3,7 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { cn } from '@utils/index';
 import { Sidebar } from '@components/layout/Sidebar';
 import { Navbar } from '@components/layout/Navbar';
+import { MobileBottomNav } from '@components/layout/MobileBottomNav';
 import { GlobalSearchModal } from '@components/common/GlobalSearchModal';
 import { useAuthStore } from '@store/authStore';
 import { useUIStore } from '@store/uiStore';
@@ -27,12 +28,13 @@ export const StudentLayout: React.FC = () => {
         )}
       >
         <Navbar />
-        <main className="min-h-[calc(100vh-4rem)]">
+        <main className="min-h-[calc(100vh-4rem)] pb-20 lg:pb-0">
           <Suspense fallback={<DashboardSkeleton />}>
             <Outlet />
           </Suspense>
         </main>
       </div>
+      <MobileBottomNav />
       <GlobalSearchModal />
     </div>
   );
