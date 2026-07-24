@@ -4,7 +4,9 @@ const STATIC_ASSETS = [
   '/index.html',
   '/manifest.json',
   '/favicon.svg',
-  '/offline.html',
+  '/pwa-192x192.png',
+  '/pwa-512x512.png',
+  '/pwa-maskable-512x512.png',
 ];
 
 // 1. Install Event: Cache Shell Assets
