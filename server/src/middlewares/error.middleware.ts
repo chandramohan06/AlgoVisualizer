@@ -16,8 +16,10 @@ export const errorMiddleware = (
   res: Response,
   _next: NextFunction,
 ): void => {
+  console.error('🔥 Server Error Caught:', err);
+
   let statusCode = 500;
-  let message = 'Internal Server Error';
+  let message = err.message || 'Internal Server Error';
 
   if (err instanceof AppError) {
     statusCode = err.statusCode;
@@ -47,6 +49,6 @@ export const errorMiddleware = (
   res.status(statusCode).json({
     success: false,
     message,
-    ...(env.NODE_ENV === 'development' && { stack: err.stack }),
+    stack: err.stack,
   });
 };
