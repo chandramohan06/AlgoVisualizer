@@ -7,11 +7,12 @@ const envSchema = z.object({
   // MongoDB
   MONGODB_URI: z
     .string()
-    .transform((val) =>
-      val && val.trim() !== ''
-        ? val
-        : 'mongodb+srv://chandramohankumarsingh06_db_user:golu26@algovisualizer.td1z1g6.mongodb.net/algovisualizer?retryWrites=true&w=majority&appName=AlgoVisualizer',
-    )
+    .transform((val) => {
+      if (!val || val.trim() === '' || val.includes('localhost') || val.includes('127.0.0.1')) {
+        return 'mongodb+srv://chandramohankumarsingh06_db_user:golu26@algovisualizer.td1z1g6.mongodb.net/algovisualizer?retryWrites=true&w=majority&appName=AlgoVisualizer';
+      }
+      return val;
+    })
     .default(
       'mongodb+srv://chandramohankumarsingh06_db_user:golu26@algovisualizer.td1z1g6.mongodb.net/algovisualizer?retryWrites=true&w=majority&appName=AlgoVisualizer',
     ),
