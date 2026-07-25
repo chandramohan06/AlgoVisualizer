@@ -7,12 +7,14 @@ const PORT = Number(env.PORT) || 3000;
 
 const startServer = async (): Promise<void> => {
   try {
-    await connectDB();
-
     app.listen(PORT, () => {
       console.log(`\n🚀  AlgoVisualizer API running on http://localhost:${PORT}`);
       console.log(`📚  Docs:   http://localhost:${PORT}/api/v1/health`);
       console.log(`🌍  Env:    ${env.NODE_ENV}\n`);
+    });
+
+    connectDB().catch((err) => {
+      console.error('Failed to connect DB:', err);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

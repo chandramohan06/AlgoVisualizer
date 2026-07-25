@@ -15,13 +15,13 @@ export const connectDB = async (): Promise<void> => {
     isConnected = true;
     console.log(`✅  MongoDB connected to Atlas: ${conn.connection.host}`);
 
-    // Auto-seed database if empty
-    const { seedDatabase } = await import('../utils/seeder');
-    await seedDatabase();
+    // Auto-seed database asynchronously in background so HTTP startup is instantaneous
+    import('../utils/seeder')
+      .then(({ seedDatabase }) => seedDatabase())
+      .catch((err) => console.error('Seeder background error:', err));
   } catch (error) {
     console.error("❌ MongoDB Atlas Connection Error:", error);
     console.dir(error, { depth: null });
-    process.exit(1);
   }
 };
 
