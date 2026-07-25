@@ -1,3 +1,6 @@
+import dns from 'dns';
+dns.setDefaultResultOrder('ipv4first');
+
 import './config/env'; // validate env first
 import app from './app';
 import { connectDB } from './config/db';

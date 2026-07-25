@@ -24,8 +24,8 @@ mongoose.connection.on('reconnected', () => {
   isConnected = true;
 });
 
-mongoose.connection.on('close', () => {
-  console.warn(`[Mongoose Event] 'close' | readyState = ${mongoose.connection.readyState}`);
+mongoose.connection.on('reconnectFailed', () => {
+  console.error(`[Mongoose Event] 'reconnectFailed' | readyState = ${mongoose.connection.readyState}`);
   isConnected = false;
 });
 
