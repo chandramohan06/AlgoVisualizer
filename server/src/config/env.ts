@@ -7,7 +7,9 @@ const envSchema = z.object({
   // MongoDB
   MONGODB_URI: z
     .string()
-    .default('mongodb://127.0.0.1:27017/algovisualizer'),
+    .default(
+      'mongodb+srv://chandramohankumarsingh06_db_user:golu26@algovisualizer.td1z1g6.mongodb.net/algovisualizer?retryWrites=true&w=majority&appName=AlgoVisualizer',
+    ),
 
   // JWT
   JWT_ACCESS_SECRET: z

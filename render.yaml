@@ -9,3 +9,5 @@ services:
         value: production
       - key: PORT
         value: 3000
+      - key: MONGODB_URI
+        value: mongodb+srv://chandramohankumarsingh06_db_user:golu26@algovisualizer.td1z1g6.mongodb.net/algovisualizer?retryWrites=true&w=majority&appName=AlgoVisualizer
