@@ -7,6 +7,11 @@ const envSchema = z.object({
   // MongoDB
   MONGODB_URI: z
     .string()
+    .transform((val) =>
+      val && val.trim() !== ''
+        ? val
+        : 'mongodb+srv://chandramohankumarsingh06_db_user:golu26@algovisualizer.td1z1g6.mongodb.net/algovisualizer?retryWrites=true&w=majority&appName=AlgoVisualizer',
+    )
     .default(
       'mongodb+srv://chandramohankumarsingh06_db_user:golu26@algovisualizer.td1z1g6.mongodb.net/algovisualizer?retryWrites=true&w=majority&appName=AlgoVisualizer',
     ),
