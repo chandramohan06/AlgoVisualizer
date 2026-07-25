@@ -14,6 +14,7 @@ export const connectDB = async (retries = 5): Promise<void> => {
       const conn = await mongoose.connect(env.MONGODB_URI, {
         dbName: 'algovisualizer',
         serverSelectionTimeoutMS: 10000,
+        family: 4,
       });
 
       isConnected = true;
