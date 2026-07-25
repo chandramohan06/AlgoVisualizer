@@ -11,14 +11,26 @@ interface DataPoint {
 function deriveXPHistory(totalXP: number, level: number, streak: number): DataPoint[] {
   const today = new Date();
   const points: DataPoint[] = [];
+  if (!totalXP || totalXP <= 0) {
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      points.push({
+        day: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        xp: 0,
+      });
+    }
+    return points;
+  }
+
   const dailyAvg = totalXP / Math.max(1, level * 7);
 
   for (let i = 29; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
     const factor = 1 - (i / 30) * 0.6;
-    const isActive = i < streak || Math.random() > 0.4;
-    const xp = isActive ? Math.round(dailyAvg * factor * (0.7 + Math.random() * 0.6)) : 0;
+    const isActive = i < streak;
+    const xp = isActive ? Math.round(dailyAvg * factor) : 0;
     points.push({
       day: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       xp: Math.max(0, xp),

@@ -260,7 +260,7 @@ export const getUserProfileDetails = async (userId: string): Promise<IStudentPro
   for (let i = 364; i >= 0; i--) {
     const d = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
     const dateStr = d.toISOString().split('T')[0];
-    const count = activityMap[dateStr] || (Math.random() > 0.65 ? Math.floor(Math.random() * 5) : 0);
+    const count = activityMap[dateStr] || 0;
 
     let level: 0 | 1 | 2 | 3 | 4 = 0;
     if (count > 0 && count <= 1) level = 1;
@@ -271,9 +271,9 @@ export const getUserProfileDetails = async (userId: string): Promise<IStudentPro
     heatmap.push({ date: dateStr, count, level });
   }
 
-  const placementReadinessMap: any = entry?.placementReadiness ? Object.fromEntries(entry.placementReadiness as any) : { Amazon: 80, Google: 65, Microsoft: 75, TCS: 95, Accenture: 90, Cognizant: 90 };
-  const topicProgressMap: any = entry?.topicProgress ? Object.fromEntries(entry.topicProgress as any) : { Arrays: 100, 'Linked List': 80, Trees: 60, Graphs: 40, 'Dynamic Programming': 25 };
-  const patternMasteryMap: any = entry?.patternMastery ? Object.fromEntries(entry.patternMastery as any) : { 'Sliding Window': 85, 'Two Pointer': 90, 'BFS / DFS': 50, 'Dynamic Programming': 25 };
+  const placementReadinessMap: any = entry?.placementReadiness ? Object.fromEntries(entry.placementReadiness as any) : {};
+  const topicProgressMap: any = entry?.topicProgress ? Object.fromEntries(entry.topicProgress as any) : {};
+  const patternMasteryMap: any = entry?.patternMastery ? Object.fromEntries(entry.patternMastery as any) : {};
 
   return {
     user: {
@@ -312,8 +312,8 @@ export const getUserProfileDetails = async (userId: string): Promise<IStudentPro
       mcqsAttempted: entry?.mcqsAttempted || 0,
       mcqsCorrect: entry?.mcqsCorrect || 0,
       mcqsWrong: entry?.mcqsWrong || 0,
-      avgQuizTimeSeconds: entry?.avgQuizTimeSeconds || 45,
-      avgCodingTimeMinutes: entry?.avgCodingTimeMinutes || 12,
+      avgQuizTimeSeconds: entry?.avgQuizTimeSeconds || 0,
+      avgCodingTimeMinutes: entry?.avgCodingTimeMinutes || 0,
     },
     placementReadiness: placementReadinessMap,
     topicProgress: topicProgressMap,

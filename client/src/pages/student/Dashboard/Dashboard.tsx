@@ -29,6 +29,7 @@ import {
   Lightbulb,
 } from 'lucide-react';
 import { useFullDashboardStats } from '@hooks/useDashboard';
+import { useContinueLearning } from '@hooks/useContinueLearning';
 import { DashboardSkeleton } from '@components/common/Skeleton';
 
 const MOTIVATIONAL_QUOTES = [
@@ -41,8 +42,9 @@ const MOTIVATIONAL_QUOTES = [
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { data: stats, isLoading, isError, refetch } = useFullDashboardStats();
+  const { session: continueLearningSession } = useContinueLearning();
   const [searchQuery, setSearchQuery] = useState('');
-  const [completedTaskIndices, setCompletedTaskIndices] = useState<number[]>([0, 1, 2]);
+  const [completedTaskIndices, setCompletedTaskIndices] = useState<number[]>([]);
 
   if (isLoading) return <DashboardSkeleton />;
   if (isError || !stats) {
@@ -66,9 +68,13 @@ export const Dashboard: React.FC = () => {
   }
 
   const quote = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
-  const readiness = stats.placementReadiness || { overall: 75, dsa: 80, java: 85, problemSolving: 70, interviewTheory: 75, systemArchitecture: 65, weakestArea: 'System Architecture', strongestArea: 'Java & Collections' };
-  const todayMission = stats.todayMission || { completionPct: 60, estimatedMinutes: 45, currentGoal: 'Master Arrays & Strings Data Structures', tasks: [] };
-  const recommendation = stats.recommendation || { title: 'Strings & String Manipulation', category: 'Strings', estimatedMinutes: 20, slug: 'strings' };
+  const readiness = stats.placementReadiness || { overall: 0, dsa: 0, java: 0, problemSolving: 0, interviewTheory: 0, systemArchitecture: 0, weakestArea: 'None', strongestArea: 'None' };
+  const todayMission = stats.todayMission || { completionPct: 0, estimatedMinutes: 0, currentGoal: 'Daily DSA Learning Mission', tasks: [] };
+  const recommendation = stats.recommendation || null;
+
+  const missionTasks = todayMission.tasks || [];
+  const completedTaskCount = missionTasks.filter((t: any, idx: number) => t.isCompleted || completedTaskIndices.includes(idx)).length;
+  const currentMissionPct = missionTasks.length > 0 ? Math.round((completedTaskCount / missionTasks.length) * 100) : 0;
 
   const handleTaskToggle = (idx: number) => {
     if (completedTaskIndices.includes(idx)) {
@@ -143,7 +149,7 @@ export const Dashboard: React.FC = () => {
             </div>
 
             <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-              Good Evening, {stats.userName} 👋
+              Welcome, {stats.userName} 👋
             </h1>
 
             <p className="text-xs md:text-sm text-slate-300 italic leading-relaxed">
@@ -169,13 +175,15 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row lg:flex-col items-stretch lg:items-end gap-3 shrink-0">
-            <button
-              onClick={() => navigate('/notes')}
-              className="px-6 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
-            >
-              <Play className="w-4 h-4 fill-current" />
-              Resume Journey
-            </button>
+            {continueLearningSession ? (
+              <button
+                onClick={() => navigate(`/visualizations?slug=${continueLearningSession.slug}`)}
+                className="px-6 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02]"
+              >
+                <Play className="w-4 h-4 fill-current" />
+                Resume Journey
+              </button>
+            ) : null}
 
             <span className="text-[11px] text-slate-400 font-mono text-center lg:text-right flex items-center justify-center gap-1">
               <Clock className="w-3 h-3 text-indigo-400" /> Est. Time Today: {todayMission.estimatedMinutes} Mins
@@ -194,7 +202,7 @@ export const Dashboard: React.FC = () => {
               <h3 className="text-base font-bold text-white">Today&apos;s Mission</h3>
             </div>
             <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
-              {Math.round((completedTaskIndices.length / 5) * 100)}% Completed
+              {currentMissionPct}% Completed
             </span>
           </div>
 
@@ -203,20 +211,14 @@ export const Dashboard: React.FC = () => {
             <motion.div
               className="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full"
               initial={{ width: 0 }}
-              animate={{ width: `${(completedTaskIndices.length / 5) * 100}%` }}
+              animate={{ width: `${currentMissionPct}%` }}
               transition={{ duration: 0.8 }}
             />
           </div>
 
           <div className="space-y-2">
-            {[
-              { label: 'Read DSA Note: Java ArrayList Methods', category: 'Notes', link: '/notes' },
-              { label: 'Visualize Algorithm: Binary Search Animation', category: 'Visualizer', link: '/visualizations' },
-              { label: 'Practice Code Problem: Two Sum Problem', category: 'Practice', link: '/practice' },
-              { label: 'Attempt Quiz: Arrays & Strings Quiz', category: 'Quiz', link: '/quiz' },
-              { label: 'Revise Cheat Sheet & Complexity Table', category: 'Revision', link: '/notes' },
-            ].map((task, idx) => {
-              const isChecked = completedTaskIndices.includes(idx);
+            {missionTasks.map((task: any, idx: number) => {
+              const isChecked = task.isCompleted || completedTaskIndices.includes(idx);
               return (
                 <div
                   key={idx}
@@ -230,11 +232,11 @@ export const Dashboard: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <CheckSquare className={`w-4 h-4 ${isChecked ? 'text-emerald-400' : 'text-slate-500'}`} />
                     <span className={`text-xs font-semibold ${isChecked ? 'line-through text-slate-400' : ''}`}>
-                      {task.label}
+                      {task.name}
                     </span>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400">
-                    {task.category}
+                    {task.category || 'Mission'}
                   </span>
                 </div>
               );
@@ -248,7 +250,7 @@ export const Dashboard: React.FC = () => {
             >
               Start Mission <ArrowRight className="w-3.5 h-3.5" />
             </button>
-            <span className="text-slate-500 font-mono text-[11px]">5 Daily Tasks Goal</span>
+            <span className="text-slate-500 font-mono text-[11px]">{missionTasks.length} Daily Tasks Goal</span>
           </div>
         </div>
 
@@ -265,27 +267,40 @@ export const Dashboard: React.FC = () => {
               </span>
             </div>
 
-            <div className="glass-card p-4 rounded-xl border border-white/10 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-indigo-300">Arrays &amp; Java ArrayList</span>
-                <span className="text-[10px] font-mono text-emerald-400">85% Read</span>
+            {continueLearningSession ? (
+              <div className="glass-card p-4 rounded-xl border border-white/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-indigo-300">{continueLearningSession.title}</span>
+                  <span className="text-[10px] font-mono text-emerald-400">Step #{continueLearningSession.frameIndex ? continueLearningSession.frameIndex + 1 : 1}</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-snug">
+                  Category: <strong>{continueLearningSession.category}</strong>
+                </p>
               </div>
-              <p className="text-xs text-slate-300 leading-snug">
-                Last Section: <strong>Java Class Methods Documentation</strong> (ArrayList grow() resizing algorithm &amp; System.arraycopy).
-              </p>
-              <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
-                <div className="bg-indigo-500 h-full w-[85%]" />
+            ) : (
+              <div className="p-4 rounded-xl bg-black/20 border border-white/5 text-center text-xs text-slate-400 py-6">
+                No recent activity yet.
               </div>
-            </div>
+            )}
           </div>
 
-          <button
-            onClick={() => navigate('/notes?slug=arrays')}
-            className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 cursor-pointer transition-all"
-          >
-            <BookOpen className="w-4 h-4" />
-            Resume Reading Note
-          </button>
+          {continueLearningSession ? (
+            <button
+              onClick={() => navigate(`/visualizations?slug=${continueLearningSession.slug}`)}
+              className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 cursor-pointer transition-all"
+            >
+              <BookOpen className="w-4 h-4" />
+              Resume Session
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/notes')}
+              className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all"
+            >
+              <BookOpen className="w-4 h-4 text-indigo-400" />
+              Browse DSA Notes
+            </button>
+          )}
         </div>
       </div>
 
@@ -317,10 +332,10 @@ export const Dashboard: React.FC = () => {
             <div>
               <div className="flex justify-between text-slate-300 mb-1">
                 <span>DSA Notes Read</span>
-                <span className="font-mono text-cyan-400 font-bold">{Math.round((stats.readNotesCount / Math.max(1, stats.notesCount)) * 100)}%</span>
+                <span className="font-mono text-cyan-400 font-bold">{stats.notesCount > 0 ? Math.round((stats.readNotesCount / stats.notesCount) * 100) : 0}%</span>
               </div>
               <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
-                <motion.div className="bg-cyan-500 h-full" initial={{ width: 0 }} animate={{ width: `${Math.round((stats.readNotesCount / Math.max(1, stats.notesCount)) * 100)}%` }} transition={{ duration: 1 }} />
+                <motion.div className="bg-cyan-500 h-full" initial={{ width: 0 }} animate={{ width: `${stats.notesCount > 0 ? Math.round((stats.readNotesCount / stats.notesCount) * 100) : 0}%` }} transition={{ duration: 1 }} />
               </div>
             </div>
 
@@ -417,7 +432,7 @@ export const Dashboard: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
             <div className="p-3 rounded-xl bg-black/30 border border-white/5 space-y-1">
               <Clock className="w-4 h-4 text-indigo-400 mx-auto" />
-              <div className="text-lg font-black text-white font-mono">4.5 Hrs</div>
+              <div className="text-lg font-black text-white font-mono">{stats.streak > 0 ? `${stats.streak * 0.5} Hrs` : '0 Hrs'}</div>
               <div className="text-[10px] text-slate-400">Weekly Study</div>
             </div>
 
@@ -449,26 +464,36 @@ export const Dashboard: React.FC = () => {
               <h3 className="text-base font-bold text-white">Smart Recommendation</h3>
             </div>
 
-            <p className="text-xs text-slate-300">
-              You completed <strong>Arrays</strong>. We automatically recommend:
-            </p>
+            {recommendation ? (
+              <>
+                <p className="text-xs text-slate-300">
+                  Recommended next topic:
+                </p>
 
-            <div className="glass-card p-3.5 rounded-xl border border-white/10 space-y-1">
-              <div className="text-xs font-bold text-cyan-300">{recommendation.title}</div>
-              <div className="text-[11px] text-slate-400 flex items-center gap-2">
-                <span>Category: {recommendation.category}</span>
-                <span>•</span>
-                <span>Est: {recommendation.estimatedMinutes} mins</span>
-              </div>
-            </div>
+                <div className="glass-card p-3.5 rounded-xl border border-white/10 space-y-1">
+                  <div className="text-xs font-bold text-cyan-300">{recommendation.title}</div>
+                  <div className="text-[11px] text-slate-400 flex items-center gap-2">
+                    <span>Category: {recommendation.category}</span>
+                    <span>•</span>
+                    <span>Est: {recommendation.estimatedMinutes} mins</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="text-xs text-slate-400 py-4">
+                No recommendations yet. Start exploring notes or algorithms!
+              </p>
+            )}
           </div>
 
-          <button
-            onClick={() => navigate(`/notes?slug=${recommendation.slug}`)}
-            className="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer transition-all"
-          >
-            Start Recommended Topic <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          {recommendation && (
+            <button
+              onClick={() => navigate(`/notes?slug=${recommendation.slug}`)}
+              className="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer transition-all"
+            >
+              Start Recommended Topic <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -477,11 +502,11 @@ export const Dashboard: React.FC = () => {
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-base font-bold text-white">Learning Streak Activity (GitHub-Style Contribution Heatmap)</h3>
+            <h3 className="text-base font-bold text-white">Learning Streak Activity</h3>
           </div>
           <div className="flex items-center gap-3 text-xs font-mono">
             <span className="text-amber-400 font-bold">Current Streak: {stats.streak} Days</span>
-            <span className="text-slate-400">Longest: {stats.streak + 5} Days</span>
+            <span className="text-slate-400">Longest: {stats.longestStreak ?? stats.streak ?? 0} Days</span>
           </div>
         </div>
 
@@ -519,20 +544,26 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            {(stats.activities || []).map((act: { _id: string; title: string; description: string; createdAt: string }, i: number) => (
-              <div key={i} className="flex items-start gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
-                <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 mt-0.5">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                </div>
-                <div className="flex-1 truncate text-xs">
-                  <div className="font-bold text-white truncate">{act.title}</div>
-                  <div className="text-[11px] text-slate-400">{act.description}</div>
-                </div>
-                <span className="text-[10px] font-mono text-slate-500 whitespace-nowrap">
-                  {new Date(act.createdAt).toLocaleDateString()}
-                </span>
+            {(!stats.activities || stats.activities.length === 0) ? (
+              <div className="p-4 text-center text-xs text-slate-400 py-8">
+                No activity yet.
               </div>
-            ))}
+            ) : (
+              (stats.activities || []).map((act: { _id: string; title: string; description: string; createdAt: string }, i: number) => (
+                <div key={i} className="flex items-start gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/5">
+                  <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="flex-1 truncate text-xs">
+                    <div className="font-bold text-white truncate">{act.title}</div>
+                    <div className="text-[11px] text-slate-400">{act.description}</div>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-500 whitespace-nowrap">
+                    {new Date(act.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -543,32 +574,38 @@ export const Dashboard: React.FC = () => {
               <ShieldAlert className="w-5 h-5 text-rose-400" />
               <h3 className="text-base font-bold text-white">Weak Topics &amp; Review Needed</h3>
             </div>
-            <span className="text-xs font-mono text-rose-400 font-bold">4 Topics</span>
+            <span className="text-xs font-mono text-rose-400 font-bold">{(stats.weakTopics || []).length} Topics</span>
           </div>
 
           <div className="space-y-2.5">
-            {(stats.weakTopics || []).map((wt: { topic: string; completionPct: number; masteryStatus: string }, idx: number) => (
-              <div key={idx} className="p-3 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between gap-2 text-xs">
-                <div>
-                  <div className="font-bold text-white">{wt.topic}</div>
-                  <div className="text-[10px] text-slate-400">Mastery: {wt.masteryStatus} ({wt.completionPct}%)</div>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => navigate('/notes')}
-                    className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 font-bold text-[10px] cursor-pointer"
-                  >
-                    Review
-                  </button>
-                  <button
-                    onClick={() => navigate('/practice')}
-                    className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[10px] cursor-pointer"
-                  >
-                    Practice
-                  </button>
-                </div>
+            {(!stats.weakTopics || stats.weakTopics.length === 0) ? (
+              <div className="p-4 text-center text-xs text-slate-400 py-8">
+                No weak topics identified yet. Keep practicing!
               </div>
-            ))}
+            ) : (
+              (stats.weakTopics || []).map((wt: { topic: string; completionPct: number; masteryStatus: string }, idx: number) => (
+                <div key={idx} className="p-3 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between gap-2 text-xs">
+                  <div>
+                    <div className="font-bold text-white">{wt.topic}</div>
+                    <div className="text-[10px] text-slate-400">Mastery: {wt.masteryStatus} ({wt.completionPct}%)</div>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => navigate('/notes')}
+                      className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 font-bold text-[10px] cursor-pointer"
+                    >
+                      Review
+                    </button>
+                    <button
+                      onClick={() => navigate('/practice')}
+                      className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[10px] cursor-pointer"
+                    >
+                      Practice
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -675,12 +712,18 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="space-y-2 text-xs">
-            {(stats.insights || []).map((ins: string, idx: number) => (
-              <div key={idx} className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-slate-200 flex items-start gap-2">
-                <span className="text-amber-400 font-bold">💡</span>
-                <span>{ins}</span>
+            {(!stats.insights || stats.insights.length === 0) ? (
+              <div className="p-4 text-center text-xs text-slate-400 py-6">
+                No insights yet. Complete notes, visualizers, or quizzes to generate insights.
               </div>
-            ))}
+            ) : (
+              (stats.insights || []).map((ins: string, idx: number) => (
+                <div key={idx} className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-slate-200 flex items-start gap-2">
+                  <span className="text-amber-400 font-bold">💡</span>
+                  <span>{ins}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -695,23 +738,29 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="space-y-2 text-xs">
-            {(stats.weeklyPlan || []).map((item: { day: string; topic: string; isDone: boolean }, idx: number) => (
-              <div key={idx} className="p-2.5 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-indigo-400 font-bold w-20">{item.day}</span>
-                  <span className={`font-semibold ${item.isDone ? 'line-through text-slate-400' : 'text-white'}`}>
-                    {item.topic}
-                  </span>
-                </div>
-                {item.isDone ? (
-                  <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                    Done ✓
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-mono text-slate-500">Upcoming</span>
-                )}
+            {(!stats.weeklyPlan || stats.weeklyPlan.length === 0) ? (
+              <div className="p-4 text-center text-xs text-slate-400 py-6">
+                No active weekly schedule.
               </div>
-            ))}
+            ) : (
+              (stats.weeklyPlan || []).map((item: { day: string; topic: string; isDone: boolean }, idx: number) => (
+                <div key={idx} className="p-2.5 rounded-xl bg-black/30 border border-white/5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-indigo-400 font-bold w-20">{item.day}</span>
+                    <span className={`font-semibold ${item.isDone ? 'line-through text-slate-400' : 'text-white'}`}>
+                      {item.topic}
+                    </span>
+                  </div>
+                  {item.isDone ? (
+                    <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                      Done ✓
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-mono text-slate-500">Upcoming</span>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -723,14 +772,16 @@ export const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bookmark className="w-4 h-4 text-amber-400" />
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Bookmarked Content ({stats.bookmarksCount})</h4>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">Bookmarked Content ({stats.bookmarksCount || 0})</h4>
             </div>
             <button onClick={() => navigate('/notes')} className="text-[11px] font-mono text-indigo-400 hover:text-indigo-300">
               View All &rarr;
             </button>
           </div>
           <p className="text-xs text-slate-400">
-            You have {stats.bookmarksCount} saved notes and practice problems ready for revision.
+            {stats.bookmarksCount > 0
+              ? `You have ${stats.bookmarksCount} saved notes and practice problems ready for revision.`
+              : 'No bookmarked items yet.'}
           </p>
         </div>
 
@@ -745,15 +796,19 @@ export const Dashboard: React.FC = () => {
               View Badges &rarr;
             </button>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
-              <Award className="w-5 h-5" />
+          {stats.latestAchievement ? (
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
+                <Award className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-white">{stats.latestAchievement.title}</div>
+                <div className="text-[11px] text-slate-400">{stats.latestAchievement.description}</div>
+              </div>
             </div>
-            <div>
-              <div className="text-xs font-bold text-white">7 Day Consistent Streak</div>
-              <div className="text-[11px] text-slate-400">Unlocked 100 Bonus XP &amp; Consistency Badge</div>
-            </div>
-          </div>
+          ) : (
+            <div className="text-xs text-slate-400 py-1">No achievements unlocked yet.</div>
+          )}
         </div>
       </div>
     </motion.div>

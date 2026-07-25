@@ -19,7 +19,7 @@ export const InterviewReadinessCard: React.FC = () => {
     const quizScore     = stats?.quizAccuracy ?? 0;
     const progressScore = stats?.percentage ?? 0;
     const streakScore   = Math.min(100, ((stats?.streak ?? 0) / 30) * 100);
-    const levelScore    = Math.min(100, ((stats?.level ?? 1) / 20) * 100);
+    const levelScore    = (stats?.totalXP ?? 0) > 0 ? Math.min(100, ((stats?.level ?? 1) / 20) * 100) : 0;
     return [
       { label: 'Problems Solved',   value: Math.round(problemScore),  weight: 0.3,  color: '#6366f1', icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
       { label: 'Quiz Accuracy',     value: Math.round(quizScore),     weight: 0.25, color: '#10b981', icon: <Target className="w-3.5 h-3.5" /> },

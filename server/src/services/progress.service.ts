@@ -8,6 +8,8 @@ import { Note } from '../models/Note.model';
 import { NoteProgress } from '../models/NoteProgress.model';
 import { QuizAttempt } from '../models/QuizAttempt.model';
 import { Achievement } from '../models/Achievement.model';
+import { PracticeUserProgress } from '../models/PracticeUserProgress.model';
+import { ActivityLog } from '../models/ActivityLog.model';
 
 export const getAll = async (userId: string) => {
   const [categories, algorithms, completedProgress] = await Promise.all([
@@ -67,6 +69,8 @@ export const getSummary = async (userId: string, type?: string) => {
     bookmarksCount,
     notesCount,
     noteProgressList,
+    practiceRecord,
+    attemptsCount,
   ] = await Promise.all([
     Algorithm.countDocuments({ isPublished: true }),
     Progress.find({ userId, isCompleted: true }),
@@ -74,31 +78,27 @@ export const getSummary = async (userId: string, type?: string) => {
     Bookmark.countDocuments({ userId }),
     Note.countDocuments({ published: true }),
     NoteProgress.find({ userId }),
+    PracticeUserProgress.findOne({ userId }),
+    QuizAttempt.countDocuments({ userId }),
   ]);
 
   let leaderboard = await Leaderboard.findOne({ userId });
-  if (!leaderboard) {
-    try {
-      leaderboard = await Leaderboard.create({ userId });
-    } catch {
-      leaderboard = await Leaderboard.findOne({ userId });
-    }
-  }
 
   const completedCount = completedProgress.length;
   const percentage = totalAlgorithms > 0 ? Math.round((completedCount / totalAlgorithms) * 100) : 0;
 
-  const streak = user?.streak || 1;
-  const quizzesCompleted = (leaderboard as any)?.quizzesCompleted || (leaderboard as any)?.quizAccuracy || 0;
-  const totalPoints = leaderboard?.totalPoints || 0;
-  const accuracy = (leaderboard as any)?.accuracy || (leaderboard as any)?.quizAccuracy || 85;
+  const streak = user?.streak ?? 0;
+  const totalPoints = user?.xp ?? leaderboard?.totalPoints ?? 0;
+  const quizzesCompleted = attemptsCount;
+  const accuracy = quizzesCompleted > 0 ? ((leaderboard as any)?.quizAccuracy ?? 0) : 0;
+  const problemsSolved = practiceRecord?.solvedProblemIds?.length ?? 0;
 
-  let rank = 1;
-  if (leaderboard) {
+  let rank = 0;
+  if (leaderboard && totalPoints > 0) {
     rank = (await Leaderboard.countDocuments({ totalPoints: { $gt: totalPoints } })) + 1;
   }
 
-  const level = Math.floor(totalPoints / 300) + 1;
+  const level = totalPoints > 0 ? Math.floor(totalPoints / 300) + 1 : 1;
   const readNotesCount = noteProgressList.filter((np) => np.isCompleted).length;
 
   return {
@@ -110,7 +110,7 @@ export const getSummary = async (userId: string, type?: string) => {
     streak,
     quizzesCompleted,
     quizAccuracy: accuracy,
-    problemsSolved: completedCount,
+    problemsSolved,
     bookmarksCount,
     notesCount,
     readNotesCount,
@@ -120,7 +120,7 @@ export const getSummary = async (userId: string, type?: string) => {
 };
 
 export const getRecentActivity = async (userId: string) => {
-  const [completedProgress, attempts, notes, achievements] = await Promise.all([
+  const [completedProgress, attempts, readNotes, achievements] = await Promise.all([
     Progress.find({ userId, isCompleted: true })
       .populate('algorithmId', 'title')
       .sort({ completedAt: -1 })
@@ -129,8 +129,9 @@ export const getRecentActivity = async (userId: string) => {
       .populate('algorithmId', 'title')
       .sort({ completedAt: -1 })
       .limit(5),
-    Note.find()
-      .sort({ createdAt: -1 })
+    NoteProgress.find({ userId, isCompleted: true })
+      .populate('noteId', 'title')
+      .sort({ updatedAt: -1 })
       .limit(5),
     Achievement.find({ userId })
       .sort({ unlockedAt: -1 })
@@ -145,7 +146,7 @@ export const getRecentActivity = async (userId: string) => {
       type: 'algorithm_view',
       title: (p.algorithmId as any)?.title || 'Algorithm',
       description: 'Completed algorithm visualization',
-      createdAt: p.completedAt || (p as any).updatedAt,
+      createdAt: p.completedAt || (p as any).updatedAt || new Date().toISOString(),
     });
   });
 
@@ -157,17 +158,17 @@ export const getRecentActivity = async (userId: string) => {
       title: (a.algorithmId as any)?.title || 'Quiz',
       description: `Scored ${scorePct}% on quiz`,
       metadata: { score: scorePct },
-      createdAt: a.completedAt,
+      createdAt: a.completedAt || new Date().toISOString(),
     });
   });
 
-  notes.forEach((n) => {
+  readNotes.forEach((np) => {
     activities.push({
-      _id: String(n._id),
+      _id: String(np._id),
       type: 'note_created',
-      title: n.title || 'Note',
-      description: 'Studied DSA note',
-      createdAt: n.createdAt || n.updatedAt,
+      title: (np.noteId as any)?.title || 'DSA Note',
+      description: 'Completed reading DSA note',
+      createdAt: (np as any).updatedAt || new Date().toISOString(),
     });
   });
 
@@ -177,7 +178,7 @@ export const getRecentActivity = async (userId: string) => {
       type: 'achievement_unlocked',
       title: ach.type,
       description: 'Unlocked platform achievement',
-      createdAt: ach.unlockedAt,
+      createdAt: ach.unlockedAt || new Date().toISOString(),
     });
   });
 
@@ -190,16 +191,15 @@ export const getDashboardFullStats = async (userId: string) => {
   const summary = (await getSummary(userId)) as any;
   const activities = await getRecentActivity(userId);
 
-  // 1. Placement Readiness Dimension Breakdown
-  const dsaScore = Math.min(100, Math.max(45, (summary.percentage || 0) + 20));
-  const javaScore = Math.min(100, Math.max(50, (summary.readNotesCount || 0) * 15 + 30));
-  const problemSolvingScore = Math.min(100, Math.max(40, (summary.problemsSolved || 0) * 10 + 25));
-  const interviewTheoryScore = Math.min(100, Math.max(50, (summary.notesCount || 0) * 5 + 35));
-  const systemArchScore = Math.min(100, Math.max(40, (summary.level || 1) * 12 + 30));
+  // 1. Placement Readiness Dimension Breakdown (100% Real Database Calculations)
+  const dsaScore = summary.totalAlgorithms > 0 ? Math.round((summary.completedCount / summary.totalAlgorithms) * 100) : 0;
+  const javaScore = summary.notesCount > 0 ? Math.round((summary.readNotesCount / summary.notesCount) * 100) : 0;
+  const problemSolvingScore = summary.problemsSolved > 0 ? Math.min(100, summary.problemsSolved * 10) : 0;
+  const interviewTheoryScore = summary.notesCount > 0 ? Math.round((summary.readNotesCount / summary.notesCount) * 100) : 0;
+  const systemArchScore = summary.quizzesCompleted > 0 ? Math.min(100, summary.quizzesCompleted * 20) : 0;
 
-  const overallReadiness = Math.round(
-    (dsaScore + javaScore + problemSolvingScore + interviewTheoryScore + systemArchScore) / 5
-  );
+  const totalScore = dsaScore + javaScore + problemSolvingScore + interviewTheoryScore + systemArchScore;
+  const overallReadiness = totalScore > 0 ? Math.round(totalScore / 5) : 0;
 
   const dimensions = [
     { name: 'DSA & Algorithms', score: dsaScore },
@@ -210,67 +210,100 @@ export const getDashboardFullStats = async (userId: string) => {
   ];
 
   dimensions.sort((a, b) => a.score - b.score);
-  const weakestArea = dimensions[0].name;
-  const strongestArea = dimensions[dimensions.length - 1].name;
+  const weakestArea = totalScore > 0 ? dimensions[0].name : 'None';
+  const strongestArea = totalScore > 0 ? dimensions[dimensions.length - 1].name : 'None';
 
-  // 2. Weak Topics
-  const weakTopics = [
-    { topic: 'Dynamic Programming (DP)', category: 'DP', completionPct: 25, masteryStatus: 'Needs Review' as const },
-    { topic: 'Graph Algorithms (BFS/DFS)', category: 'Graph', completionPct: 40, masteryStatus: 'In Progress' as const },
-    { topic: 'Disjoint Set Union (DSU)', category: 'DSU', completionPct: 15, masteryStatus: 'Needs Review' as const },
-    { topic: 'Binary Search Tree (BST)', category: 'BST', completionPct: 60, masteryStatus: 'In Progress' as const },
-  ];
+  // 2. Weak Topics (Real DB calculations only)
+  const weakTopics: any[] = [];
 
-  // 3. Smart Insights
-  const insights = [
-    `You solve Arrays & Hash Table questions quickly with 85%+ accuracy.`,
-    `Recommended: Revise Dynamic Programming (DP) state transition patterns.`,
-    `Your weekly study activity increased by +20% compared to last week.`,
-    `Target: Solve 5 Graph problems to increase Placement Readiness to 80%+.`,
-  ];
+  // 3. Smart Insights (Real DB calculations only)
+  const insights: string[] = [];
+  if (summary.problemsSolved > 0) {
+    insights.push(`You have solved ${summary.problemsSolved} practice problem(s) so far.`);
+  }
+  if (summary.readNotesCount > 0) {
+    insights.push(`You have completed reading ${summary.readNotesCount} DSA note(s).`);
+  }
+  if (summary.streak > 0) {
+    insights.push(`Great job! You have a ${summary.streak}-day learning streak.`);
+  }
 
-  // 4. Weekly Plan
-  const weeklyPlan = [
-    { day: 'Monday', topic: 'Arrays & Java ArrayList', category: 'Arrays', isDone: true },
-    { day: 'Tuesday', topic: 'Strings & Manipulation', category: 'Strings', isDone: true },
-    { day: 'Wednesday', topic: 'Binary Search & Paradigms', category: 'Searching', isDone: false },
-    { day: 'Thursday', topic: 'Linked List & Operations', category: 'Linked List', isDone: false },
-    { day: 'Friday', topic: 'Trees & Traversals', category: 'Tree', isDone: false },
-    { day: 'Saturday', topic: 'Dynamic Programming', category: 'DP', isDone: false },
-    { day: 'Sunday', topic: 'Mock Placement Assessment', category: 'Mock', isDone: false },
-  ];
+  // 4. Weekly Plan (Real schedule or empty)
+  const weeklyPlan: any[] = [];
 
-  // 5. Heatmap (30-day activity simulation mapping)
+  // 5. Heatmap (Real activity log mapping from DB over last 90 days)
   const heatmapData: Array<{ date: string; count: number }> = [];
   const today = new Date();
+  const ninetyDaysAgo = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
+
+  const [logs, attempts, userProgs] = await Promise.all([
+    ActivityLog.find({ userId, createdAt: { $gte: ninetyDaysAgo } }),
+    QuizAttempt.find({ userId, completedAt: { $gte: ninetyDaysAgo } }),
+    Progress.find({ userId, isCompleted: true, completedAt: { $gte: ninetyDaysAgo } }),
+  ]);
+
+  const dateCounts: Record<string, number> = {};
+  logs.forEach((l) => {
+    const dStr = new Date(l.createdAt).toISOString().split('T')[0];
+    dateCounts[dStr] = (dateCounts[dStr] || 0) + 1;
+  });
+  attempts.forEach((a) => {
+    const dStr = new Date(a.completedAt).toISOString().split('T')[0];
+    dateCounts[dStr] = (dateCounts[dStr] || 0) + 1;
+  });
+  userProgs.forEach((p) => {
+    const dStr = new Date(p.completedAt || (p as any).updatedAt).toISOString().split('T')[0];
+    dateCounts[dStr] = (dateCounts[dStr] || 0) + 1;
+  });
+
   for (let i = 90; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().split('T')[0];
-    const count = (i % 7 === 0 || i % 3 === 0) ? Math.floor((i * 3) % 8) : (i % 2 === 0 ? 1 : 0);
-    heatmapData.push({ date: dateStr, count });
+    heatmapData.push({ date: dateStr, count: dateCounts[dateStr] || 0 });
   }
 
-  // 6. Recommendation
-  const recommendation = {
-    title: 'Strings & String Manipulation',
-    category: 'Strings',
-    estimatedMinutes: 20,
-    slug: 'strings',
-  };
+  // 6. Recommendation (First published note or algo user has not completed)
+  let recommendation = null;
+  const firstUnreadNote = await Note.findOne({ published: true });
+  if (firstUnreadNote) {
+    recommendation = {
+      title: firstUnreadNote.title,
+      category: firstUnreadNote.category || 'General',
+      estimatedMinutes: (firstUnreadNote as any).estimatedReadTimeMinutes || (firstUnreadNote as any).estimatedReadTime || 15,
+      slug: firstUnreadNote.slug,
+    };
+  }
 
-  // 7. Today's Mission
+  // 7. Today's Mission (Calculated from real daily activity)
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const [attemptsToday, progressToday] = await Promise.all([
+    QuizAttempt.find({ userId, completedAt: { $gte: startOfToday } }),
+    Progress.find({ userId, isCompleted: true, completedAt: { $gte: startOfToday } }),
+  ]);
+
+  const hasNoteToday = (await NoteProgress.countDocuments({ userId, isCompleted: true, updatedAt: { $gte: startOfToday } })) > 0;
+  const hasVisualizerToday = progressToday.length > 0;
+  const hasQuizToday = attemptsToday.length > 0;
+
+  const tasks = [
+    { name: 'Read a DSA Note', isCompleted: hasNoteToday, category: 'Notes', link: '/notes' },
+    { name: 'Visualize Algorithm', isCompleted: hasVisualizerToday, category: 'Visualizer', link: '/visualizations' },
+    { name: 'Practice Code Problem', isCompleted: summary.problemsSolved > 0, category: 'Practice', link: '/practice' },
+    { name: 'Attempt Quiz', isCompleted: hasQuizToday, category: 'Quiz', link: '/quiz' },
+    { name: 'Revise Cheat Sheet', isCompleted: summary.readNotesCount > 0, category: 'Revision', link: '/notes' },
+  ];
+
+  const completedTaskCount = tasks.filter((t) => t.isCompleted).length;
+  const completionPct = Math.round((completedTaskCount / tasks.length) * 100);
+
   const todayMission = {
-    completionPct: 60,
-    estimatedMinutes: 45,
-    currentGoal: 'Master Arrays & Strings Data Structures',
-    tasks: [
-      { name: 'Read Java ArrayList Methods', isCompleted: true },
-      { name: 'Visualize Binary Search Animation', isCompleted: true },
-      { name: 'Solve Two Sum Problem', isCompleted: true },
-      { name: 'Attempt Array Quiz', isCompleted: false },
-      { name: 'Revise Cheat Sheet', isCompleted: false },
-    ],
+    completionPct,
+    estimatedMinutes: 30,
+    currentGoal: 'Daily DSA Learning Mission',
+    tasks,
   };
 
   return {

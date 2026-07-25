@@ -8,6 +8,25 @@ export const ContinueLearningCard: React.FC = () => {
   const navigate = useNavigate();
   const { session } = useContinueLearning();
 
+  if (!session) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="rounded-2xl bg-gradient-to-r from-indigo-950/40 via-slate-900 to-purple-950/40 border border-white/10 p-5 space-y-4 shadow-xl"
+      >
+        <div className="flex items-center gap-2 border-b border-white/10 pb-3">
+          <Sparkles className="w-4 h-4 text-indigo-400" />
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300">Continue Learning Session</h2>
+        </div>
+        <div className="p-4 rounded-xl bg-black/20 border border-white/5 text-center text-xs text-slate-400">
+          No recent activity yet. Start exploring algorithms or notes to see progress!
+        </div>
+      </motion.div>
+    );
+  }
+
   const handleResume = () => {
     navigate(`/visualizer/${session.category}/${session.slug}`);
   };

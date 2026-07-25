@@ -9,27 +9,27 @@ export function useInterviewProgress() {
   const [solvedIds, setSolvedIds] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem(SOLVED_STORAGE_KEY);
-      return saved ? new Set(JSON.parse(saved)) : new Set(['arr-two-sum', 'll-reverse']);
+      return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch {
-      return new Set(['arr-two-sum', 'll-reverse']);
+      return new Set();
     }
   });
 
   const [bookmarkIds, setBookmarkIds] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem(BOOKMARK_STORAGE_KEY);
-      return saved ? new Set(JSON.parse(saved)) : new Set(['arr-max-subarray']);
+      return saved ? new Set(JSON.parse(saved)) : new Set();
     } catch {
-      return new Set(['arr-max-subarray']);
+      return new Set();
     }
   });
 
   const [revisionLevels, setRevisionLevels] = useState<Record<string, RevisionLevel>>(() => {
     try {
       const saved = localStorage.getItem(REVISION_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : { 'arr-two-sum': 'revision-1', 'll-reverse': 'mastered' };
+      return saved ? JSON.parse(saved) : {};
     } catch {
-      return { 'arr-two-sum': 'revision-1', 'll-reverse': 'mastered' };
+      return {};
     }
   });
 
