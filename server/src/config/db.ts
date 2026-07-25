@@ -13,14 +13,13 @@ export const connectDB = async (retries = 5): Promise<void> => {
     try {
       const conn = await mongoose.connect(env.MONGODB_URI, {
         dbName: 'algovisualizer',
-        serverSelectionTimeoutMS: 10000,
-        family: 4,
+        serverSelectionTimeoutMS: 15000,
       });
 
       isConnected = true;
       console.log(`✅  MongoDB connected to Atlas: ${conn.connection.host}`);
 
-      // Auto-seed database asynchronously in background so HTTP startup is instantaneous
+      // Auto-seed database asynchronously in background
       import('../utils/seeder')
         .then(({ seedDatabase }) => seedDatabase())
         .catch((err) => console.error('Seeder background error:', err));
@@ -28,7 +27,7 @@ export const connectDB = async (retries = 5): Promise<void> => {
     } catch (error) {
       console.error(`❌ MongoDB Atlas Connection Error (Attempt ${attempt}/${retries}):`, error);
       if (attempt < retries) {
-        await new Promise((res) => setTimeout(res, 3000));
+        await new Promise((res) => setTimeout(res, 2000));
       }
     }
   }
