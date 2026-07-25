@@ -9,12 +9,12 @@ const envSchema = z.object({
     .string()
     .transform((val) => {
       if (!val || val.trim() === '' || val.includes('localhost') || val.includes('127.0.0.1')) {
-        return 'mongodb+srv://chandramohankumarsingh06_db_user:golu26@algovisualizer.td1z1g6.mongodb.net/algovisualizer?retryWrites=true&w=majority&appName=AlgoVisualizer';
+        return 'mongodb://chandramohankumarsingh06_db_user:golu26@ac-rdhmxat-shard-00-00.td1z1g6.mongodb.net:27017,ac-rdhmxat-shard-00-01.td1z1g6.mongodb.net:27017,ac-rdhmxat-shard-00-02.td1z1g6.mongodb.net:27017/algovisualizer?replicaSet=atlas-rdhmxat-shard-0&ssl=true&authSource=admin';
       }
       return val;
     })
     .default(
-      'mongodb+srv://chandramohankumarsingh06_db_user:golu26@algovisualizer.td1z1g6.mongodb.net/algovisualizer?retryWrites=true&w=majority&appName=AlgoVisualizer',
+      'mongodb://chandramohankumarsingh06_db_user:golu26@ac-rdhmxat-shard-00-00.td1z1g6.mongodb.net:27017,ac-rdhmxat-shard-00-01.td1z1g6.mongodb.net:27017,ac-rdhmxat-shard-00-02.td1z1g6.mongodb.net:27017/algovisualizer?replicaSet=atlas-rdhmxat-shard-0&ssl=true&authSource=admin',
     ),
 
   // JWT
