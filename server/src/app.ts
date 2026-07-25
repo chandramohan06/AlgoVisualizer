@@ -11,6 +11,9 @@ import { router } from './routes';
 
 const app = express();
 
+// Trust reverse proxy (Render load balancer 1 hop) for express-rate-limit X-Forwarded-For header
+app.set('trust proxy', 1);
+
 // ─── Security ───────────────────────────────────────────────────────────────
 app.use(
   helmet({
