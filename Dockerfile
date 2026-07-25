@@ -14,7 +14,7 @@ RUN npm ci
 COPY . .
 
 # Force Docker BuildKit to invalidate cache and execute compilation fresh
-ARG BUILD_ID=2026-07-23-v1
+ARG BUILD_ID=2026-07-25-v2
 
 RUN npm run build
 
