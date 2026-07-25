@@ -3,7 +3,34 @@ import { env } from './env';
 
 let isConnected = false;
 
+// Connection Event Diagnostics
+mongoose.connection.on('connected', () => {
+  console.log(`[Mongoose Event] 'connected' | readyState = ${mongoose.connection.readyState} (1=Connected)`);
+  isConnected = true;
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn(`[Mongoose Event] 'disconnected' | readyState = ${mongoose.connection.readyState} (0=Disconnected)`);
+  isConnected = false;
+  connectDB().catch((err) => console.error('Auto-reconnect error:', err));
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error(`[Mongoose Event] 'error': ${err.message} | readyState = ${mongoose.connection.readyState}`);
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log(`[Mongoose Event] 'reconnected' | readyState = ${mongoose.connection.readyState}`);
+  isConnected = true;
+});
+
+mongoose.connection.on('close', () => {
+  console.warn(`[Mongoose Event] 'close' | readyState = ${mongoose.connection.readyState}`);
+  isConnected = false;
+});
+
 export const connectDB = async (retries = 10): Promise<void> => {
+  console.log(`[connectDB] Called. readyState = ${mongoose.connection.readyState}, URI = ${env.MONGODB_URI.substring(0, 30)}...`);
   if (isConnected || mongoose.connection.readyState === 1) {
     isConnected = true;
     return;
@@ -19,7 +46,7 @@ export const connectDB = async (retries = 10): Promise<void> => {
       });
 
       isConnected = true;
-      console.log(`✅  MongoDB connected to Atlas: ${conn.connection.host}`);
+      console.log(`✅  MongoDB connected to Atlas: ${conn.connection.host} | readyState = ${mongoose.connection.readyState}`);
 
       // Auto-seed database asynchronously in background
       import('../utils/seeder')
@@ -36,12 +63,6 @@ export const connectDB = async (retries = 10): Promise<void> => {
     }
   }
 };
-
-mongoose.connection.on('disconnected', () => {
-  console.warn('⚠️  MongoDB disconnected! Retrying connection...');
-  isConnected = false;
-  connectDB().catch((err) => console.error('Auto-reconnect error:', err));
-});
 
 export const disconnectDB = async (): Promise<void> => {
   if (!isConnected) return;

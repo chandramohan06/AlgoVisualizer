@@ -68,6 +68,7 @@ app.use('/api', apiLimiter);
 // ─── Health Check Endpoints ──────────────────────────────────────────────────
 const healthHandler = (_req: express.Request, res: express.Response) => {
   const dbState = mongoose.connection.readyState;
+  console.log(`[healthHandler] Request received. readyState = ${dbState} (0=Disconnected, 1=Connected, 2=Connecting)`);
   const dbStatusMap: Record<number, string> = {
     0: 'Disconnected',
     1: 'Connected',

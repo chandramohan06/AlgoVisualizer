@@ -9,6 +9,7 @@ import { Difficulty, QuestionType, Role } from '@algovisualizer/shared';
 import bcrypt from 'bcryptjs';
 
 export const seedDatabase = async (): Promise<void> => {
+  console.log(`[seeder] Starting seedDatabase. readyState = ${mongoose.connection.readyState}`);
   try {
     // 0. Ensure Developer Founder Profile exists
     const devProfileCount = await DeveloperProfile.countDocuments();
