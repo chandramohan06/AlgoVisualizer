@@ -3,13 +3,13 @@ import app from './app';
 import { connectDB } from './config/db';
 import { env } from './config/env';
 
-const PORT = Number(env.PORT) || 3000;
+const PORT = Number(process.env.PORT || env.PORT) || 3000;
 
 const startServer = async (): Promise<void> => {
   try {
-    app.listen(PORT, () => {
-      console.log(`\n🚀  AlgoVisualizer API running on http://localhost:${PORT}`);
-      console.log(`📚  Docs:   http://localhost:${PORT}/api/v1/health`);
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`\n🚀  AlgoVisualizer API running on http://0.0.0.0:${PORT}`);
+      console.log(`📚  Docs:   http://0.0.0.0:${PORT}/api/v1/health`);
       console.log(`🌍  Env:    ${env.NODE_ENV}\n`);
     });
 
