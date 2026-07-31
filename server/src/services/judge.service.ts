@@ -498,21 +498,20 @@ export const evaluateCode = async (params: {
       break;
     }
 
-    // Handle Syntax / Compilation Error
-    if (
-      runRes.stderr.includes('SyntaxError') ||
-      runRes.stderr.includes('Unmatched') ||
-      runRes.stderr.includes('no public method')
-    ) {
-      console.log(`[JudgeService] Compilation/Syntax Error at TestCase #${idx + 1}`);
-      finalVerdict = 'Compile Error';
-      aggregateStderr = runRes.stderr;
-      failedTestCaseIndex = idx + 1;
-      break;
-    }
+    // Handle Runtime Error (Uncaught exceptions / crashes)
+    const isRuntimeErr =
+      runRes.stderr.includes('Traceback (most recent call last)') ||
+      runRes.stderr.includes('ZeroDivisionError') ||
+      runRes.stderr.includes('IndexError') ||
+      runRes.stderr.includes('KeyError') ||
+      runRes.stderr.includes('TypeError') ||
+      runRes.stderr.includes('ValueError') ||
+      runRes.stderr.includes('AttributeError') ||
+      runRes.stderr.includes('NameError') ||
+      runRes.stderr.includes('NullPointerException') ||
+      runRes.stderr.includes('ReferenceError');
 
-    // Handle Runtime Error
-    if (runRes.stderr) {
+    if (isRuntimeErr) {
       console.log(`[JudgeService] TestCase #${idx + 1} failed: Runtime Error: ${runRes.stderr}`);
       finalVerdict = 'Runtime Error';
       aggregateStderr = runRes.stderr;
@@ -527,6 +526,28 @@ export const evaluateCode = async (params: {
         memoryMb: 14.5,
         error: runRes.stderr,
       });
+      break;
+    }
+
+    // Handle Syntax / Compilation Error
+    const isCompileErr =
+      runRes.stderr.includes('SyntaxError') ||
+      runRes.stderr.includes('Unmatched') ||
+      runRes.stderr.includes('no public method') ||
+      runRes.stderr.includes('CompileError') ||
+      runRes.stderr.includes('Unexpected') ||
+      runRes.stderr.includes('cannot find symbol') ||
+      runRes.stderr.includes('javac:') ||
+      runRes.stderr.includes('g++:') ||
+      /syntax error/i.test(runRes.stderr);
+
+    if (isCompileErr) {
+      console.log(`[JudgeService] Compilation/Syntax Error at TestCase #${idx + 1}`);
+      finalVerdict = 'Compile Error';
+      aggregateStderr = runRes.stderr;
+      failedTestCaseIndex = idx + 1;
+      passedCount = 0;
+      testResults.length = 0;
       break;
     }
 
@@ -554,6 +575,10 @@ export const evaluateCode = async (params: {
     });
   }
 
+  if (finalVerdict === 'Compile Error') {
+    passedCount = 0;
+  }
+
   const totalRuntimeMs = Date.now() - startTime;
   const memoryMb = Math.round((Math.random() * 4 + 14) * 10) / 10;
 
@@ -567,13 +592,13 @@ export const evaluateCode = async (params: {
 
   return {
     verdict: finalVerdict,
-    passedCount,
+    passedCount: finalVerdict === 'Compile Error' ? 0 : passedCount,
     totalCount: testCases.length,
-    runtimeMs: totalRuntimeMs,
-    memoryMb,
+    runtimeMs: finalVerdict === 'Compile Error' ? 0 : totalRuntimeMs,
+    memoryMb: finalVerdict === 'Compile Error' ? 0 : memoryMb,
     stdout: aggregateStdout || (finalVerdict === 'Accepted' ? 'All test cases passed cleanly.' : 'Execution completed.'),
     stderr: aggregateStderr,
-    testResults,
+    testResults: finalVerdict === 'Compile Error' ? [] : testResults,
     failedTestCaseIndex,
   };
 };

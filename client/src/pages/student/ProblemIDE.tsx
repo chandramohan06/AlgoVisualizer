@@ -285,17 +285,18 @@ export const ProblemIDE: React.FC = () => {
     setExecutionResult(null);
 
     try {
-      const res = await practiceService.runCode(question.id, language, code, customInput);
+      const customInputToSend = activeConsoleTab === 'customInput' ? customInput : undefined;
+      const res = await practiceService.runCode(question.id, language, code, customInputToSend);
       setExecutionResult({
         verdict: res.verdict || 'Compile Error',
-        passedCount: res.passedCount ?? 0,
+        passedCount: res.verdict === 'Compile Error' ? 0 : (res.passedCount ?? 0),
         totalCount: res.totalCount ?? question.testCases.length,
-        runtimeMs: res.runtimeMs ?? 0,
-        memoryMb: res.memoryMb ?? 0,
+        runtimeMs: res.verdict === 'Compile Error' ? 0 : (res.runtimeMs ?? 0),
+        memoryMb: res.verdict === 'Compile Error' ? 0 : (res.memoryMb ?? 0),
         language,
         stdout: res.stdout || '',
         stderr: res.stderr || '',
-        testResults: res.testResults || [],
+        testResults: res.verdict === 'Compile Error' ? [] : (res.testResults || []),
         isSubmission: false,
       });
       setActiveConsoleTab(res.verdict === 'Compile Error' ? 'console' : 'result');
@@ -315,7 +316,7 @@ export const ProblemIDE: React.FC = () => {
       setIsRunning(false);
       setLoadingText('');
     }
-  }, [isRunning, isSubmitting, question, language, code, customInput]);
+  }, [isRunning, isSubmitting, question, language, code, customInput, activeConsoleTab]);
 
   // SUBMIT CODE Handler
   const handleSubmitCode = useCallback(async () => {

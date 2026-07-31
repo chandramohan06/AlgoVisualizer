@@ -226,24 +226,42 @@ export const TestCaseConsolePanel: React.FC<TestCaseConsolePanelProps> = ({
                   {executionResult.verdict}
                 </div>
                 <div className="text-xs font-semibold text-slate-300">
-                  Passed Test Cases: <strong className="text-white font-mono">{executionResult.passedCount} / {executionResult.totalCount}</strong>
+                  {executionResult.verdict === 'Compile Error' ? (
+                    <span className="text-rose-400 font-mono font-bold">Compilation Failed (0 test cases executed)</span>
+                  ) : (
+                    <>Passed Test Cases: <strong className="text-white font-mono">{executionResult.passedCount} / {executionResult.totalCount}</strong></>
+                  )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 text-xs font-mono">
-                <div className="flex items-center gap-1.5 bg-[#090a0f]/60 px-3 py-1.5 rounded-lg border border-white/10">
-                  <Clock className="w-4 h-4 text-blue-400" />
-                  <span>Runtime: <strong className="text-white">{executionResult.runtimeMs} ms</strong></span>
+              {executionResult.verdict !== 'Compile Error' && (
+                <div className="flex items-center gap-4 text-xs font-mono">
+                  <div className="flex items-center gap-1.5 bg-[#090a0f]/60 px-3 py-1.5 rounded-lg border border-white/10">
+                    <Clock className="w-4 h-4 text-blue-400" />
+                    <span>Runtime: <strong className="text-white">{executionResult.runtimeMs} ms</strong></span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-[#090a0f]/60 px-3 py-1.5 rounded-lg border border-white/10">
+                    <Cpu className="w-4 h-4 text-purple-400" />
+                    <span>Memory: <strong className="text-white">{executionResult.memoryMb} MB</strong></span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 bg-[#090a0f]/60 px-3 py-1.5 rounded-lg border border-white/10">
-                  <Cpu className="w-4 h-4 text-purple-400" />
-                  <span>Memory: <strong className="text-white">{executionResult.memoryMb} MB</strong></span>
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Test Results Breakdown */}
-            {executionResult.testResults && executionResult.testResults.length > 0 && (
+            {/* Error Message Box for Compile Error / Runtime Error */}
+            {executionResult.stderr && (
+              <div className="space-y-2 font-mono">
+                <div className="text-xs font-bold text-rose-400 uppercase tracking-wider font-sans flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4" /> {executionResult.verdict === 'Compile Error' ? 'Compiler Output / Errors' : 'Runtime Exception Log'}
+                </div>
+                <pre className="bg-[#12141c] p-4 rounded-xl border border-rose-500/30 text-rose-300 whitespace-pre-wrap overflow-x-auto text-xs">
+                  {executionResult.stderr}
+                </pre>
+              </div>
+            )}
+
+            {/* Test Results Breakdown for Wrong Answer / Accepted */}
+            {executionResult.verdict !== 'Compile Error' && executionResult.testResults && executionResult.testResults.length > 0 && (
               <div className="space-y-3 font-mono">
                 <div className="text-xs font-bold text-slate-300 uppercase tracking-wider font-sans">Test Suite Details</div>
                 <div className="space-y-2">
