@@ -353,10 +353,15 @@ export const updateQuestionStatus = async (userId: string, problemId: string, st
 export const runCode = async (
   userId: string,
   problemIdOrSlug: string,
-  language: 'java' | 'cpp' | 'python',
+  language: 'java' | 'cpp' | 'python' | 'javascript',
   code: string,
   customInput?: string
 ) => {
+  const validLanguages = ['java', 'cpp', 'python', 'javascript'];
+  if (!validLanguages.includes(language)) {
+    throw new AppError(`Unsupported language: '${language}'. Supported languages are: java, cpp, python, javascript.`, 400);
+  }
+
   const problem = await PracticeProblem.findOne({
     $or: [
       { slug: problemIdOrSlug },
@@ -395,9 +400,13 @@ export const runCode = async (
 export const submitCode = async (
   userId: string,
   problemIdOrSlug: string,
-  language: 'java' | 'cpp' | 'python',
+  language: 'java' | 'cpp' | 'python' | 'javascript',
   code: string
 ) => {
+  const validLanguages = ['java', 'cpp', 'python', 'javascript'];
+  if (!validLanguages.includes(language)) {
+    throw new AppError(`Unsupported language: '${language}'. Supported languages are: java, cpp, python, javascript.`, 400);
+  }
   const problem = await PracticeProblem.findOne({
     $or: [
       { slug: problemIdOrSlug },

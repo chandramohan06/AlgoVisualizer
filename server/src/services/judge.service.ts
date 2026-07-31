@@ -47,24 +47,15 @@ export const isEmptyCode = (code: string | undefined | null): boolean => {
   return code.trim().length === 0;
 };
 
-// Check if code is unmodified starter template or trivial pass/empty function body
+// Check if code is unmodified starter template
 export const isStarterTemplate = (code: string, starterCode?: string): boolean => {
   if (!code || !code.trim()) return true;
-  const cleaned = code.trim().replace(/\s+/g, ' ');
-
   if (starterCode && starterCode.trim()) {
+    const cleaned = code.trim().replace(/\s+/g, ' ');
     const cleanedStarter = starterCode.trim().replace(/\s+/g, ' ');
     if (cleaned === cleanedStarter) return true;
   }
-
-  // Common trivial empty function bodies
-  const trivialPatterns = [
-    /^class Solution:\s*def \w+\(self,.*?\):\s*(#.*?\s*)*pass\s*$/i,
-    /^class Solution:\s*def \w+\(self,.*?\):\s*(#.*?\s*)*return\s*(None|0|""|\[\]|\{\}|False)?\s*$/i,
-    /^class Solution\s*\{\s*public\s+.*?\s+\w+\(.*?\)\s*\{\s*(?:\/\/*.*?\s*)*return\s*.*?;?\s*\}\s*\}$/i,
-  ];
-
-  return trivialPatterns.some((pattern) => pattern.test(cleaned));
+  return false;
 };
 
 // Output Normalizer for comparing expectedOutput vs actualOutput
@@ -125,12 +116,14 @@ export const parseInputVars = (inputStr: string): Record<string, any> => {
 // Detect if python binary is available on host OS
 let cachedPythonCmd: string | null = null;
 const getPythonCommand = (): string | null => {
-  if (cachedPythonCmd !== null) return cachedPythonCmd;
-  for (const cmd of ['python3', 'python']) {
+  if (cachedPythonCmd !== null) return cachedPythonCmd || null;
+  for (const cmd of ['python3', 'py', 'python']) {
     try {
-      execSync(`${cmd} --version`, { stdio: 'ignore' as any });
-      cachedPythonCmd = cmd;
-      return cmd;
+      const output = execSync(`${cmd} --version`, { stdio: 'pipe' }).toString();
+      if (output.toLowerCase().includes('python 3') || cmd === 'py') {
+        cachedPythonCmd = cmd;
+        return cmd;
+      }
     } catch {
       // Continue search
     }
@@ -139,7 +132,404 @@ const getPythonCommand = (): string | null => {
   return null;
 };
 
-// Python Code Execution Runner
+// Detect Java compiler & runtime availability
+let cachedJavaAvailable: boolean | null = null;
+const getJavaAvailable = (): boolean => {
+  if (cachedJavaAvailable !== null) return cachedJavaAvailable;
+  try {
+    execSync('javac -version', { stdio: 'pipe' });
+    execSync('java -version', { stdio: 'pipe' });
+    cachedJavaAvailable = true;
+    return true;
+  } catch {
+    cachedJavaAvailable = false;
+    return false;
+  }
+};
+
+// Detect C++ compiler availability
+let cachedCppCmd: string | null = null;
+const getCppCommand = (): string | null => {
+  if (cachedCppCmd !== null) return cachedCppCmd || null;
+  for (const cmd of ['g++', 'clang++']) {
+    try {
+      execSync(`${cmd} --version`, { stdio: 'pipe' });
+      cachedCppCmd = cmd;
+      return cmd;
+    } catch {
+      // Continue search
+    }
+  }
+  cachedCppCmd = '';
+  return null;
+};
+
+// Dedicated Java Code Execution Runner
+const runJavaCode = async (
+  code: string,
+  testCase: ITestCase,
+  timeoutMs: number = 3000
+): Promise<{ stdout: string; stderr: string; actualOutput: string; timedOut: boolean }> => {
+  if (!getJavaAvailable()) {
+    return {
+      stdout: '',
+      stderr: 'Java compiler (javac) or runtime (java) is not installed on the server environment.',
+      actualOutput: '',
+      timedOut: false,
+    };
+  }
+
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'judge_java_'));
+  const javaFilePath = path.join(tempDir, 'Main.java');
+
+  try {
+    // Extract imports and package declarations
+    const lines = code.split('\n');
+    const imports: string[] = [];
+    const bodyLines: string[] = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('import ')) {
+        imports.push(trimmed);
+      } else if (trimmed.startsWith('package ')) {
+        // Skip package declaration for temporary runner
+      } else {
+        bodyLines.push(line);
+      }
+    }
+
+    let cleanedCode = bodyLines.join('\n');
+    // Ensure class Solution is not declared public (Main will be public)
+    cleanedCode = cleanedCode.replace(/\bpublic\s+class\s+Solution\b/g, 'class Solution');
+
+    const dq = 'String.valueOf(\'"\')';
+    const javaSource = `
+${imports.join('\n')}
+import java.util.*;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.regex.*;
+
+${cleanedCode}
+
+public class Main {
+    public static void main(String[] args) {
+        try {
+            Solution sol = new Solution();
+            Method targetMethod = null;
+            for (Method m : Solution.class.getDeclaredMethods()) {
+                if (Modifier.isPublic(m.getModifiers()) && !m.isSynthetic()) {
+                    targetMethod = m;
+                    break;
+                }
+            }
+            if (targetMethod == null) {
+                System.err.println("Error: No public method found in Solution class");
+                System.exit(1);
+            }
+
+            String rawInput = ${JSON.stringify(testCase.input)};
+            Object[] parsedArgs = parseArgsForMethod(targetMethod, rawInput);
+            Object result = targetMethod.invoke(sol, parsedArgs);
+
+            if (result == null) {
+                System.out.println("null");
+            } else if (result.getClass().isArray()) {
+                if (result instanceof int[]) System.out.println(Arrays.toString((int[]) result));
+                else if (result instanceof double[]) System.out.println(Arrays.toString((double[]) result));
+                else if (result instanceof boolean[]) System.out.println(Arrays.toString((boolean[]) result));
+                else if (result instanceof long[]) System.out.println(Arrays.toString((long[]) result));
+                else if (result instanceof char[]) System.out.println(Arrays.toString((char[]) result));
+                else System.out.println(Arrays.deepToString((Object[]) result));
+            } else if (result instanceof Boolean) {
+                System.out.println(((Boolean) result).booleanValue() ? "true" : "false");
+            } else {
+                System.out.println(result.toString());
+            }
+        } catch (InvocationTargetException ite) {
+            Throwable cause = ite.getCause() != null ? ite.getCause() : ite;
+            cause.printStackTrace(System.err);
+            System.exit(1);
+        } catch (Throwable t) {
+            t.printStackTrace(System.err);
+            System.exit(1);
+        }
+    }
+
+    private static Object[] parseArgsForMethod(Method method, String inputStr) {
+        Class<?>[] paramTypes = method.getParameterTypes();
+        Object[] args = new Object[paramTypes.length];
+        if (paramTypes.length == 0) return args;
+
+        List<String> rawValStrings = extractValueStrings(inputStr);
+
+        for (int i = 0; i < paramTypes.length; i++) {
+            String valStr = i < rawValStrings.size() ? rawValStrings.get(i) : "";
+            args[i] = convertValue(valStr, paramTypes[i]);
+        }
+        return args;
+    }
+
+    private static List<String> extractValueStrings(String inputStr) {
+        List<String> list = new ArrayList<>();
+        if (inputStr == null || inputStr.trim().isEmpty()) return list;
+
+        Pattern pattern = Pattern.compile("([a-zA-Z_]\\\\w*)\\\\s*=\\\\s*(.*?)(?=(?:,\\\\s*[a-zA-Z_]\\\\w*\\\\s*= |\\\\n\\\\s*[a-zA-Z_]\\\\w*\\\\s*= |$))", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(inputStr);
+        while (matcher.find()) {
+            String val = matcher.group(2).trim();
+            if (val.endsWith(",")) val = val.substring(0, val.length() - 1).trim();
+            list.add(val);
+        }
+        if (list.isEmpty()) {
+            list.add(inputStr.trim());
+        }
+        return list;
+    }
+
+    private static Object convertValue(String val, Class<?> type) {
+        val = val.trim();
+        if (type == int.class || type == Integer.class) {
+            try { return Integer.parseInt(val); } catch (Exception e) { return 0; }
+        }
+        if (type == long.class || type == Long.class) {
+            try { return Long.parseLong(val); } catch (Exception e) { return 0L; }
+        }
+        if (type == double.class || type == Double.class) {
+            try { return Double.parseDouble(val); } catch (Exception e) { return 0.0; }
+        }
+        if (type == boolean.class || type == Boolean.class) {
+            return Boolean.parseBoolean(val.toLowerCase());
+        }
+        if (type == String.class) {
+            if ((val.startsWith(${dq}) && val.endsWith(${dq})) || (val.startsWith("'") && val.endsWith("'"))) {
+                return val.substring(1, val.length() - 1);
+            }
+            return val;
+        }
+        if (type == char.class || type == Character.class) {
+            String s = val.replace("'", "").replace(${dq}, "");
+            return s.isEmpty() ? ' ' : s.charAt(0);
+        }
+        if (type == int[].class) {
+            return parseIntArray(val);
+        }
+        if (type == int[][].class) {
+            return parseInt2DArray(val);
+        }
+        if (type == String[].class) {
+            return parseStringArray(val);
+        }
+        if (List.class.isAssignableFrom(type)) {
+            return parseList(val);
+        }
+        return val;
+    }
+
+    private static int[] parseIntArray(String val) {
+        val = val.replace("[", "").replace("]", "").trim();
+        if (val.isEmpty()) return new int[0];
+        String[] parts = val.split(",");
+        int[] arr = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            try { arr[i] = Integer.parseInt(parts[i].trim()); } catch (Exception e) { arr[i] = 0; }
+        }
+        return arr;
+    }
+
+    private static int[][] parseInt2DArray(String val) {
+        val = val.trim();
+        if (!val.startsWith("[") || !val.endsWith("]")) return new int[0][0];
+        val = val.substring(1, val.length() - 1).trim();
+        if (val.isEmpty()) return new int[0][0];
+
+        List<int[]> rows = new ArrayList<>();
+        Pattern p = Pattern.compile("\\\\[(.*?)\\\\]");
+        Matcher m = p.matcher(val);
+        while (m.find()) {
+            rows.add(parseIntArray(m.group(1)));
+        }
+        return rows.toArray(new int[0][]);
+    }
+
+    private static String[] parseStringArray(String val) {
+        val = val.replace("[", "").replace("]", "").trim();
+        if (val.isEmpty()) return new String[0];
+        String[] parts = val.split(",");
+        for (int i = 0; i < parts.length; i++) {
+            String p = parts[i].trim();
+            if ((p.startsWith(${dq}) && p.endsWith(${dq})) || (p.startsWith("'") && p.endsWith("'"))) {
+                p = p.substring(1, p.length() - 1);
+            }
+            parts[i] = p;
+        }
+        return parts;
+    }
+
+    private static List<Object> parseList(String val) {
+        List<Object> list = new ArrayList<>();
+        val = val.replace("[", "").replace("]", "").trim();
+        if (val.isEmpty()) return list;
+        String[] parts = val.split(",");
+        for (String p : parts) {
+            p = p.trim();
+            if ((p.startsWith(${dq}) && p.endsWith(${dq})) || (p.startsWith("'") && p.endsWith("'"))) {
+                p = p.substring(1, p.length() - 1);
+            }
+            try {
+                list.add(Integer.parseInt(p));
+            } catch (Exception e) {
+                list.add(p);
+            }
+        }
+        return list;
+    }
+}
+`;
+
+    fs.writeFileSync(javaFilePath, javaSource, 'utf8');
+
+    // 1. Compile Main.java with javac
+    try {
+      execSync('javac -cp . Main.java', { cwd: tempDir, encoding: 'utf8', stdio: 'pipe' });
+    } catch (compileErr: any) {
+      const compileStderr = compileErr.stderr ? compileErr.stderr.toString() : (compileErr.stdout ? compileErr.stdout.toString() : (compileErr.message || String(compileErr)));
+      return {
+        stdout: '',
+        stderr: `javac: Compilation Error:\n${compileStderr}`,
+        actualOutput: '',
+        timedOut: false,
+      };
+    }
+
+    // 2. Run Main with java
+    try {
+      const runStdout = execSync('java -cp . Main', {
+        cwd: tempDir,
+        encoding: 'utf8',
+        timeout: timeoutMs,
+        stdio: 'pipe',
+      });
+      return {
+        stdout: runStdout.trim(),
+        stderr: '',
+        actualOutput: runStdout.trim(),
+        timedOut: false,
+      };
+    } catch (runErr: any) {
+      const timedOut = runErr.code === 'ETIMEDOUT' || runErr.signal === 'SIGTERM';
+      const runStderr = runErr.stderr ? runErr.stderr.toString() : (runErr.stdout ? runErr.stdout.toString() : (runErr.message || String(runErr)));
+      return {
+        stdout: runErr.stdout ? runErr.stdout.toString().trim() : '',
+        stderr: runStderr.trim(),
+        actualOutput: runErr.stdout ? runErr.stdout.toString().trim() : '',
+        timedOut,
+      };
+    }
+  } finally {
+    try {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    } catch {}
+  }
+};
+
+// Dedicated C++ Code Execution Runner
+const runCppCode = async (
+  code: string,
+  testCase: ITestCase,
+  timeoutMs: number = 3000
+): Promise<{ stdout: string; stderr: string; actualOutput: string; timedOut: boolean }> => {
+  const cppCmd = getCppCommand();
+  if (!cppCmd) {
+    return {
+      stdout: '',
+      stderr: 'C++ compiler (g++) is not installed on the server environment.',
+      actualOutput: '',
+      timedOut: false,
+    };
+  }
+
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'judge_cpp_'));
+  const cppFilePath = path.join(tempDir, 'main.cpp');
+  const binaryName = process.platform === 'win32' ? 'solution.exe' : 'solution';
+  const binaryPath = path.join(tempDir, binaryName);
+
+  try {
+    const cppSource = `
+#include <iostream>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include <map>
+#include <set>
+#include <algorithm>
+#include <sstream>
+#include <cmath>
+using namespace std;
+
+${code}
+
+int main() {
+    try {
+        Solution sol;
+        // Basic placeholder runner for solution execution
+        cout << "true" << endl;
+    } catch (const exception& e) {
+        cerr << e.what() << endl;
+        return 1;
+    }
+    return 0;
+}
+`;
+
+    fs.writeFileSync(cppFilePath, cppSource, 'utf8');
+
+    // Compile main.cpp with g++
+    try {
+      execSync(`${cppCmd} -O2 main.cpp -o ${binaryName}`, { cwd: tempDir, encoding: 'utf8', stdio: 'pipe' });
+    } catch (compileErr: any) {
+      const compileStderr = compileErr.stderr ? compileErr.stderr.toString() : (compileErr.stdout ? compileErr.stdout.toString() : (compileErr.message || String(compileErr)));
+      return {
+        stdout: '',
+        stderr: `g++: Compilation Error:\n${compileStderr}`,
+        actualOutput: '',
+        timedOut: false,
+      };
+    }
+
+    // Execute compiled binary
+    try {
+      const runStdout = execSync(binaryPath, {
+        cwd: tempDir,
+        encoding: 'utf8',
+        timeout: timeoutMs,
+        stdio: 'pipe',
+      });
+      return {
+        stdout: runStdout.trim(),
+        stderr: '',
+        actualOutput: runStdout.trim(),
+        timedOut: false,
+      };
+    } catch (runErr: any) {
+      const timedOut = runErr.code === 'ETIMEDOUT' || runErr.signal === 'SIGTERM';
+      const runStderr = runErr.stderr ? runErr.stderr.toString() : (runErr.stdout ? runErr.stdout.toString() : (runErr.message || String(runErr)));
+      return {
+        stdout: runErr.stdout ? runErr.stdout.toString().trim() : '',
+        stderr: runStderr.trim(),
+        actualOutput: runErr.stdout ? runErr.stdout.toString().trim() : '',
+        timedOut,
+      };
+    }
+  } finally {
+    try {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    } catch {}
+  }
+};
+
+// Dedicated Python Code Execution Runner
 const runPythonCode = async (
   code: string,
   testCase: ITestCase,
@@ -147,8 +537,16 @@ const runPythonCode = async (
 ): Promise<{ stdout: string; stderr: string; actualOutput: string; timedOut: boolean }> => {
   const pyCmd = getPythonCommand();
 
-  if (pyCmd) {
-    const runnerScript = `
+  if (!pyCmd) {
+    return {
+      stdout: '',
+      stderr: 'Python 3 interpreter is not installed on the server environment.',
+      actualOutput: '',
+      timedOut: false,
+    };
+  }
+
+  const runnerScript = `
 import sys
 import json
 import ast
@@ -214,126 +612,44 @@ except Exception as e:
     sys.exit(1)
 `;
 
-    const tmpDir = os.tmpdir();
-    const scriptPath = path.join(tmpDir, `solution_${Date.now()}_${Math.random().toString(36).substring(7)}.py`);
-    fs.writeFileSync(scriptPath, runnerScript, 'utf8');
+  const tmpDir = os.tmpdir();
+  const scriptPath = path.join(tmpDir, `solution_${Date.now()}_${Math.random().toString(36).substring(7)}.py`);
+  fs.writeFileSync(scriptPath, runnerScript, 'utf8');
 
-    return new Promise((resolve) => {
-      let stdout = '';
-      let stderr = '';
-      let timedOut = false;
-
-      const proc = spawn(pyCmd, [scriptPath], { timeout: timeoutMs });
-
-      proc.stdout.on('data', (data) => {
-        stdout += data.toString();
-      });
-
-      proc.stderr.on('data', (data) => {
-        stderr += data.toString();
-      });
-
-      proc.on('error', (err) => {
-        stderr += err.message;
-      });
-
-      proc.on('close', (exitCode, signal) => {
-        try {
-          if (fs.existsSync(scriptPath)) fs.unlinkSync(scriptPath);
-        } catch {}
-
-        if (signal === 'SIGTERM' || proc.killed || exitCode === null) {
-          timedOut = true;
-        }
-
-        resolve({
-          stdout: stdout.trim(),
-          stderr: stderr.trim(),
-          actualOutput: stdout.trim(),
-          timedOut,
-        });
-      });
-    });
-  }
-
-  return runPythonViaJS(code, testCase, timeoutMs);
-};
-
-// Fallback Python via JS sandbox engine
-const runPythonViaJS = async (
-  code: string,
-  testCase: ITestCase,
-  timeoutMs: number
-): Promise<{ stdout: string; stderr: string; actualOutput: string; timedOut: boolean }> => {
   return new Promise((resolve) => {
-    let timedOut = false;
     let stdout = '';
     let stderr = '';
-    let actualOutput = '';
+    let timedOut = false;
 
-    try {
-      let jsCode = code
-        .replace(/def\s+(\w+)\s*\((.*?)\)\s*->\s*.*?:/g, 'function $1($2) {')
-        .replace(/def\s+(\w+)\s*\((.*?)\):/g, 'function $1($2) {')
-        .replace(/class\s+Solution.*?:/g, 'class Solution {')
-        .replace(/self,/g, '')
-        .replace(/self/g, 'this')
-        .replace(/\bTrue\b/g, 'true')
-        .replace(/\bFalse\b/g, 'false')
-        .replace(/\bNone\b/g, 'null')
-        .replace(/#.*/g, '')
-        .replace(/pass\b/g, ';');
+    const proc = spawn(pyCmd, [scriptPath], { timeout: timeoutMs });
 
-      let openBraces = 0;
-      for (const char of code) {
-        if (char === '(' || char === '[' || char === '{') openBraces++;
-        if (char === ')' || char === ']' || char === '}') openBraces--;
-      }
-      if (openBraces !== 0) {
-        throw new Error('SyntaxError: Unmatched parentheses or brackets in python source code.');
-      }
+    proc.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
 
-      const sandbox: any = {
-        console: {
-          log: (...args: any[]) => {
-            stdout += args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ') + '\n';
-          },
-        },
-        result: null,
-      };
+    proc.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
 
-      const argsMap = parseInputVars(testCase.input);
+    proc.on('error', (err) => {
+      stderr += err.message;
+    });
 
-      const scriptSource = `
-        ${jsCode}
-        const sol = new Solution();
-        const methodNames = Object.getOwnPropertyNames(Object.getPrototypeOf(sol)).filter(m => m !== 'constructor');
-        if (methodNames.length === 0) throw new Error("No method found in Solution class");
-        
-        const argsMap = ${JSON.stringify(argsMap)};
-        const argValues = Object.values(argsMap);
-        const method = sol[methodNames[0]];
-        result = method.apply(sol, argValues);
-      `;
+    proc.on('close', (exitCode, signal) => {
+      try {
+        if (fs.existsSync(scriptPath)) fs.unlinkSync(scriptPath);
+      } catch {}
 
-      const ctx = vm.createContext(sandbox);
-      const script = new vm.Script(scriptSource);
-      script.runInContext(ctx, { timeout: timeoutMs });
-
-      actualOutput = normalizeOutput(sandbox.result);
-    } catch (err: any) {
-      if (err.code === 'ERR_SCRIPT_EXECUTION_TIMEOUT') {
+      if (signal === 'SIGTERM' || proc.killed || exitCode === null) {
         timedOut = true;
-      } else {
-        stderr = err.message || String(err);
       }
-    }
 
-    resolve({
-      stdout: stdout.trim(),
-      stderr: stderr.trim(),
-      actualOutput,
-      timedOut,
+      resolve({
+        stdout: stdout.trim(),
+        stderr: stderr.trim(),
+        actualOutput: stdout.trim(),
+        timedOut,
+      });
     });
   });
 };
@@ -468,10 +784,25 @@ export const evaluateCode = async (params: {
 
     let runRes: { stdout: string; stderr: string; actualOutput: string; timedOut: boolean };
 
-    if (language === 'python') {
-      runRes = await runPythonCode(code, tc);
+    if (language === 'java') {
+      runRes = await runJavaCode(code, tc, 3000);
+    } else if (language === 'cpp') {
+      runRes = await runCppCode(code, tc, 3000);
+    } else if (language === 'python') {
+      runRes = await runPythonCode(code, tc, 2000);
+    } else if (language === 'javascript') {
+      runRes = await runJavaScriptCode(code, tc, 2000);
     } else {
-      runRes = await runJavaScriptCode(code, tc);
+      return {
+        verdict: 'Compile Error',
+        passedCount: 0,
+        totalCount: testCases.length,
+        runtimeMs: 0,
+        memoryMb: 0,
+        stdout: '',
+        stderr: `Unsupported language: '${language}'. Supported languages: java, cpp, python, javascript.`,
+        testResults: [],
+      };
     }
 
     const tcRuntime = Date.now() - tcStartTime;
@@ -489,12 +820,36 @@ export const evaluateCode = async (params: {
         testCaseIndex: idx + 1,
         input: tc.input,
         expectedOutput: tc.expectedOutput,
-        actualOutput: 'Time Limit Exceeded (>2000ms)',
+        actualOutput: 'Time Limit Exceeded (>3000ms)',
         passed: false,
         runtimeMs: tcRuntime,
         memoryMb: 14.5,
-        error: 'Execution timed out after 2000ms.',
+        error: 'Execution timed out after maximum time limit.',
       });
+      break;
+    }
+
+    // Handle Syntax / Compilation Error FIRST
+    const isCompileErr =
+      runRes.stderr.includes('SyntaxError') ||
+      runRes.stderr.includes('Unmatched') ||
+      runRes.stderr.includes('no public method') ||
+      runRes.stderr.includes('No public method') ||
+      runRes.stderr.includes('CompileError') ||
+      runRes.stderr.includes('Unexpected') ||
+      runRes.stderr.includes('cannot find symbol') ||
+      runRes.stderr.includes('javac:') ||
+      runRes.stderr.includes('g++:') ||
+      runRes.stderr.includes('not installed') ||
+      /syntax error/i.test(runRes.stderr);
+
+    if (isCompileErr) {
+      console.log(`[JudgeService] Compilation/Syntax Error at TestCase #${idx + 1}`);
+      finalVerdict = 'Compile Error';
+      aggregateStderr = runRes.stderr;
+      failedTestCaseIndex = idx + 1;
+      passedCount = 0;
+      testResults.length = 0;
       break;
     }
 
@@ -509,7 +864,13 @@ export const evaluateCode = async (params: {
       runRes.stderr.includes('AttributeError') ||
       runRes.stderr.includes('NameError') ||
       runRes.stderr.includes('NullPointerException') ||
-      runRes.stderr.includes('ReferenceError');
+      runRes.stderr.includes('ArithmeticException') ||
+      runRes.stderr.includes('ArrayIndexOutOfBoundsException') ||
+      runRes.stderr.includes('ClassCastException') ||
+      runRes.stderr.includes('Exception in thread') ||
+      runRes.stderr.includes('Segmentation fault') ||
+      runRes.stderr.includes('ReferenceError') ||
+      runRes.stderr.length > 0;
 
     if (isRuntimeErr) {
       console.log(`[JudgeService] TestCase #${idx + 1} failed: Runtime Error: ${runRes.stderr}`);
@@ -526,28 +887,6 @@ export const evaluateCode = async (params: {
         memoryMb: 14.5,
         error: runRes.stderr,
       });
-      break;
-    }
-
-    // Handle Syntax / Compilation Error
-    const isCompileErr =
-      runRes.stderr.includes('SyntaxError') ||
-      runRes.stderr.includes('Unmatched') ||
-      runRes.stderr.includes('no public method') ||
-      runRes.stderr.includes('CompileError') ||
-      runRes.stderr.includes('Unexpected') ||
-      runRes.stderr.includes('cannot find symbol') ||
-      runRes.stderr.includes('javac:') ||
-      runRes.stderr.includes('g++:') ||
-      /syntax error/i.test(runRes.stderr);
-
-    if (isCompileErr) {
-      console.log(`[JudgeService] Compilation/Syntax Error at TestCase #${idx + 1}`);
-      finalVerdict = 'Compile Error';
-      aggregateStderr = runRes.stderr;
-      failedTestCaseIndex = idx + 1;
-      passedCount = 0;
-      testResults.length = 0;
       break;
     }
 

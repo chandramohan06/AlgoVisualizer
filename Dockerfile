@@ -2,7 +2,7 @@ FROM node:20-alpine
 
 WORKDIR /usr/src/app
 
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache python3 make g++ openjdk17
 
 COPY package*.json ./
 COPY client/package*.json ./client/

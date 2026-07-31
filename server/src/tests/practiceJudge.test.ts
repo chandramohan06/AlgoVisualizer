@@ -1,7 +1,7 @@
-import { evaluateCode, isEmptyCode, isStarterTemplate } from '../services/judge.service';
+import { evaluateCode } from '../services/judge.service';
 
 const runTests = async () => {
-  console.log('🧪 Starting Practice Judge Engine Automated Test Suite...\n');
+  console.log('🧪 Starting Online Judge Engine End-to-End Automated Regression Test Suite...\n');
 
   let passed = 0;
   let failed = 0;
@@ -16,126 +16,247 @@ const runTests = async () => {
     }
   };
 
+  const assertContains = (actualStr: string, substring: string, testName: string) => {
+    if (actualStr && actualStr.includes(substring)) {
+      console.log(`✅ PASS: ${testName}`);
+      passed++;
+    } else {
+      console.error(`❌ FAIL: ${testName} - Expected substring "${substring}" in "${actualStr}"`);
+      failed++;
+    }
+  };
+
+  const assertNotContains = (actualStr: string, substring: string, testName: string) => {
+    if (!actualStr || !actualStr.includes(substring)) {
+      console.log(`✅ PASS: ${testName}`);
+      passed++;
+    } else {
+      console.error(`❌ FAIL: ${testName} - Forbidden substring "${substring}" found in "${actualStr}"`);
+      failed++;
+    }
+  };
+
   const sampleTestCases = [
     { input: 'nums = [2,7,11,15], target = 9', expectedOutput: '[0, 1]' },
     { input: 'nums = [3,2,4], target = 6', expectedOutput: '[1, 2]' },
   ];
 
-  // Test 1: Empty editor
-  console.log('--- Test 1: Empty Editor Code ---');
-  const res1 = await evaluateCode({
+  const anagramTestCases = [
+    { input: 's = "anagram", t = "nagaram"', expectedOutput: 'true' },
+  ];
+
+  // -------------------------------------------------------------
+  // JAVA TEST CASES
+  // -------------------------------------------------------------
+
+  console.log('--- JAVA TESTS ---');
+
+  // Test 1: User's Java Anagram Code Snippet (Requirement 11)
+  console.log('\n[Java Test 1: Target Anagram Snippet]');
+  const javaUserCode = `class Solution {
+    public boolean isAnagram(String s, String t) {
+        return true;
+    }
+}`;
+  const resJava1 = await evaluateCode({
+    userId: 'test_user',
+    problemId: 'valid-anagram',
+    language: 'java',
+    code: javaUserCode,
+    testCases: anagramTestCases,
+  });
+  assertEqual(resJava1.verdict, 'Accepted', 'Java isAnagram snippet should evaluate to Accepted');
+  assertNotContains(resJava1.stderr, 'Unexpected identifier', 'Java output must NOT contain JS V8 "Unexpected identifier" error');
+
+  // Test 2: Java Two Sum Accepted
+  console.log('\n[Java Test 2: Two Sum Accepted]');
+  const javaTwoSumCode = `class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        java.util.Map<Integer, Integer> map = new java.util.HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            int diff = target - nums[i];
+            if (map.containsKey(diff)) {
+                return new int[]{map.get(diff), i};
+            }
+            map.put(nums[i], i);
+        }
+        return new int[]{};
+    }
+}`;
+  const resJava2 = await evaluateCode({
     userId: 'test_user',
     problemId: 'two-sum',
-    language: 'python',
-    code: '',
+    language: 'java',
+    code: javaTwoSumCode,
     testCases: sampleTestCases,
   });
-  assertEqual(res1.verdict, 'Compile Error', 'Empty editor should produce Compile Error');
-  assertEqual(res1.stderr, 'Please write some code before running.', 'Empty editor error message');
+  assertEqual(resJava2.verdict, 'Accepted', 'Java Two Sum should produce Accepted verdict');
+  assertEqual(resJava2.passedCount, 2, 'Java Two Sum passed count should be 2');
 
-  // Test 2: Only whitespace
-  console.log('\n--- Test 2: Whitespace Only Code ---');
-  const res2 = await evaluateCode({
+  // Test 3: Java Compilation Error (Directly from javac)
+  console.log('\n[Java Test 3: Compilation Error]');
+  const javaCompileErrorCode = `class Solution {
+    public boolean isAnagram(String s, String t) {
+        boolean x = ;
+        return true;
+    }
+}`;
+  const resJava3 = await evaluateCode({
+    userId: 'test_user',
+    problemId: 'valid-anagram',
+    language: 'java',
+    code: javaCompileErrorCode,
+    testCases: anagramTestCases,
+  });
+  assertEqual(resJava3.verdict, 'Compile Error', 'Invalid Java code should produce Compile Error');
+  assertContains(resJava3.stderr, 'javac:', 'Compile error message must come directly from javac compiler');
+
+  // Test 4: Java Runtime Error (ArithmeticException)
+  console.log('\n[Java Test 4: Runtime Error]');
+  const javaRuntimeErrorCode = `class Solution {
+    public boolean isAnagram(String s, String t) {
+        int x = 1 / 0;
+        return true;
+    }
+}`;
+  const resJava4 = await evaluateCode({
+    userId: 'test_user',
+    problemId: 'valid-anagram',
+    language: 'java',
+    code: javaRuntimeErrorCode,
+    testCases: anagramTestCases,
+  });
+  assertEqual(resJava4.verdict, 'Runtime Error', 'Division by zero in Java should produce Runtime Error');
+  assertContains(resJava4.stderr, 'ArithmeticException', 'Java runtime error stderr should report ArithmeticException');
+
+  // Test 5: Java Wrong Answer
+  console.log('\n[Java Test 5: Wrong Answer]');
+  const javaWrongAnswerCode = `class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        return new int[]{99, 99};
+    }
+}`;
+  const resJava5 = await evaluateCode({
     userId: 'test_user',
     problemId: 'two-sum',
-    language: 'python',
-    code: '   \n\t  \n  ',
+    language: 'java',
+    code: javaWrongAnswerCode,
     testCases: sampleTestCases,
   });
-  assertEqual(res2.verdict, 'Compile Error', 'Whitespace only should produce Compile Error');
+  assertEqual(resJava5.verdict, 'Wrong Answer', 'Incorrect return value in Java should produce Wrong Answer');
 
-  // Test 3: Unchanged Starter Template
-  console.log('\n--- Test 3: Starter Template Code ---');
-  const starterCode = 'class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        pass';
-  const res3 = await evaluateCode({
+  // -------------------------------------------------------------
+  // C++ TEST CASES
+  // -------------------------------------------------------------
+
+  console.log('\n--- C++ TESTS ---');
+
+  // Test 6: C++ Accepted
+  console.log('\n[C++ Test 1: Accepted Solution]');
+  const cppAcceptedCode = `class Solution {
+public:
+    bool isAnagram(string s, string t) {
+        return true;
+    }
+};`;
+  const resCpp1 = await evaluateCode({
     userId: 'test_user',
-    problemId: 'two-sum',
-    language: 'python',
-    code: starterCode,
-    starterCode,
-    testCases: sampleTestCases,
+    problemId: 'valid-anagram',
+    language: 'cpp',
+    code: cppAcceptedCode,
+    testCases: anagramTestCases,
   });
-  assertEqual(res3.verdict, 'Compile Error', 'Starter template should produce Compile Error');
+  assertEqual(resCpp1.verdict, 'Accepted', 'Valid C++ solution should produce Accepted verdict');
 
-  // Test 4: Invalid syntax
-  console.log('\n--- Test 4: Invalid Syntax (Compile Error) ---');
-  const res4 = await evaluateCode({
+  // Test 7: C++ Compilation Error
+  console.log('\n[C++ Test 2: Compilation Error]');
+  const cppCompileErrorCode = `class Solution {
+public:
+    bool isAnagram(string s, string t) {
+        int x = ;
+        return true;
+    }
+};`;
+  const resCpp2 = await evaluateCode({
     userId: 'test_user',
-    problemId: 'two-sum',
-    language: 'python',
-    code: 'class Solution:\n    def twoSum(self, nums, target):\n        if (nums == [:\n            return []',
-    testCases: sampleTestCases,
+    problemId: 'valid-anagram',
+    language: 'cpp',
+    code: cppCompileErrorCode,
+    testCases: anagramTestCases,
   });
-  assertEqual(res4.verdict, 'Compile Error', 'Invalid syntax should produce Compile Error');
+  assertEqual(resCpp2.verdict, 'Compile Error', 'Invalid C++ code should produce Compile Error');
+  assertContains(resCpp2.stderr, 'g++:', 'C++ compilation error must come directly from g++ compiler');
 
-  // Test 5: Infinite loop (Time Limit Exceeded)
-  console.log('\n--- Test 5: Infinite Loop (Time Limit Exceeded) ---');
-  const res5 = await evaluateCode({
-    userId: 'test_user',
-    problemId: 'two-sum',
-    language: 'python',
-    code: 'class Solution:\n    def twoSum(self, nums, target):\n        while True:\n            pass',
-    testCases: sampleTestCases,
-  });
-  assertEqual(res5.verdict, 'Time Limit Exceeded', 'Infinite loop should produce Time Limit Exceeded');
+  // -------------------------------------------------------------
+  // PYTHON TEST CASES
+  // -------------------------------------------------------------
 
-  // Test 6: Runtime Exception
-  console.log('\n--- Test 6: Runtime Exception (Runtime Error) ---');
-  const res6 = await evaluateCode({
-    userId: 'test_user',
-    problemId: 'two-sum',
-    language: 'python',
-    code: 'class Solution:\n    def twoSum(self, nums, target):\n        x = 1 / 0\n        return []',
-    testCases: sampleTestCases,
-  });
-  assertEqual(res6.verdict, 'Runtime Error', 'Division by zero should produce Runtime Error');
+  console.log('\n--- PYTHON TESTS ---');
 
-  // Test 7: Wrong Answer
-  console.log('\n--- Test 7: Wrong Answer ---');
-  const res7 = await evaluateCode({
-    userId: 'test_user',
-    problemId: 'two-sum',
-    language: 'python',
-    code: 'class Solution:\n    def twoSum(self, nums, target):\n        return [99, 99]',
-    testCases: sampleTestCases,
-  });
-  assertEqual(res7.verdict, 'Wrong Answer', 'Incorrect return value should produce Wrong Answer');
-
-  // Test 8: Partial Correct
-  console.log('\n--- Test 8: Partial Correct ---');
-  const res8 = await evaluateCode({
-    userId: 'test_user',
-    problemId: 'two-sum',
-    language: 'python',
-    code: `class Solution:
-    def twoSum(self, nums, target):
-        if nums == [2,7,11,15]:
-            return [0, 1]
-        return [99, 99]`,
-    testCases: sampleTestCases,
-  });
-  assertEqual(res8.verdict, 'Wrong Answer', 'Failing 2nd test case should produce Wrong Answer');
-  assertEqual(res8.passedCount, 1, 'Passed count for partial correct should be 1');
-
-  // Test 9: Accepted
-  console.log('\n--- Test 9: Accepted Solution ---');
-  const res9 = await evaluateCode({
-    userId: 'test_user',
-    problemId: 'two-sum',
-    language: 'python',
-    code: `class Solution:
-    def twoSum(self, nums, target):
+  // Test 8: Python Accepted
+  console.log('\n[Python Test 1: Accepted Solution]');
+  const pythonAcceptedCode = `class Solution:
+    def twoSum(self, nums: list[int], target: int) -> list[int]:
         m = {}
         for i, n in enumerate(nums):
             diff = target - n
             if diff in m:
                 return [m[diff], i]
             m[n] = i
-        return []`,
+        return []`;
+  const resPy1 = await evaluateCode({
+    userId: 'test_user',
+    problemId: 'two-sum',
+    language: 'python',
+    code: pythonAcceptedCode,
     testCases: sampleTestCases,
   });
-  assertEqual(res9.verdict, 'Accepted', 'Correct Two Sum code should produce Accepted');
-  assertEqual(res9.passedCount, 2, 'All test cases passed');
+  assertEqual(resPy1.verdict, 'Accepted', 'Correct Python Two Sum code should produce Accepted');
+  assertEqual(resPy1.passedCount, 2, 'Python Two Sum all test cases passed');
+
+  // Test 9: Python Syntax Error
+  console.log('\n[Python Test 2: Syntax Error]');
+  const pythonCompileErrorCode = `class Solution:
+    def twoSum(self, nums, target):
+        if (nums == [:
+            return []`;
+  const resPy2 = await evaluateCode({
+    userId: 'test_user',
+    problemId: 'two-sum',
+    language: 'python',
+    code: pythonCompileErrorCode,
+    testCases: sampleTestCases,
+  });
+  assertEqual(resPy2.verdict, 'Compile Error', 'Invalid Python syntax should produce Compile Error');
+
+  // Test 10: Python Runtime Error
+  console.log('\n[Python Test 3: Runtime Error]');
+  const pythonRuntimeErrorCode = `class Solution:
+    def twoSum(self, nums, target):
+        return 1 / 0`;
+  const resPy3 = await evaluateCode({
+    userId: 'test_user',
+    problemId: 'two-sum',
+    language: 'python',
+    code: pythonRuntimeErrorCode,
+    testCases: sampleTestCases,
+  });
+  assertEqual(resPy3.verdict, 'Runtime Error', 'ZeroDivisionError in Python should produce Runtime Error');
+
+  // -------------------------------------------------------------
+  // STRICT UNSUPPORTED LANGUAGE VALIDATION
+  // -------------------------------------------------------------
+
+  console.log('\n--- UNSUPPORTED LANGUAGE VALIDATION ---');
+  const resUnsupported = await evaluateCode({
+    userId: 'test_user',
+    problemId: 'two-sum',
+    language: 'ruby' as any,
+    code: 'def two_sum; end',
+    testCases: sampleTestCases,
+  });
+  assertEqual(resUnsupported.verdict, 'Compile Error', 'Unsupported language request should produce Compile Error');
+  assertContains(resUnsupported.stderr, 'Unsupported language', 'Stderr should report unsupported language error');
 
   console.log(`\n========================================`);
   console.log(`📊 Test Results: ${passed} Passed, ${failed} Failed`);

@@ -185,24 +185,20 @@ export const PracticeProblems: React.FC = () => {
 
     try {
       const res = await practiceService.runCode(selectedQuestion.id, language, code, customInput);
+      const verdict = res.verdict || 'Compile Error';
       setExecutionResult({
-        verdict: res.verdict || 'Accepted',
-        passedCount: res.passedCount || selectedQuestion.testCases.length,
-        totalCount: res.totalCount || selectedQuestion.testCases.length,
-        runtimeMs: res.runtimeMs || 18,
-        memoryMb: res.memoryMb || 14.2,
-        stdout: res.stdout || 'Execution output logged cleanly.',
+        verdict,
+        passedCount: verdict === 'Compile Error' ? 0 : (res.passedCount ?? 0),
+        totalCount: res.totalCount ?? selectedQuestion.testCases.length,
+        runtimeMs: verdict === 'Compile Error' ? 0 : (res.runtimeMs ?? 0),
+        memoryMb: verdict === 'Compile Error' ? 0 : (res.memoryMb ?? 0),
+        language,
+        stdout: res.stdout || '',
         stderr: res.stderr || '',
-        testResults: res.testResults || selectedQuestion.testCases.map((tc: any, idx: number) => ({
-          testCaseIndex: idx + 1,
-          input: tc.input,
-          expectedOutput: tc.expectedOutput,
-          actualOutput: tc.expectedOutput,
-          passed: true,
-        })),
+        testResults: verdict === 'Compile Error' ? [] : (res.testResults || []),
         isSubmission: false,
       });
-      setActiveConsoleTab('result');
+      setActiveConsoleTab(verdict === 'Compile Error' ? 'console' : 'result');
     } catch (err: any) {
       setExecutionResult({
         verdict: 'Compile Error',
@@ -210,6 +206,7 @@ export const PracticeProblems: React.FC = () => {
         totalCount: selectedQuestion.testCases.length,
         runtimeMs: 0,
         memoryMb: 0,
+        language,
         stderr: err?.message || 'SyntaxError during compilation execution.',
         isSubmission: false,
       });
@@ -226,24 +223,19 @@ export const PracticeProblems: React.FC = () => {
 
     try {
       const res = await practiceService.submitCode(selectedQuestion.id, language, code);
-      const verdict = res.verdict || 'Accepted';
+      const verdict = res.verdict || 'Compile Error';
       const isAccepted = verdict === 'Accepted';
 
       setExecutionResult({
         verdict,
-        passedCount: res.passedCount || (isAccepted ? selectedQuestion.testCases.length + selectedQuestion.hiddenTestCases.length : 2),
-        totalCount: res.totalCount || (selectedQuestion.testCases.length + selectedQuestion.hiddenTestCases.length),
-        runtimeMs: res.runtimeMs || 24,
-        memoryMb: res.memoryMb || 15.6,
-        stdout: res.stdout || (isAccepted ? 'All test cases passed cleanly.' : 'Testcase #3 failed.'),
+        passedCount: res.passedCount ?? 0,
+        totalCount: res.totalCount ?? (selectedQuestion.testCases.length + (selectedQuestion.hiddenTestCases?.length || 0)),
+        runtimeMs: res.runtimeMs ?? 0,
+        memoryMb: res.memoryMb ?? 0,
+        language,
+        stdout: res.stdout || '',
         stderr: res.stderr || '',
-        testResults: (selectedQuestion.testCases || []).concat(selectedQuestion.hiddenTestCases || []).map((tc: any, idx: number) => ({
-          testCaseIndex: idx + 1,
-          input: tc.input,
-          expectedOutput: tc.expectedOutput,
-          actualOutput: isAccepted ? tc.expectedOutput : (idx === 2 ? 'Wrong Output' : tc.expectedOutput),
-          passed: isAccepted || idx !== 2,
-        })),
+        testResults: res.testResults || [],
         isSubmission: true,
       });
 
@@ -268,7 +260,7 @@ export const PracticeProblems: React.FC = () => {
       }
 
       fetchSubmissions(selectedQuestion.id);
-      setActiveConsoleTab('result');
+      setActiveConsoleTab(verdict === 'Compile Error' ? 'console' : 'result');
     } catch (err: any) {
       setExecutionResult({
         verdict: 'Runtime Error',
