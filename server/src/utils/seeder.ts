@@ -2367,12 +2367,19 @@ export const seedDatabase = async (): Promise<void> => {
 
     // 6. Seed All 250 Practice Problems
     const allQuestions = getAllPracticeQuestions();
-    const practiceProblemsData = allQuestions.map((q) => {
+    const targetCompanies = [
+      'TCS', 'Infosys', 'Wipro', 'Cognizant', 'Accenture', 'Capgemini', 'Deloitte', 'IBM',
+      'Oracle', 'Amazon', 'Microsoft', 'Google', 'Adobe', 'Flipkart', 'Paytm', 'Goldman Sachs',
+      'JP Morgan', 'PhonePe', 'Uber', 'Swiggy', 'Zomato', 'Nvidia', 'Qualcomm', 'Samsung',
+      'Intel', 'VMware', 'Salesforce', 'Atlassian', 'LinkedIn', 'Apple', 'Meta', 'Netflix'
+    ];
+
+    const practiceProblemsData = allQuestions.map((q, idx) => {
       const codeSnippets = {
-        java: q.starterCodeJava || '',
-        cpp: q.starterCodeCpp || '',
-        python: q.starterCodePython || '',
-        javascript: `class Solution {\n  // Write your solution here\n}`,
+        java: q.starterCodeJava || `class Solution {\n    // Write your Java solution here\n}`,
+        cpp: q.starterCodeCpp || `#include <iostream>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Write your C++ solution here\n};`,
+        python: '',
+        pseudo: '',
       };
 
       const metadata = MetadataExtractor.extractMetadata(q.starterCodeJava || q.starterCodeCpp || '', null, q.starterCodeJava);
@@ -2390,12 +2397,24 @@ export const seedDatabase = async (): Promise<void> => {
         hiddenTestCases = q.examples.slice(1).map(ex => ({ input: ex.input, expectedOutput: ex.output }));
       }
 
+      const assignedCompanies = (q.companies && q.companies.length > 0)
+        ? q.companies
+        : [
+            targetCompanies[idx % targetCompanies.length],
+            targetCompanies[(idx + 7) % targetCompanies.length],
+            targetCompanies[(idx + 13) % targetCompanies.length],
+          ];
+
+      const topicName = q.topic || q.category || 'Arrays';
+
       return {
         title: q.title,
         slug: q.slug || q.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
         difficulty: q.difficulty === 'Hard' ? Difficulty.HARD : q.difficulty === 'Medium' ? Difficulty.MEDIUM : Difficulty.EASY,
-        category: q.category || q.topic || 'Arrays',
-        pattern: q.pattern || q.category || 'Arrays',
+        category: topicName,
+        pattern: topicName,
+        topic: topicName,
+        companies: assignedCompanies,
         overview: q.problemStatement || q.title,
         hints: q.hints || [],
         examples: q.examples || [],
@@ -2404,6 +2423,10 @@ export const seedDatabase = async (): Promise<void> => {
         hiddenTestCases,
         codeSnippets,
         metadata,
+        acceptanceRate: parseFloat(q.acceptanceRate || '65') || 65,
+        totalSubmissions: q.totalSubmissions || (100 + (idx * 37) % 500),
+        totalSolved: q.totalSolved || (50 + (idx * 23) % 300),
+        frequency: 50 + (idx * 17) % 50,
         complexity: {
           time: q.timeComplexity || 'O(N)',
           space: q.spaceComplexity || 'O(1)',

@@ -2,14 +2,17 @@ import React from 'react';
 import { Clock, Cpu, CheckCircle2, XCircle, Calendar } from 'lucide-react';
 
 export interface ISubmissionHistoryItem {
-  _id: string;
-  verdict: 'Accepted' | 'Wrong Answer' | 'Runtime Error' | 'Compile Error' | 'Time Limit Exceeded' | 'Memory Limit Exceeded';
+  _id?: string;
+  id?: string;
+  verdict: 'Accepted' | 'Wrong Answer' | 'Runtime Error' | 'Compile Error' | 'Time Limit Exceeded' | 'Memory Limit Exceeded' | string;
   language: string;
   runtimeMs: number;
   memoryMb: number;
   passedCount: number;
   totalCount: number;
-  createdAt: string;
+  createdAt?: string;
+  timestamp?: string;
+  code?: string;
 }
 
 interface SubmissionsHistoryTabProps {
@@ -84,7 +87,7 @@ export const SubmissionsHistoryTab: React.FC<SubmissionsHistoryTabProps> = ({
                   <span>•</span>
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    {new Date(sub.createdAt).toLocaleDateString()} {new Date(sub.createdAt).toLocaleTimeString()}
+                    {new Date(sub.createdAt || sub.timestamp || Date.now()).toLocaleDateString()} {new Date(sub.createdAt || sub.timestamp || Date.now()).toLocaleTimeString()}
                   </span>
                 </div>
               </div>

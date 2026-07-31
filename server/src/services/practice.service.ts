@@ -111,33 +111,60 @@ export const getUserProgress = async (userId: string) => {
 };
 
 export const getQuestions = async (userId: string, filters: Record<string, any> = {}) => {
-  const { category, topic, difficulty, company, status, search, limit = 100 } = filters;
+  const { category, topic, difficulty, company, status, search, sortBy = 'default', limit = 250 } = filters;
 
   const query: any = {};
-  const targetCategory = category || topic;
-  if (targetCategory && targetCategory !== 'All' && targetCategory !== 'all') {
-    query.$or = [
-      { category: new RegExp(`^${targetCategory}$`, 'i') },
-      { pattern: new RegExp(`^${targetCategory}$`, 'i') },
-      { tags: new RegExp(`^${targetCategory}$`, 'i') },
-    ];
+
+  // 1. Topic / Category Multi-select Filter
+  const targetTopic = topic || category;
+  if (targetTopic && targetTopic !== 'All' && targetTopic !== 'all') {
+    const topicList = Array.isArray(targetTopic)
+      ? targetTopic
+      : String(targetTopic).split(',').map(t => t.trim()).filter(Boolean);
+
+    if (topicList.length > 0) {
+      query.$or = [
+        { topic: { $in: topicList.map(t => new RegExp(`^${t}$`, 'i')) } },
+        { category: { $in: topicList.map(t => new RegExp(`^${t}$`, 'i')) } },
+        { pattern: { $in: topicList.map(t => new RegExp(`^${t}$`, 'i')) } },
+      ];
+    }
   }
 
+  // 2. Difficulty Filter
   if (difficulty && difficulty !== 'All' && difficulty !== 'all') {
-    query.difficulty = difficulty.toLowerCase();
+    const diffList = Array.isArray(difficulty)
+      ? difficulty
+      : String(difficulty).split(',').map(d => d.trim()).filter(Boolean);
+
+    if (diffList.length > 0) {
+      query.difficulty = { $in: diffList.map(d => d.charAt(0).toUpperCase() + d.slice(1).toLowerCase()) };
+    }
   }
 
+  // 3. Multi-select Company Filter
   if (company && company !== 'All' && company !== 'all') {
-    query.companies = company;
+    const companyList = Array.isArray(company)
+      ? company
+      : String(company).split(',').map(c => c.trim()).filter(Boolean);
+
+    if (companyList.length > 0) {
+      query.companies = { $in: companyList.map(c => new RegExp(`^${c}$`, 'i')) };
+    }
   }
 
+  // 4. Global Search
   if (search && search.trim()) {
     const s = search.trim();
+    const searchRegex = new RegExp(s, 'i');
     query.$or = [
-      { title: { $regex: s, $options: 'i' } },
-      { pattern: { $regex: s, $options: 'i' } },
-      { companies: { $regex: s, $options: 'i' } },
-      { tags: { $regex: s, $options: 'i' } },
+      { title: searchRegex },
+      { slug: searchRegex },
+      { topic: searchRegex },
+      { category: searchRegex },
+      { pattern: searchRegex },
+      { companies: searchRegex },
+      { tags: searchRegex },
     ];
   }
 
@@ -161,10 +188,14 @@ export const getQuestions = async (userId: string, filters: Record<string, any> 
     const isAttempted = attemptedSet.has(idStr) || attemptedSet.has(p.slug);
     const isBookmarked = bookmarkSet.has(idStr) || bookmarkSet.has(p.slug);
     const revisionLevel = revisionMap.get(idStr) || revisionMap.get(p.slug) || 'unmarked';
+    const isRevision = revisionLevel !== 'unmarked';
 
     let currentStatus: 'Not Attempted' | 'Attempted' | 'Solved' = 'Not Attempted';
     if (isSolved) currentStatus = 'Solved';
     else if (isAttempted) currentStatus = 'Attempted';
+
+    const rawAccRate = (p as any).acceptanceRate;
+    const formattedAccRate = typeof rawAccRate === 'number' ? `${rawAccRate.toFixed(1)}%` : (rawAccRate || '58.4%');
 
     return {
       _id: p._id,
@@ -172,16 +203,19 @@ export const getQuestions = async (userId: string, filters: Record<string, any> 
       number: p.leetcodeNumber || (idx + 1),
       title: p.title,
       slug: p.slug,
-      category: p.category,
-      topic: p.category,
+      category: p.topic || p.category,
+      topic: p.topic || p.category,
       pattern: p.pattern,
       difficulty: p.difficulty,
-      companies: p.companies,
-      tags: p.tags,
+      companies: p.companies || [],
+      tags: p.tags || [],
       estimatedTime: `${p.estimatedTimeMinutes || 15} mins`,
-      acceptanceRate: '58.4%',
+      acceptanceRate: formattedAccRate,
+      frequency: (p as any).frequency || 50,
+      totalSubmissions: (p as any).totalSubmissions || 100,
       isSolved,
       isBookmarked,
+      isRevision,
       status: currentStatus,
       revisionLevel,
       bestRuntime: detail?.bestRuntime,
@@ -190,6 +224,7 @@ export const getQuestions = async (userId: string, filters: Record<string, any> 
     };
   });
 
+  // Filter by Status
   if (status === 'solved') {
     results = results.filter((q) => q.isSolved);
   } else if (status === 'attempted') {
@@ -198,6 +233,17 @@ export const getQuestions = async (userId: string, filters: Record<string, any> 
     results = results.filter((q) => !q.isSolved);
   } else if (status === 'bookmarked') {
     results = results.filter((q) => q.isBookmarked);
+  } else if (status === 'revision') {
+    results = results.filter((q) => q.isRevision);
+  }
+
+  // Sort Results
+  if (sortBy === 'acceptance') {
+    results.sort((a, b) => parseFloat(b.acceptanceRate) - parseFloat(a.acceptanceRate));
+  } else if (sortBy === 'frequency') {
+    results.sort((a, b) => b.frequency - a.frequency);
+  } else if (sortBy === 'newest') {
+    results.reverse();
   }
 
   return results;
@@ -357,9 +403,9 @@ export const runCode = async (
   code: string,
   customInput?: string
 ) => {
-  const validLanguages = ['java', 'cpp', 'python', 'javascript'];
+  const validLanguages = ['java', 'cpp'];
   if (!validLanguages.includes(language)) {
-    throw new AppError(`Unsupported language: '${language}'. Supported languages are: java, cpp, python, javascript.`, 400);
+    throw new AppError(`Unsupported language: '${language}'. The Practice platform supports ONLY Java and C++.`, 400);
   }
 
   const problem = await PracticeProblem.findOne({
@@ -405,9 +451,9 @@ export const submitCode = async (
   language: 'java' | 'cpp' | 'python' | 'javascript',
   code: string
 ) => {
-  const validLanguages = ['java', 'cpp', 'python', 'javascript'];
+  const validLanguages = ['java', 'cpp'];
   if (!validLanguages.includes(language)) {
-    throw new AppError(`Unsupported language: '${language}'. Supported languages are: java, cpp, python, javascript.`, 400);
+    throw new AppError(`Unsupported language: '${language}'. The Practice platform supports ONLY Java and C++.`, 400);
   }
   const problem = await PracticeProblem.findOne({
     $or: [
@@ -570,4 +616,60 @@ export const getSubmissions = async (userId: string, problemIdOrSlug: string) =>
     .lean();
 
   return submissions;
+};
+
+export const getPlacementRoadmap = async (userId: string) => {
+  const userProg = await getUserProgressRecord(userId);
+  const solvedSet = new Set(expandProblemIdentifiers(userProg.solvedProblemIds));
+
+  const roadmapSteps = [
+    { id: 'arrays', name: 'Arrays', topicMatch: ['Arrays', 'Array'] },
+    { id: 'strings', name: 'Strings', topicMatch: ['Strings', 'String'] },
+    { id: 'hashmap', name: 'HashMap', topicMatch: ['HashMap', 'Hash Table', 'HashSet'] },
+    { id: 'sorting', name: 'Sorting', topicMatch: ['Sorting'] },
+    { id: 'searching', name: 'Searching', topicMatch: ['Searching', 'Binary Search'] },
+    { id: 'linkedlist', name: 'Linked List', topicMatch: ['Linked List'] },
+    { id: 'stack', name: 'Stack', topicMatch: ['Stack'] },
+    { id: 'queue', name: 'Queue', topicMatch: ['Queue', 'Deque'] },
+    { id: 'trees', name: 'Trees', topicMatch: ['Tree', 'BST', 'Binary Search Tree'] },
+    { id: 'graphs', name: 'Graphs', topicMatch: ['Graph'] },
+    { id: 'dp', name: 'Dynamic Programming', topicMatch: ['Dynamic Programming', 'DP'] },
+  ];
+
+  const allProblems = await PracticeProblem.find({}).lean();
+
+  const result = roadmapSteps.map((step) => {
+    const matchingProblems = allProblems.filter((p) => {
+      const pTopic = (p.topic || p.category || '').toLowerCase();
+      return step.topicMatch.some((tm) => pTopic.includes(tm.toLowerCase()));
+    });
+
+    const total = matchingProblems.length;
+    const solved = matchingProblems.filter((p) => {
+      const idStr = p._id.toString();
+      return solvedSet.has(idStr) || solvedSet.has(p.slug);
+    }).length;
+
+    const percentage = total > 0 ? Math.round((solved / total) * 100) : 0;
+
+    return {
+      id: step.id,
+      name: step.name,
+      total,
+      solved,
+      percentage,
+      isCompleted: percentage === 100 && total > 0,
+    };
+  });
+
+  const totalQuestions = allProblems.length;
+  const totalSolved = Array.from(solvedSet).filter(id => !id.startsWith('p-') && !/^\d+$/.test(id)).length;
+  const overallPercentage = totalQuestions > 0 ? Math.round((totalSolved / totalQuestions) * 100) : 0;
+
+  return {
+    overallPercentage,
+    totalQuestions,
+    totalSolved,
+    steps: result,
+  };
 };

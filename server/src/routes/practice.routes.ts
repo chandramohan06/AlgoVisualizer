@@ -10,6 +10,7 @@ router.use(authenticate);
 router.get('/questions', PracticeController.getQuestions);
 router.get('/questions/:id', PracticeController.getQuestionById);
 router.get('/user-progress', PracticeController.getUserProgress);
+router.get('/roadmap', PracticeController.getPlacementRoadmap);
 
 router.post('/run', PracticeController.runCode);
 router.post('/submit', PracticeController.submitCode);

@@ -56,8 +56,11 @@ export interface IPracticeProblemDocument extends Document {
   relatedSlugs: string[];
   visualizerSlug?: string;
   visualizerCategory?: string;
-  moduleNumber?: number;
-  moduleTitle?: string;
+  topic?: string;
+  acceptanceRate?: number;
+  totalSubmissions?: number;
+  totalSolved?: number;
+  frequency?: number;
   metadata?: {
     functionName: string;
     returnType: string;
@@ -127,8 +130,11 @@ const PracticeProblemSchema = new Schema<IPracticeProblemDocument>(
     relatedSlugs: { type: [String], default: [] },
     visualizerSlug: { type: String, default: '' },
     visualizerCategory: { type: String, default: '' },
-    moduleNumber: { type: Number, index: true },
-    moduleTitle: { type: String, index: true },
+    topic: { type: String, index: true },
+    acceptanceRate: { type: Number, default: 50 },
+    totalSubmissions: { type: Number, default: 100 },
+    totalSolved: { type: Number, default: 50 },
+    frequency: { type: Number, default: 50 },
     metadata: {
       type: Schema.Types.Mixed,
       default: undefined,
@@ -140,6 +146,6 @@ const PracticeProblemSchema = new Schema<IPracticeProblemDocument>(
 PracticeProblemSchema.index({ category: 1, pattern: 1 });
 PracticeProblemSchema.index({ difficulty: 1 });
 PracticeProblemSchema.index({ companies: 1 });
-PracticeProblemSchema.index({ moduleNumber: 1 });
+PracticeProblemSchema.index({ topic: 1 });
 
 export const PracticeProblem = mongoose.model<IPracticeProblemDocument>('PracticeProblem', PracticeProblemSchema);

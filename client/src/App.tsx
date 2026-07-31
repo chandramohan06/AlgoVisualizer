@@ -109,6 +109,7 @@ const AdminReports = lazy(() => import('@pages/admin/AdminReports'));
 const AdminAuditLogs = lazy(() => import('@pages/admin/AdminAuditLogs'));
 const AdminSettings = lazy(() => import('@pages/admin/Settings'));
 const AdminDeveloperManager = lazy(() => import('@pages/admin/AdminDeveloperManager'));
+const AdminPracticeManager = lazy(() => import('@pages/admin/AdminPracticeManager'));
 
 import NotFound from '@pages/common/NotFound';
 import Forbidden from '@pages/common/Forbidden';
@@ -262,6 +263,7 @@ const AppContent: React.FC = () => {
             <Route path="/admin/reports" element={<AdminReports />} />
             <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/practice" element={<AdminPracticeManager />} />
             <Route path={ROUTES.ADMIN_DEVELOPER_MANAGER} element={<AdminDeveloperManager />} />
           </Route>
 

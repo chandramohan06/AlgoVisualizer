@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { CheckCircle2, XCircle, AlertCircle, Clock, Cpu, Terminal, Layers, FileText } from 'lucide-react';
-import { IPracticeQuestion } from '../../data/practice100EasyQuestions';
 
 export interface ITestResultItem {
   testCaseIndex: number;
@@ -34,24 +33,32 @@ export interface IExecutionResult {
   isSubmission?: boolean;
 }
 
-interface TestCaseConsolePanelProps {
-  question: IPracticeQuestion;
+export interface TestCaseConsolePanelProps {
+  question?: any;
+  testCases?: any[];
   customInput: string;
   onCustomInputChange: (val: string) => void;
   executionResult: IExecutionResult | null;
   activeTab: 'testcases' | 'customInput' | 'console' | 'result' | 'executionDetails';
-  setActiveTab: (tab: 'testcases' | 'customInput' | 'console' | 'result' | 'executionDetails') => void;
+  onTabChange?: (tab: 'testcases' | 'customInput' | 'console' | 'result' | 'executionDetails') => void;
+  setActiveTab?: (tab: 'testcases' | 'customInput' | 'console' | 'result' | 'executionDetails') => void;
+  isRunning?: boolean;
+  isSubmitting?: boolean;
 }
 
 export const TestCaseConsolePanel: React.FC<TestCaseConsolePanelProps> = ({
   question,
+  testCases: propTestCases,
   customInput,
   onCustomInputChange,
   executionResult,
   activeTab,
+  onTabChange,
   setActiveTab,
 }) => {
   const [selectedTestCaseIdx, setSelectedTestCaseIdx] = useState<number>(0);
+  const handleTabChange = onTabChange || setActiveTab || (() => {});
+  const displayCases = propTestCases || question?.examples || question?.testCases || [];
 
   const getVerdictBadgeClass = (verdict: string) => {
     switch (verdict) {
@@ -80,7 +87,7 @@ export const TestCaseConsolePanel: React.FC<TestCaseConsolePanelProps> = ({
       <div className="flex items-center justify-between px-4 py-1.5 bg-[#12141c] border-b border-white/10 shrink-0 text-xs">
         <div className="flex flex-wrap items-center gap-1">
           <button
-            onClick={() => setActiveTab('testcases')}
+            onClick={() => handleTabChange('testcases')}
             className={`px-3 py-1 rounded-md font-semibold transition-colors ${
               activeTab === 'testcases'
                 ? 'bg-indigo-600 text-white shadow'
@@ -91,7 +98,7 @@ export const TestCaseConsolePanel: React.FC<TestCaseConsolePanelProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('customInput')}
+            onClick={() => handleTabChange('customInput')}
             className={`px-3 py-1 rounded-md font-semibold transition-colors ${
               activeTab === 'customInput'
                 ? 'bg-indigo-600 text-white shadow'
@@ -102,7 +109,7 @@ export const TestCaseConsolePanel: React.FC<TestCaseConsolePanelProps> = ({
           </button>
 
           <button
-            onClick={() => setActiveTab('console')}
+            onClick={() => handleTabChange('console')}
             className={`px-3 py-1 rounded-md font-semibold flex items-center gap-1.5 transition-colors ${
               activeTab === 'console'
                 ? 'bg-indigo-600 text-white shadow'
@@ -115,7 +122,7 @@ export const TestCaseConsolePanel: React.FC<TestCaseConsolePanelProps> = ({
           {executionResult && (
             <>
               <button
-                onClick={() => setActiveTab('result')}
+                onClick={() => handleTabChange('result')}
                 className={`px-3 py-1 rounded-md font-bold flex items-center gap-1.5 transition-colors border ${getVerdictBadgeClass(executionResult.verdict)}`}
               >
                 {executionResult.verdict === 'Accepted' ? (
@@ -127,7 +134,7 @@ export const TestCaseConsolePanel: React.FC<TestCaseConsolePanelProps> = ({
               </button>
 
               <button
-                onClick={() => setActiveTab('executionDetails')}
+                onClick={() => handleTabChange('executionDetails')}
                 className={`px-3 py-1 rounded-md font-bold flex items-center gap-1.5 transition-colors ${
                   activeTab === 'executionDetails'
                     ? 'bg-indigo-600 text-white shadow'
@@ -147,7 +154,7 @@ export const TestCaseConsolePanel: React.FC<TestCaseConsolePanelProps> = ({
         {activeTab === 'testcases' && (
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              {question.testCases.map((_: any, idx: number) => (
+              {displayCases.map((_: any, idx: number) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedTestCaseIdx(idx)}
@@ -162,14 +169,14 @@ export const TestCaseConsolePanel: React.FC<TestCaseConsolePanelProps> = ({
               ))}
             </div>
 
-            {question.testCases[selectedTestCaseIdx] && (
+            {displayCases[selectedTestCaseIdx] && (
               <div className="space-y-3 bg-[#12141c] p-4 rounded-xl border border-white/5">
                 <div>
                   <label className="text-[10px] text-slate-400 uppercase tracking-wider font-bold block mb-1">
                     Input:
                   </label>
                   <pre className="bg-[#090a0f] p-3 rounded-lg border border-white/5 text-slate-200 overflow-x-auto whitespace-pre-wrap">
-                    {question.testCases[selectedTestCaseIdx].input}
+                    {displayCases[selectedTestCaseIdx].input}
                   </pre>
                 </div>
 
@@ -178,7 +185,7 @@ export const TestCaseConsolePanel: React.FC<TestCaseConsolePanelProps> = ({
                     Expected Output:
                   </label>
                   <pre className="bg-[#090a0f] p-3 rounded-lg border border-white/5 text-emerald-400 font-bold overflow-x-auto whitespace-pre-wrap">
-                    {question.testCases[selectedTestCaseIdx].expectedOutput}
+                    {displayCases[selectedTestCaseIdx].expectedOutput || displayCases[selectedTestCaseIdx].output}
                   </pre>
                 </div>
               </div>

@@ -65,3 +65,8 @@ export const getSubmissions = asyncHandler(async (req: AuthRequest, res: Respons
   const data = await PracticeService.getSubmissions(req.user!._id, id);
   sendSuccess({ res, data });
 });
+
+export const getPlacementRoadmap = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const data = await PracticeService.getPlacementRoadmap(req.user!._id);
+  sendSuccess({ res, data });
+});

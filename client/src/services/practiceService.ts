@@ -27,11 +27,14 @@ export interface IPracticeQuestionItem {
   leetcodeNumber?: number;
   category: string;
   pattern: string;
+  topic?: string;
   difficulty: Difficulty;
   companies: string[];
   tags: string[];
   leetcodeUrl?: string;
   estimatedTimeMinutes: number;
+  acceptanceRate?: string;
+  frequency?: number;
   visualizerSlug?: string;
   visualizerCategory?: string;
   isSolved: boolean;
@@ -55,12 +58,13 @@ export interface IPracticeQuestionDetails extends IPracticeQuestionItem {
   description?: string;
   hints: string[];
   examples?: { input: string; output: string; explanation?: string }[];
+  constraints?: string[];
   approaches: IPracticeApproach[];
   codeSnippets: {
     java: string;
     cpp: string;
-    python: string;
-    pseudo: string;
+    python?: string;
+    pseudo?: string;
   };
   complexity: {
     time: string;
@@ -171,6 +175,11 @@ export const practiceService = {
 
   getSubmissions: async (id: string): Promise<any[]> => {
     const { data } = await api.get<{ data: any[] }>(API_ENDPOINTS.PRACTICE_QUESTION_SUBMISSIONS(id));
+    return data.data;
+  },
+
+  getPlacementRoadmap: async (): Promise<any> => {
+    const { data } = await api.get<{ data: any }>('/practice/roadmap');
     return data.data;
   },
 };

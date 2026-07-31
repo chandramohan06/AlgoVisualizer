@@ -25,8 +25,8 @@ export const PracticeProblems: React.FC = () => {
   const [selectedCompany, setSelectedCompany] = useState<string>('All');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
-  // Editor & Language
-  const [language, setLanguage] = useState<'java' | 'cpp' | 'python'>('python');
+  // Editor & Language (Restricted to Java & C++ ONLY)
+  const [language, setLanguage] = useState<'java' | 'cpp'>('java');
   const [code, setCode] = useState<string>('');
 
   // Right Panel Tabs: 'description' | 'editor' | 'submissions'
@@ -113,7 +113,7 @@ export const PracticeProblems: React.FC = () => {
   };
 
   // Language Change
-  const handleLanguageChange = (lang: 'java' | 'cpp' | 'python') => {
+  const handleLanguageChange = (lang: 'java' | 'cpp') => {
     setLanguage(lang);
   };
 
@@ -415,7 +415,7 @@ export const PracticeProblems: React.FC = () => {
                       onCustomInputChange={setCustomInput}
                       executionResult={executionResult}
                       activeTab={activeConsoleTab}
-                      setActiveTab={setActiveConsoleTab}
+                      onTabChange={setActiveConsoleTab}
                     />
                   </div>
                 </div>

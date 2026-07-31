@@ -85,15 +85,15 @@ const runTests = async () => {
   assertEqual(res1.verdict, 'Accepted', 'Java Two Sum -> Accepted', res1);
   assertEqual(res1.passedCount, 2, 'Java Two Sum -> Passed Count 2');
 
-  // Python Two Sum
+  // Python Two Sum (Unsupported)
   const res2 = await evaluateCode({
     userId: 'test_user',
     problemId: 'two-sum',
     language: 'python',
-    code: `class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        m = {}\n        for i, n in enumerate(nums):\n            diff = target - n\n            if diff in m:\n                return [m[diff], i]\n            m[n] = i\n        return []`,
+    code: `class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        pass`,
     testCases: twoSumTC,
   });
-  assertEqual(res2.verdict, 'Accepted', 'Python Two Sum -> Accepted', res2);
+  assertEqual(res2.verdict, 'Compile Error', 'Python Two Sum -> Correctly Rejected (Java & C++ ONLY)', res2);
 
   // C++ Two Sum
   const res3 = await evaluateCode({
@@ -105,15 +105,15 @@ const runTests = async () => {
   });
   assertEqual(res3.verdict, 'Accepted', 'C++ Two Sum -> Accepted', res3);
 
-  // JS Two Sum
+  // JS Two Sum (Unsupported)
   const res4 = await evaluateCode({
     userId: 'test_user',
     problemId: 'two-sum',
     language: 'javascript',
-    code: `class Solution { twoSum(nums, target) { const map = {}; for (let i = 0; i < nums.length; i++) { const diff = target - nums[i]; if (diff in map) return [map[diff], i]; map[nums[i]] = i; } return []; } }`,
+    code: `class Solution { twoSum(nums, target) { return [0, 1]; } }`,
     testCases: twoSumTC,
   });
-  assertEqual(res4.verdict, 'Accepted', 'JavaScript Two Sum -> Accepted', res4);
+  assertEqual(res4.verdict, 'Compile Error', 'JavaScript Two Sum -> Correctly Rejected (Java & C++ ONLY)', res4);
 
   console.log('\n========================================');
   console.log('CATEGORY 2: REVERSE STRING (char[], Void In-Place Mutation)');
@@ -130,15 +130,15 @@ const runTests = async () => {
   assertEqual(res5.verdict, 'Accepted', 'Java Reverse String (void in-place) -> Accepted', res5);
   assertEqual(res5.passedCount, 2, 'Java Reverse String -> Passed Count 2');
 
-  // Python Reverse String
+  // Python Reverse String (Unsupported)
   const res6 = await evaluateCode({
     userId: 'test_user',
     problemId: 'reverse-string',
     language: 'python',
-    code: `class Solution:\n    def reverseString(self, s: list[str]) -> None:\n        s.reverse()`,
+    code: `class Solution:\n    def reverseString(self, s: list[str]) -> None:\n        pass`,
     testCases: reverseStringTC,
   });
-  assertEqual(res6.verdict, 'Accepted', 'Python Reverse String (void in-place) -> Accepted', res6);
+  assertEqual(res6.verdict, 'Compile Error', 'Python Reverse String -> Correctly Rejected (Java & C++ ONLY)', res6);
 
   console.log('\n========================================');
   console.log('CATEGORY 3: VALID ANAGRAM (Strings, Booleans)');
@@ -169,15 +169,15 @@ const runTests = async () => {
   });
   assertEqual(res8.verdict, 'Accepted', 'Java Merge Two Sorted Lists (ListNode) -> Accepted', res8);
 
-  // Python Merge Two Lists
+  // Python Merge Two Lists (Unsupported)
   const res9 = await evaluateCode({
     userId: 'test_user',
     problemId: 'merge-two-sorted-lists',
     language: 'python',
-    code: `class Solution:\n    def mergeTwoLists(self, l1: ListNode, l2: ListNode) -> ListNode:\n        if not l1: return l2\n        if not l2: return l1\n        if l1.val < l2.val:\n            l1.next = self.mergeTwoLists(l1.next, l2)\n            return l1\n        else:\n            l2.next = self.mergeTwoLists(l1, l2.next)\n            return l2`,
+    code: `class Solution:\n    def mergeTwoLists(self, l1: ListNode, l2: ListNode) -> ListNode:\n        pass`,
     testCases: mergeListsTC,
   });
-  assertEqual(res9.verdict, 'Accepted', 'Python Merge Two Sorted Lists (ListNode) -> Accepted', res9);
+  assertEqual(res9.verdict, 'Compile Error', 'Python Merge Two Sorted Lists -> Correctly Rejected (Java & C++ ONLY)', res9);
 
   console.log('\n========================================');
   console.log('CATEGORY 5: BINARY TREE MAXIMUM DEPTH (TreeNode)');
@@ -193,15 +193,15 @@ const runTests = async () => {
   });
   assertEqual(res10.verdict, 'Accepted', 'Java Max Depth (TreeNode) -> Accepted', res10);
 
-  // Python Max Depth of Binary Tree
+  // Python Max Depth of Binary Tree (Unsupported)
   const res11 = await evaluateCode({
     userId: 'test_user',
     problemId: 'maximum-depth-of-binary-tree',
     language: 'python',
-    code: `class Solution:\n    def maxDepth(self, root: TreeNode) -> int:\n        if not root: return 0\n        return 1 + max(self.maxDepth(root.left), self.maxDepth(root.right))`,
+    code: `class Solution:\n    def maxDepth(self, root: TreeNode) -> int:\n        pass`,
     testCases: treeDepthTC,
   });
-  assertEqual(res11.verdict, 'Accepted', 'Python Max Depth (TreeNode) -> Accepted', res11);
+  assertEqual(res11.verdict, 'Compile Error', 'Python Max Depth -> Correctly Rejected (Java & C++ ONLY)', res11);
 
   console.log('\n========================================');
   console.log('CATEGORY 6: NUMBER OF ISLANDS (char[][], Matrix)');
@@ -274,7 +274,7 @@ const runTests = async () => {
   });
   assertEqual(res17.verdict, 'Compile Error', 'Python Syntax Error -> Compile Error');
 
-  // Python Runtime Error
+  // Python Unsupported Language Error Test
   const res18 = await evaluateCode({
     userId: 'test_user',
     problemId: 'two-sum',
@@ -282,7 +282,7 @@ const runTests = async () => {
     code: `class Solution:\n    def twoSum(self, nums, target):\n        return 1 / 0`,
     testCases: twoSumTC,
   });
-  assertEqual(res18.verdict, 'Runtime Error', 'Python ZeroDivisionError -> Runtime Error');
+  assertEqual(res18.verdict, 'Compile Error', 'Python -> Correctly Rejected as Unsupported (Compile Error)');
 
   // Unsupported Language Error
   const res19 = await evaluateCode({
