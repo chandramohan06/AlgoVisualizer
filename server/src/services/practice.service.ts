@@ -4,6 +4,7 @@ import { Leaderboard } from '../models/Leaderboard.model';
 import { User } from '../models/User.model';
 import { Submission, SubmissionVerdict } from '../models/Submission.model';
 import { AppError } from '../utils/AppError';
+import { evaluateCode, ITestCase } from './judge.service';
 
 // Helper to expand all possible problem identifiers (slug, _id, number, p-number)
 // so frontend components can reliably match progress regardless of key format used.
@@ -356,49 +357,39 @@ export const runCode = async (
   code: string,
   customInput?: string
 ) => {
-  if (!code || code.trim().length < 3) {
-    return {
-      verdict: 'Compile Error' as SubmissionVerdict,
-      passedCount: 0,
-      totalCount: 1,
-      runtimeMs: 0,
-      memoryMb: 12.4,
-      stderr: 'SyntaxError: Empty code submitted.',
-      stdout: '',
-      testResults: [],
-    };
+  const problem = await PracticeProblem.findOne({
+    $or: [
+      { slug: problemIdOrSlug },
+      { leetcodeNumber: isNaN(Number(problemIdOrSlug)) ? -1 : Number(problemIdOrSlug) },
+      { _id: problemIdOrSlug.match(/^[0-9a-fA-F]{24}$/) ? problemIdOrSlug : null },
+    ],
+  }).lean();
+
+  const starterCode = (problem?.codeSnippets as any)?.[language] || '';
+  let testCases: ITestCase[] = [];
+
+  if (customInput && customInput.trim()) {
+    testCases = [{ input: customInput.trim(), expectedOutput: '' }];
+  } else if (problem?.testCases && problem.testCases.length > 0) {
+    testCases = problem.testCases;
+  } else {
+    testCases = [
+      { input: 'nums = [2,7,11,15], target = 9', expectedOutput: '[0, 1]' },
+      { input: 'nums = [3,2,4], target = 6', expectedOutput: '[1, 2]' },
+    ];
   }
 
-  const runtimeMs = Math.floor(Math.random() * 20) + 12;
-  const memoryMb = Math.round((Math.random() * 4 + 14) * 10) / 10;
+  const result = await evaluateCode({
+    userId,
+    problemId: problemIdOrSlug,
+    language,
+    code,
+    testCases,
+    starterCode,
+    isSubmission: false,
+  });
 
-  const testResults = [
-    {
-      testCaseIndex: 1,
-      input: customInput || 'nums = [2,7,11,15], target = 9',
-      expectedOutput: '[0, 1]',
-      actualOutput: '[0, 1]',
-      passed: true,
-    },
-    {
-      testCaseIndex: 2,
-      input: 'nums = [3,2,4], target = 6',
-      expectedOutput: '[1, 2]',
-      actualOutput: '[1, 2]',
-      passed: true,
-    },
-  ];
-
-  return {
-    verdict: 'Accepted' as SubmissionVerdict,
-    passedCount: testResults.length,
-    totalCount: testResults.length,
-    runtimeMs,
-    memoryMb,
-    stdout: 'Standard Output:\nExecuted test suite successfully.',
-    stderr: '',
-    testResults,
-  };
+  return result;
 };
 
 export const submitCode = async (
@@ -408,21 +399,44 @@ export const submitCode = async (
   code: string
 ) => {
   const problem = await PracticeProblem.findOne({
-    $or: [{ slug: problemIdOrSlug }, { _id: problemIdOrSlug.match(/^[0-9a-fA-F]{24}$/) ? problemIdOrSlug : null }],
+    $or: [
+      { slug: problemIdOrSlug },
+      { leetcodeNumber: isNaN(Number(problemIdOrSlug)) ? -1 : Number(problemIdOrSlug) },
+      { _id: problemIdOrSlug.match(/^[0-9a-fA-F]{24}$/) ? problemIdOrSlug : null },
+    ],
   }).lean();
 
   const problemId = problem?._id ? problem._id.toString() : problemIdOrSlug;
   const problemSlug = problem?.slug || problemIdOrSlug;
+  const starterCode = (problem?.codeSnippets as any)?.[language] || '';
 
-  const hasSyntaxErr = code.includes('throw new Error') || code.includes('return ;');
-  const verdict: SubmissionVerdict = hasSyntaxErr ? 'Wrong Answer' : 'Accepted';
+  let testCases: ITestCase[] = [];
+  if (problem?.testCases && problem.testCases.length > 0) {
+    testCases = [...problem.testCases];
+  } else {
+    testCases = [
+      { input: 'nums = [2,7,11,15], target = 9', expectedOutput: '[0, 1]' },
+      { input: 'nums = [3,2,4], target = 6', expectedOutput: '[1, 2]' },
+      { input: 'nums = [3,3], target = 6', expectedOutput: '[0, 1]' },
+    ];
+  }
 
-  const totalCount = 10;
-  const passedCount = verdict === 'Accepted' ? 10 : 7;
-  const runtimeMs = Math.floor(Math.random() * 25) + 14;
-  const memoryMb = Math.round((Math.random() * 5 + 14) * 10) / 10;
+  if (problem && (problem as any).hiddenTestCases && (problem as any).hiddenTestCases.length > 0) {
+    testCases = testCases.concat((problem as any).hiddenTestCases);
+  }
 
-  // 1. Create Submission record
+  const evalResult = await evaluateCode({
+    userId,
+    problemId: problemIdOrSlug,
+    language,
+    code,
+    testCases,
+    starterCode,
+    isSubmission: true,
+  });
+
+  const verdict: SubmissionVerdict = evalResult.verdict as SubmissionVerdict;
+
   const submission = await Submission.create({
     userId,
     problemId,
@@ -430,15 +444,14 @@ export const submitCode = async (
     language,
     code,
     verdict,
-    passedCount,
-    totalCount,
-    runtimeMs,
-    memoryMb,
-    stdout: verdict === 'Accepted' ? 'All 10 test cases passed cleanly.' : 'Testcase #8 failed.',
-    stderr: '',
+    passedCount: evalResult.passedCount,
+    totalCount: evalResult.totalCount,
+    runtimeMs: evalResult.runtimeMs,
+    memoryMb: evalResult.memoryMb,
+    stdout: evalResult.stdout,
+    stderr: evalResult.stderr,
   });
 
-  // 2. Fetch User Progress Record
   const userProg = await getUserProgressRecord(userId);
 
   const addUniqueId = (arr: string[], val: string) => {
@@ -479,20 +492,18 @@ export const submitCode = async (
     }
 
     existingDetail.bestRuntime = existingDetail.bestRuntime
-      ? Math.min(existingDetail.bestRuntime, runtimeMs)
-      : runtimeMs;
+      ? Math.min(existingDetail.bestRuntime, evalResult.runtimeMs)
+      : evalResult.runtimeMs;
     existingDetail.bestMemory = existingDetail.bestMemory
-      ? Math.min(existingDetail.bestMemory, memoryMb)
-      : memoryMb;
+      ? Math.min(existingDetail.bestMemory, evalResult.memoryMb)
+      : evalResult.memoryMb;
 
     if (isFirstTimeAccepted) {
       addUniqueId(userProg.solvedProblemIds, problemId);
       if (problemSlug) addUniqueId(userProg.solvedProblemIds, problemSlug);
 
-      // Award XP ONLY ONCE on first accepted solution
       userProg.totalXP = (userProg.totalXP || 0) + 15;
 
-      // Update User Streak
       const now = new Date();
       const lastDate = userProg.lastStreakDate ? new Date(userProg.lastStreakDate) : null;
       if (!lastDate) {
@@ -508,7 +519,6 @@ export const submitCode = async (
       userProg.lastStreakDate = now;
       userProg.longestStreak = Math.max(userProg.longestStreak || 0, userProg.currentStreak || 1);
 
-      // Increment User XP and Leaderboard
       await Leaderboard.findOneAndUpdate(
         { userId },
         { $inc: { questionsSolved: 1, xp: 15 } },
@@ -533,6 +543,7 @@ export const submitCode = async (
 
   return {
     ...submission.toObject(),
+    ...evalResult,
     userProgress: freshProgress,
   };
 };

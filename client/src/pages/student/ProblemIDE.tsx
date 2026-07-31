@@ -264,6 +264,22 @@ export const ProblemIDE: React.FC = () => {
   const handleRunCode = useCallback(async () => {
     if (isRunning || isSubmitting) return;
 
+    // Validate empty or whitespace code
+    if (!code || !code.trim()) {
+      setExecutionResult({
+        verdict: 'Compile Error',
+        passedCount: 0,
+        totalCount: question.testCases.length,
+        runtimeMs: 0,
+        memoryMb: 0,
+        language,
+        stderr: 'Please write some code before running.',
+        isSubmission: false,
+      });
+      setActiveConsoleTab('console');
+      return;
+    }
+
     setIsRunning(true);
     setLoadingText('Executing Test Cases...');
     setExecutionResult(null);
@@ -271,24 +287,18 @@ export const ProblemIDE: React.FC = () => {
     try {
       const res = await practiceService.runCode(question.id, language, code, customInput);
       setExecutionResult({
-        verdict: res.verdict || 'Accepted',
-        passedCount: res.passedCount || question.testCases.length,
-        totalCount: res.totalCount || question.testCases.length,
-        runtimeMs: res.runtimeMs || 18,
-        memoryMb: res.memoryMb || 14.2,
+        verdict: res.verdict || 'Compile Error',
+        passedCount: res.passedCount ?? 0,
+        totalCount: res.totalCount ?? question.testCases.length,
+        runtimeMs: res.runtimeMs ?? 0,
+        memoryMb: res.memoryMb ?? 0,
         language,
-        stdout: res.stdout || 'Execution output logged cleanly.',
+        stdout: res.stdout || '',
         stderr: res.stderr || '',
-        testResults: res.testResults || question.testCases.map((tc: any, idx: number) => ({
-          testCaseIndex: idx + 1,
-          input: tc.input,
-          expectedOutput: tc.expectedOutput,
-          actualOutput: tc.expectedOutput,
-          passed: true,
-        })),
+        testResults: res.testResults || [],
         isSubmission: false,
       });
-      setActiveConsoleTab('result');
+      setActiveConsoleTab(res.verdict === 'Compile Error' ? 'console' : 'result');
     } catch (err: any) {
       setExecutionResult({
         verdict: 'Compile Error',
@@ -311,31 +321,41 @@ export const ProblemIDE: React.FC = () => {
   const handleSubmitCode = useCallback(async () => {
     if (isRunning || isSubmitting) return;
 
+    // Validate empty or whitespace code
+    if (!code || !code.trim()) {
+      setExecutionResult({
+        verdict: 'Compile Error',
+        passedCount: 0,
+        totalCount: question.testCases.length + (question.hiddenTestCases?.length || 0),
+        runtimeMs: 0,
+        memoryMb: 0,
+        language,
+        stderr: 'Please write some code before submitting.',
+        isSubmission: true,
+      });
+      setActiveConsoleTab('console');
+      return;
+    }
+
     setIsSubmitting(true);
     setLoadingText('Running Hidden Test Cases...');
     setExecutionResult(null);
 
     try {
       const res = await practiceService.submitCode(question.id, language, code);
-      const verdict = res.verdict || 'Accepted';
+      const verdict = res.verdict || 'Compile Error';
       const isAccepted = verdict === 'Accepted';
 
       setExecutionResult({
         verdict,
-        passedCount: res.passedCount || (isAccepted ? question.testCases.length + question.hiddenTestCases.length : 2),
-        totalCount: res.totalCount || (question.testCases.length + question.hiddenTestCases.length),
-        runtimeMs: res.runtimeMs || 24,
-        memoryMb: res.memoryMb || 15.6,
+        passedCount: res.passedCount ?? 0,
+        totalCount: res.totalCount ?? (question.testCases.length + (question.hiddenTestCases?.length || 0)),
+        runtimeMs: res.runtimeMs ?? 0,
+        memoryMb: res.memoryMb ?? 0,
         language,
-        stdout: res.stdout || (isAccepted ? 'All test cases passed cleanly.' : 'Testcase #3 failed.'),
+        stdout: res.stdout || '',
         stderr: res.stderr || '',
-        testResults: (question.testCases || []).concat(question.hiddenTestCases || []).map((tc: any, idx: number) => ({
-          testCaseIndex: idx + 1,
-          input: tc.input,
-          expectedOutput: tc.expectedOutput,
-          actualOutput: isAccepted ? tc.expectedOutput : (idx === 2 ? 'Wrong Output' : tc.expectedOutput),
-          passed: isAccepted || idx !== 2,
-        })),
+        testResults: res.testResults || [],
         isSubmission: true,
       });
 
@@ -347,7 +367,7 @@ export const ProblemIDE: React.FC = () => {
 
       invalidateProgress();
       fetchSubmissions(question.id);
-      setActiveConsoleTab('result');
+      setActiveConsoleTab(verdict === 'Compile Error' ? 'console' : 'result');
     } catch (err: any) {
       setExecutionResult({
         verdict: 'Runtime Error',

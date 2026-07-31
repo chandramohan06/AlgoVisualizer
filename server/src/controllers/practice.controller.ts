@@ -42,14 +42,20 @@ export const saveNote = asyncHandler(async (req: AuthRequest, res: Response) => 
 
 export const runCode = asyncHandler(async (req: AuthRequest, res: Response) => {
   const id = (req.params.id || req.body.id || req.body.problemId) as string;
-  const { language, code, customInput } = req.body;
+  const { language = 'python', code, customInput } = req.body;
+
+  console.log(`[PracticeController] RunCode Request: Problem=${id}, Lang=${language}, CodeLength=${code ? code.length : 0}`);
+
   const data = await PracticeService.runCode(req.user!._id, id, language, code, customInput);
   sendSuccess({ res, message: 'Code executed', data });
 });
 
 export const submitCode = asyncHandler(async (req: AuthRequest, res: Response) => {
   const id = (req.params.id || req.body.id || req.body.problemId) as string;
-  const { language, code } = req.body;
+  const { language = 'python', code } = req.body;
+
+  console.log(`[PracticeController] SubmitCode Request: Problem=${id}, Lang=${language}, CodeLength=${code ? code.length : 0}`);
+
   const data = await PracticeService.submitCode(req.user!._id, id, language, code);
   sendSuccess({ res, message: 'Submission evaluated', data });
 });
