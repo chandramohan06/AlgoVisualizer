@@ -370,18 +370,19 @@ export const runCode = async (
     ],
   }).lean();
 
-  const starterCode = (problem?.codeSnippets as any)?.[language] || '';
+  if (!problem) {
+    throw new AppError(`Practice problem '${problemIdOrSlug}' not found in database.`, 404);
+  }
+
+  const starterCode = (problem.codeSnippets as any)?.[language] || '';
   let testCases: ITestCase[] = [];
 
   if (customInput && customInput.trim()) {
     testCases = [{ input: customInput.trim(), expectedOutput: '' }];
-  } else if (problem?.testCases && problem.testCases.length > 0) {
+  } else if (problem.testCases && problem.testCases.length > 0) {
     testCases = problem.testCases;
   } else {
-    testCases = [
-      { input: 'nums = [2,7,11,15], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3,2,4], target = 6', expectedOutput: '[1, 2]' },
-    ];
+    throw new AppError(`No testcases configured for practice problem '${problemIdOrSlug}'.`, 400);
   }
 
   const result = await evaluateCode({
@@ -391,7 +392,7 @@ export const runCode = async (
     code,
     testCases,
     starterCode,
-    metadata: problem?.metadata,
+    metadata: problem.metadata,
     isSubmission: false,
   });
 
@@ -416,22 +417,22 @@ export const submitCode = async (
     ],
   }).lean();
 
-  const problemId = problem?._id ? problem._id.toString() : problemIdOrSlug;
-  const problemSlug = problem?.slug || problemIdOrSlug;
-  const starterCode = (problem?.codeSnippets as any)?.[language] || '';
-
-  let testCases: ITestCase[] = [];
-  if (problem?.testCases && problem.testCases.length > 0) {
-    testCases = [...problem.testCases];
-  } else {
-    testCases = [
-      { input: 'nums = [2,7,11,15], target = 9', expectedOutput: '[0, 1]' },
-      { input: 'nums = [3,2,4], target = 6', expectedOutput: '[1, 2]' },
-      { input: 'nums = [3,3], target = 6', expectedOutput: '[0, 1]' },
-    ];
+  if (!problem) {
+    throw new AppError(`Practice problem '${problemIdOrSlug}' not found in database.`, 404);
   }
 
-  if (problem && (problem as any).hiddenTestCases && (problem as any).hiddenTestCases.length > 0) {
+  const problemId = problem._id ? problem._id.toString() : problemIdOrSlug;
+  const problemSlug = problem.slug || problemIdOrSlug;
+  const starterCode = (problem.codeSnippets as any)?.[language] || '';
+
+  let testCases: ITestCase[] = [];
+  if (problem.testCases && problem.testCases.length > 0) {
+    testCases = [...problem.testCases];
+  } else {
+    throw new AppError(`No testcases configured for practice problem '${problemIdOrSlug}'.`, 400);
+  }
+
+  if ((problem as any).hiddenTestCases && (problem as any).hiddenTestCases.length > 0) {
     testCases = testCases.concat((problem as any).hiddenTestCases);
   }
 
@@ -442,7 +443,7 @@ export const submitCode = async (
     code,
     testCases,
     starterCode,
-    metadata: problem?.metadata,
+    metadata: problem.metadata,
     isSubmission: true,
   });
 

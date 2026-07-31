@@ -38,6 +38,7 @@ export interface IPracticeProblemDocument extends Document {
   examples?: IExample[];
   constraints?: string[];
   testCases?: ITestCase[];
+  hiddenTestCases?: ITestCase[];
   approaches: IApproach[];
   codeSnippets: {
     java: string;
@@ -83,6 +84,26 @@ const PracticeProblemSchema = new Schema<IPracticeProblemDocument>(
     prerequisites: { type: [String], default: [] },
     overview: { type: String, required: true },
     hints: { type: [String], default: [] },
+    examples: [
+      {
+        input: { type: String },
+        output: { type: String },
+        explanation: { type: String },
+      },
+    ],
+    testCases: [
+      {
+        input: { type: String },
+        expectedOutput: { type: String },
+        isHidden: { type: Boolean, default: false },
+      },
+    ],
+    hiddenTestCases: [
+      {
+        input: { type: String },
+        expectedOutput: { type: String },
+      },
+    ],
     approaches: [
       {
         name: { type: String, required: true },
@@ -109,10 +130,8 @@ const PracticeProblemSchema = new Schema<IPracticeProblemDocument>(
     moduleNumber: { type: Number, index: true },
     moduleTitle: { type: String, index: true },
     metadata: {
-      functionName: { type: String },
-      returnType: { type: String },
-      parameters: [{ name: String, type: String }],
-      mutateParamName: { type: String },
+      type: Schema.Types.Mixed,
+      default: undefined,
     },
   },
   { timestamps: true },

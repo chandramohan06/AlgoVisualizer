@@ -7,6 +7,8 @@ import { User } from '../models/User.model';
 import { DeveloperProfile } from '../models/DeveloperProfile.model';
 import { Difficulty, QuestionType, Role } from '@algovisualizer/shared';
 import bcrypt from 'bcryptjs';
+import { getAllPracticeQuestions } from '../data/allPracticeQuestions.data';
+import { MetadataExtractor } from '../services/judge/utils/MetadataExtractor';
 
 export const seedDatabase = async (): Promise<void> => {
   console.log(`[seeder] Starting seedDatabase. readyState = ${mongoose.connection.readyState}`);
@@ -89,9 +91,10 @@ export const seedDatabase = async (): Promise<void> => {
     }
     const categoryCount = await Category.countDocuments();
     const arrayCategoryExists = await Category.findOne({ slug: 'array' });
+    const practiceProblemCount = await PracticeProblem.countDocuments();
     
-    if (categoryCount > 0 && arrayCategoryExists) {
-      console.log('🌱  Database already seeded with Array category. Skipping seeder.');
+    if (categoryCount > 0 && arrayCategoryExists && practiceProblemCount >= 200) {
+      console.log(`🌱  Database already seeded (${practiceProblemCount} practice problems). Skipping seeder.`);
       return;
     }
 
@@ -2083,8 +2086,11 @@ export const seedDatabase = async (): Promise<void> => {
       },
     ];
 
-    const seededAlgorithms = await Algorithm.insertMany(algorithmsData);
-    console.log(`✅  Seeded ${seededAlgorithms.length} core algorithms.`);
+    let seededAlgorithms: any[] = await Algorithm.find({});
+    if (seededAlgorithms.length === 0) {
+      seededAlgorithms = await Algorithm.insertMany(algorithmsData);
+      console.log(`✅  Seeded ${seededAlgorithms.length} core algorithms.`);
+    }
 
     const getAlgoId = (slug: string) => {
       const found = seededAlgorithms.find((a) => a.slug === slug);
@@ -2353,327 +2359,72 @@ export const seedDatabase = async (): Promise<void> => {
       },
     ];
 
-    const seededQuizzes = await QuizQuestion.insertMany(quizQuestionsData);
-    console.log(`✅  Seeded ${seededQuizzes.length} quiz questions.`);
+    let seededQuizzes: any[] = await QuizQuestion.find({});
+    if (seededQuizzes.length === 0) {
+      seededQuizzes = await QuizQuestion.insertMany(quizQuestionsData as any);
+      console.log(`✅  Seeded ${seededQuizzes.length} quiz questions.`);
+    }
 
-    // 6. Seed Practice Problems for Array Algorithms
-    const practiceProblemsData = [
-      // === BASIC ARRAY OPERATIONS ===
-      {
-        algorithmId: getAlgoId('array-traversal'),
-        title: 'Find Maximum Element',
-        description: 'Given an array of integers, find the maximum element in the array.',
-        difficulty: Difficulty.EASY,
-        starterCode: {
-          java: 'class Solution {\n    public int findMax(int[] nums) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    int findMax(vector<int>& nums) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[1, 5, 3, 9, 2]', expectedOutput: '9' },
-          { input: '[-1, -5, -3]', expectedOutput: '-1' },
-        ],
-        solution: 'Traverse the array and keep track of the maximum element seen so far.',
-        externalLink: 'https://leetcode.com/problems/find-maximum-element/',
-      },
-      // === SEARCHING ===
-      {
-        algorithmId: getAlgoId('linear-search'),
-        title: 'Find Index of Target',
-        description: 'Given an array of integers and a target value, return the index of the target if it exists, otherwise return -1.',
-        difficulty: Difficulty.EASY,
-        starterCode: {
-          java: 'class Solution {\n    public int search(int[] nums, int target) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: 'nums = [4,5,6,7,0,1,2], target = 0', expectedOutput: '4' },
-          { input: 'nums = [4,5,6,7,0,1,2], target = 3', expectedOutput: '-1' },
-        ],
-        solution: 'Use linear search to check each element sequentially until target is found.',
-        externalLink: 'https://leetcode.com/problems/linear-search/',
-      },
-      {
-        algorithmId: getAlgoId('binary-search'),
-        title: 'Binary Search',
-        description: 'Given an array of integers nums which is sorted in ascending order, and an integer target, write a function to search target in nums.',
-        difficulty: Difficulty.EASY,
-        starterCode: {
-          java: 'class Solution {\n    public int search(int[] nums, int target) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    int search(vector<int>& nums, int target) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: 'nums = [-1,0,3,5,9,12], target = 9', expectedOutput: '4' },
-          { input: 'nums = [-1,0,3,5,9,12], target = 2', expectedOutput: '-1' },
-        ],
-        solution: 'Use binary search with left and right pointers, adjusting based on comparison with mid element.',
-        externalLink: 'https://leetcode.com/problems/binary-search/',
-      },
-      // === SORTING ===
-      {
-        algorithmId: getAlgoId('bubble-sort'),
-        title: 'Sort an Array',
-        description: 'Given an array of integers, sort the array in ascending order.',
-        difficulty: Difficulty.EASY,
-        starterCode: {
-          java: 'class Solution {\n    public int[] sortArray(int[] nums) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    vector<int> sortArray(vector<int>& nums) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[5, 2, 3, 1]', expectedOutput: '[1, 2, 3, 5]' },
-          { input: '[5, 1, 1, 2, 0, 0]', expectedOutput: '[0, 0, 1, 1, 2, 5]' },
-        ],
-        solution: 'Use Bubble Sort, Selection Sort, Insertion Sort, or any standard sorting algorithm.',
-        externalLink: 'https://leetcode.com/problems/sort-an-array/',
-      },
-      {
-        algorithmId: getAlgoId('merge-sort'),
-        title: 'Sort an Array',
-        description: 'Given an array of integers nums, sort the array in ascending order and return it.',
-        difficulty: Difficulty.MEDIUM,
-        starterCode: {
-          java: 'class Solution {\n    public int[] sortArray(int[] nums) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    vector<int> sortArray(vector<int>& nums) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[5,2,3,1]', expectedOutput: '[1,2,3,5]' },
-          { input: '[5,1,1,2,0,0]', expectedOutput: '[0,0,1,1,2,5]' },
-        ],
-        solution: 'Use Merge Sort for guaranteed O(N log N) time complexity.',
-        externalLink: 'https://leetcode.com/problems/sort-an-array/',
-      },
-      // === TWO POINTER ===
-      {
-        algorithmId: getAlgoId('two-sum'),
-        title: 'Two Sum',
-        description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
-        difficulty: Difficulty.EASY,
-        starterCode: {
-          java: 'class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: 'nums = [2,7,11,15], target = 9', expectedOutput: '[0,1]' },
-          { input: 'nums = [3,2,4], target = 6', expectedOutput: '[1,2]' },
-        ],
-        solution: 'Use hash map to store complement of each element for O(N) time.',
-        externalLink: 'https://leetcode.com/problems/two-sum/',
-      },
-      {
-        algorithmId: getAlgoId('remove-duplicates'),
-        title: 'Remove Duplicates from Sorted Array',
-        description: 'Given a sorted array nums, remove the duplicates in-place such that each element appears only once and returns the new length.',
-        difficulty: Difficulty.EASY,
-        starterCode: {
-          java: 'class Solution {\n    public int removeDuplicates(int[] nums) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    int removeDuplicates(vector<int>& nums) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[1,1,2]', expectedOutput: '2, nums = [1,2]' },
-          { input: '[0,0,1,1,1,2,2,3,3,4]', expectedOutput: '5, nums = [0,1,2,3,4]' },
-        ],
-        solution: 'Use two pointers where one tracks the position to place next unique element.',
-        externalLink: 'https://leetcode.com/problems/remove-duplicates-from-sorted-array/',
-      },
-      {
-        algorithmId: getAlgoId('container-with-most-water'),
-        title: 'Container With Most Water',
-        description: 'You are given an integer array height of length n. Find two lines that together with the x-axis form a container that holds the most water.',
-        difficulty: Difficulty.MEDIUM,
-        starterCode: {
-          java: 'class Solution {\n    public int maxArea(int[] height) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    int maxArea(vector<int>& height) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[1,8,6,2,5,4,8,3,7]', expectedOutput: '49' },
-          { input: '[1,1]', expectedOutput: '1' },
-        ],
-        solution: 'Use two pointers from ends, move the pointer with smaller height inward.',
-        externalLink: 'https://leetcode.com/problems/container-with-most-water/',
-      },
-      // === SLIDING WINDOW ===
-      {
-        algorithmId: getAlgoId('max-sum-subarray'),
-        title: 'Maximum Subarray',
-        description: 'Given an integer array nums, find the contiguous subarray which has the largest sum and return its sum.',
-        difficulty: Difficulty.MEDIUM,
-        starterCode: {
-          java: 'class Solution {\n    public int maxSubArray(int[] nums) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    int maxSubArray(vector<int>& nums) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[-2,1,-3,4,-1,2,1,-5,4]', expectedOutput: '6' },
-          { input: '[1]', expectedOutput: '1' },
-        ],
-        solution: 'Use Kadane\'s algorithm to track maximum sum ending at each position.',
-        externalLink: 'https://leetcode.com/problems/maximum-subarray/',
-      },
-      {
-        algorithmId: getAlgoId('longest-substring-without-repeating'),
-        title: 'Longest Substring Without Repeating Characters',
-        description: 'Given a string s, find the length of the longest substring without repeating characters.',
-        difficulty: Difficulty.MEDIUM,
-        starterCode: {
-          java: 'class Solution {\n    public int lengthOfLongestSubstring(String s) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    int lengthOfLongestSubstring(string s) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: 'abcabcbb', expectedOutput: '3' },
-          { input: 'bbbbb', expectedOutput: '1' },
-        ],
-        solution: 'Use sliding window with hash map to track character positions.',
-        externalLink: 'https://leetcode.com/problems/longest-substring-without-repeating-characters/',
-      },
-      // === PREFIX SUM ===
-      {
-        algorithmId: getAlgoId('prefix-sum'),
-        title: 'Range Sum Query - Immutable',
-        description: 'Given an integer array nums, handle multiple queries of the sum of elements between indices i and j.',
-        difficulty: Difficulty.EASY,
-        starterCode: {
-          java: 'class NumArray {\n    private int[] prefix;\n    public NumArray(int[] nums) {\n        \n    }\n    public int sumRange(int left, int right) {\n        \n    }\n}',
-          cpp: 'class NumArray {\nprivate:\n    vector<int> prefix;\npublic:\n    NumArray(vector<int>& nums) {\n        \n    }\n    int sumRange(int left, int right) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: 'nums = [-2, 0, 3, -5, 2, -1], sumRange(0, 2)', expectedOutput: '1' },
-          { input: 'nums = [-2, 0, 3, -5, 2, -1], sumRange(1, 5)', expectedOutput: '-1' },
-        ],
-        solution: 'Precompute prefix sums to answer range queries in O(1) time.',
-        externalLink: 'https://leetcode.com/problems/range-sum-query-immutable/',
-      },
-      // === MATRIX ===
-      {
-        algorithmId: getAlgoId('spiral-matrix'),
-        title: 'Spiral Matrix',
-        description: 'Given an m x n matrix, return all elements of the matrix in spiral order.',
-        difficulty: Difficulty.MEDIUM,
-        starterCode: {
-          java: 'class Solution {\n    public List<Integer> spiralOrder(int[][] matrix) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    vector<int> spiralOrder(vector<vector<int>>& matrix) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[[1,2,3],[4,5,6],[7,8,9]]', expectedOutput: '[1,2,3,6,9,8,7,4,5]' },
-          { input: '[[1,2,3,4],[5,6,7,8],[9,10,11,12]]', expectedOutput: '[1,2,3,4,8,12,11,10,9,5,6,7]' },
-        ],
-        solution: 'Track four boundaries (top, bottom, left, right) and traverse in spiral order.',
-        externalLink: 'https://leetcode.com/problems/spiral-matrix/',
-      },
-      {
-        algorithmId: getAlgoId('rotate-matrix'),
-        title: 'Rotate Image',
-        description: 'You are given an n x n 2D matrix representing an image, rotate the image by 90 degrees (clockwise).',
-        difficulty: Difficulty.MEDIUM,
-        starterCode: {
-          java: 'class Solution {\n    public void rotate(int[][] matrix) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    void rotate(vector<vector<int>>& matrix) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[[1,2,3],[4,5,6],[7,8,9]]', expectedOutput: '[[7,4,1],[8,5,2],[9,6,3]]' },
-          { input: '[[5,1,9,11],[2,4,8,10],[13,3,6,7],[15,14,12,16]]', expectedOutput: '[[15,13,2,5],[14,3,4,1],[12,6,8,9],[16,7,10,11]]' },
-        ],
-        solution: 'Transpose the matrix then reverse each row.',
-        externalLink: 'https://leetcode.com/problems/rotate-image/',
-      },
-      {
-        algorithmId: getAlgoId('set-matrix-zeroes'),
-        title: 'Set Matrix Zeroes',
-        description: 'Given an m x n integer matrix, if an element is 0, set its entire row and column to 0.',
-        difficulty: Difficulty.MEDIUM,
-        starterCode: {
-          java: 'class Solution {\n    public void setZeroes(int[][] matrix) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    void setZeroes(vector<vector<int>>& matrix) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[[1,1,1],[1,0,1],[1,1,1]]', expectedOutput: '[[1,0,1],[0,0,0],[1,0,1]]' },
-          { input: '[[0,1,2,0],[3,4,5,2],[1,3,1,5]]', expectedOutput: '[[0,0,0,0],[0,4,5,0],[0,3,1,0]]' },
-        ],
-        solution: 'Use first row and column as markers to track which rows/columns should be zeroed.',
-        externalLink: 'https://leetcode.com/problems/set-matrix-zeroes/',
-      },
-      // === MISCELLANEOUS ===
-      {
-        algorithmId: getAlgoId('majority-element'),
-        title: 'Majority Element',
-        description: 'Given an array nums of size n, return the majority element. The majority element is the element that appears more than n/2 times.',
-        difficulty: Difficulty.EASY,
-        starterCode: {
-          java: 'class Solution {\n    public int majorityElement(int[] nums) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    int majorityElement(vector<int>& nums) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[3,2,3]', expectedOutput: '3' },
-          { input: '[2,2,1,1,1,2,2]', expectedOutput: '2' },
-        ],
-        solution: 'Use Boyer-Moore Voting Algorithm to find majority element in O(N) time and O(1) space.',
-        externalLink: 'https://leetcode.com/problems/majority-element/',
-      },
-      {
-        algorithmId: getAlgoId('product-except-self'),
-        title: 'Product of Array Except Self',
-        description: 'Given an integer array nums, return an array answer such that answer[i] is equal to the product of all the elements of nums except nums[i-1].',
-        difficulty: Difficulty.MEDIUM,
-        starterCode: {
-          java: 'class Solution {\n    public int[] productExceptSelf(int[] nums) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    vector<int> productExceptSelf(vector<int>& nums) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[1,2,3,4]', expectedOutput: '[24,12,8,6]' },
-          { input: '[-1,1,0,-3,3]', expectedOutput: '[0,0,9,0,0]' },
-        ],
-        solution: 'Use prefix and suffix products to compute result without division.',
-        externalLink: 'https://leetcode.com/problems/product-of-array-except-self/',
-      },
-      {
-        algorithmId: getAlgoId('best-time-buy-sell-stock'),
-        title: 'Best Time to Buy and Sell Stock',
-        description: 'You are given an array prices where prices[i] is the price of a given stock on the ith day. Maximize profit by choosing a single day to buy and a different day to sell.',
-        difficulty: Difficulty.EASY,
-        starterCode: {
-          java: 'class Solution {\n    public int maxProfit(int[] prices) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    int maxProfit(vector<int>& prices) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[7,1,5,3,6,4]', expectedOutput: '5' },
-          { input: '[7,6,4,3,1]', expectedOutput: '0' },
-        ],
-        solution: 'Track minimum price seen so far and calculate maximum profit at each step.',
-        externalLink: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock/',
-      },
-      {
-        algorithmId: getAlgoId('trapping-rain-water'),
-        title: 'Trapping Rain Water',
-        description: 'Given n non-negative integers representing an elevation map where the width of each bar is 1, compute how much water it can trap after raining.',
-        difficulty: Difficulty.HARD,
-        starterCode: {
-          java: 'class Solution {\n    public int trap(int[] height) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    int trap(vector<int>& height) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[0,1,0,2,1,0,1,3,2,1,2,1]', expectedOutput: '6' },
-          { input: '[4,2,0,3,2,5]', expectedOutput: '9' },
-        ],
-        solution: 'Use two pointers tracking max heights from both ends to calculate trapped water.',
-        externalLink: 'https://leetcode.com/problems/trapping-rain-water/',
-      },
-      {
-        algorithmId: getAlgoId('missing-number'),
-        title: 'Missing Number',
-        description: 'Given an array nums containing n distinct numbers in the range [0, n], return the only number in the range that is missing from the array.',
-        difficulty: Difficulty.EASY,
-        starterCode: {
-          java: 'class Solution {\n    public int missingNumber(int[] nums) {\n        \n    }\n}',
-          cpp: 'class Solution {\npublic:\n    int missingNumber(vector<int>& nums) {\n        \n    }\n};',
-        },
-        testCases: [
-          { input: '[3,0,1]', expectedOutput: '2' },
-          { input: '[0,1]', expectedOutput: '2' },
-        ],
-        solution: 'Use sum formula or XOR to find the missing number.',
-        externalLink: 'https://leetcode.com/problems/missing-number/',
-      },
-    ];
+    // 6. Seed All 250 Practice Problems
+    const allQuestions = getAllPracticeQuestions();
+    const practiceProblemsData = allQuestions.map((q) => {
+      const codeSnippets = {
+        java: q.starterCodeJava || '',
+        cpp: q.starterCodeCpp || '',
+        python: q.starterCodePython || '',
+        javascript: `class Solution {\n  // Write your solution here\n}`,
+      };
 
-    const seededProblems = await PracticeProblem.insertMany(practiceProblemsData);
-    console.log(`✅  Seeded ${seededProblems.length} LeetCode practice problems.`);
+      const metadata = MetadataExtractor.extractMetadata(q.starterCodeJava || q.starterCodeCpp || '', null, q.starterCodeJava);
+
+      let testCases = (q.testCases && q.testCases.length > 0) ? q.testCases : [];
+      if (testCases.length === 0 && q.examples && q.examples.length > 0) {
+        testCases = q.examples.map(ex => ({ input: ex.input, expectedOutput: ex.output }));
+      }
+      if (testCases.length === 0 && (q as any).sampleInput) {
+        testCases = [{ input: (q as any).sampleInput, expectedOutput: (q as any).sampleOutput || q.expectedOutput || '' }];
+      }
+
+      let hiddenTestCases = (q.hiddenTestCases && q.hiddenTestCases.length > 0) ? q.hiddenTestCases : [];
+      if (hiddenTestCases.length === 0 && q.examples && q.examples.length > 1) {
+        hiddenTestCases = q.examples.slice(1).map(ex => ({ input: ex.input, expectedOutput: ex.output }));
+      }
+
+      return {
+        title: q.title,
+        slug: q.slug || q.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+        difficulty: q.difficulty === 'Hard' ? Difficulty.HARD : q.difficulty === 'Medium' ? Difficulty.MEDIUM : Difficulty.EASY,
+        category: q.category || q.topic || 'Arrays',
+        pattern: q.pattern || q.category || 'Arrays',
+        overview: q.problemStatement || q.title,
+        hints: q.hints || [],
+        examples: q.examples || [],
+        constraints: q.constraints || [],
+        testCases,
+        hiddenTestCases,
+        codeSnippets,
+        metadata,
+        complexity: {
+          time: q.timeComplexity || 'O(N)',
+          space: q.spaceComplexity || 'O(1)',
+          explanation: '',
+        },
+        commonMistakes: [],
+        relatedSlugs: [],
+      };
+    });
+
+    const uniqueMap = new Map<string, any>();
+    for (const item of practiceProblemsData) {
+      if (!uniqueMap.has(item.slug)) {
+        uniqueMap.set(item.slug, item);
+      }
+    }
+    const deduplicatedData = Array.from(uniqueMap.values());
+
+    await PracticeProblem.deleteMany({});
+    const seededProblems = await PracticeProblem.insertMany(deduplicatedData);
+    console.log(`✅  Seeded ${seededProblems.length} LeetCode practice problems into MongoDB.`);
   } catch (error) {
     console.error('❌  Error seeding database:', error);
   }
