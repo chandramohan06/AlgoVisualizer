@@ -57,6 +57,12 @@ export interface IPracticeProblemDocument extends Document {
   visualizerCategory?: string;
   moduleNumber?: number;
   moduleTitle?: string;
+  metadata?: {
+    functionName: string;
+    returnType: string;
+    parameters: Array<{ name: string; type: string }>;
+    mutateParamName?: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -102,6 +108,12 @@ const PracticeProblemSchema = new Schema<IPracticeProblemDocument>(
     visualizerCategory: { type: String, default: '' },
     moduleNumber: { type: Number, index: true },
     moduleTitle: { type: String, index: true },
+    metadata: {
+      functionName: { type: String },
+      returnType: { type: String },
+      parameters: [{ name: String, type: String }],
+      mutateParamName: { type: String },
+    },
   },
   { timestamps: true },
 );

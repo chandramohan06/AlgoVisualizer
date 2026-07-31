@@ -391,6 +391,7 @@ export const runCode = async (
     code,
     testCases,
     starterCode,
+    metadata: problem?.metadata,
     isSubmission: false,
   });
 
@@ -441,6 +442,7 @@ export const submitCode = async (
     code,
     testCases,
     starterCode,
+    metadata: problem?.metadata,
     isSubmission: true,
   });
 
