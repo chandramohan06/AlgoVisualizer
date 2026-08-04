@@ -25,3 +25,14 @@ export const getDashboardFullStats = asyncHandler(async (req: AuthRequest, res: 
   sendSuccess({ res, data });
 });
 
+export const toggleProgress = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { questionId, isCompleted, status } = req.body;
+  const data = await ProgressService.toggleProgress(req.user!._id, questionId, isCompleted, status);
+  sendSuccess({ res, data });
+});
+
+export const saveProgress = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { items } = req.body;
+  const data = await ProgressService.saveProgress(req.user!._id, items || []);
+  sendSuccess({ res, data });
+});

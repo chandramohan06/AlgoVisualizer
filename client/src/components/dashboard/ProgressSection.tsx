@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, TrendingUp, AlertTriangle, ShieldCheck, Target, CheckCircle2, Zap, Award } from 'lucide-react';
 import { useCategoryProgress } from '@hooks/useDashboard';
+import { useRoadmapProgress } from '@hooks/useRoadmapProgress';
 import { ProgressRing } from '@components/common/ProgressRing';
 import { Skeleton } from '@components/common/Skeleton';
 
@@ -11,9 +12,10 @@ export interface ProgressSectionProps {
 
 export const ProgressSection: React.FC<ProgressSectionProps> = ({ stats }) => {
   const { data: categories, isLoading } = useCategoryProgress();
+  const { completedCount } = useRoadmapProgress();
 
   const totalAlgos = stats?.totalAlgorithms || 50;
-  const completedAlgos = stats?.completedProgress?.length || stats?.completedAlgorithms || 12;
+  const completedAlgos = completedCount || stats?.completedProgress?.length || stats?.completedAlgorithms || 12;
   const algoPct = Math.min(100, Math.round((completedAlgos / totalAlgos) * 100));
 
   const totalNotes = stats?.totalNotes || 26;

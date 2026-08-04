@@ -10,6 +10,50 @@ import { QuizAttempt } from '../models/QuizAttempt.model';
 import { Achievement } from '../models/Achievement.model';
 import { ActivityLog } from '../models/ActivityLog.model';
 
+export const toggleProgress = async (userId: string, questionId: string, isCompleted: boolean, status?: string) => {
+  const existing = await Progress.findOne({ userId, questionId });
+
+  if (existing) {
+    existing.isCompleted = isCompleted;
+    existing.status = status || (isCompleted ? 'Completed' : 'Not Started');
+    existing.completedAt = isCompleted ? new Date() : undefined;
+    await existing.save();
+    return existing;
+  }
+
+  const created = await Progress.create({
+    userId,
+    questionId,
+    isCompleted,
+    status: status || (isCompleted ? 'Completed' : 'Not Started'),
+    completedAt: isCompleted ? new Date() : undefined,
+  });
+
+  return created;
+};
+
+export const saveProgress = async (userId: string, progressItems: Array<{ questionId: string; isCompleted: boolean; status?: string }>) => {
+  const ops = progressItems.map((item) => ({
+    updateOne: {
+      filter: { userId, questionId: item.questionId },
+      update: {
+        $set: {
+          isCompleted: item.isCompleted,
+          status: item.status || (item.isCompleted ? 'Completed' : 'Not Started'),
+          completedAt: item.isCompleted ? new Date() : undefined,
+        },
+      },
+      upsert: true,
+    },
+  }));
+
+  if (ops.length > 0) {
+    await Progress.bulkWrite(ops);
+  }
+
+  return { success: true, count: progressItems.length };
+};
+
 export const getAll = async (userId: string) => {
   const [categories, algorithms, completedProgress] = await Promise.all([
     Category.find().sort({ order: 1 }),

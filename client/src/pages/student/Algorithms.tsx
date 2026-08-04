@@ -6,7 +6,7 @@ import {
   ChevronDown, ChevronRight, Clock, Zap, StickyNote,
   X, Save, CheckCircle2, Target, Flame
 } from 'lucide-react';
-import { useAuthStore } from '@store/authStore';
+
 import { useUserProgress } from '../../hooks/useUserProgress';
 import { useRoadmapProgress } from '../../hooks/useRoadmapProgress';
 import {
@@ -34,7 +34,6 @@ const COMPANY_OPTIONS = [
 
 export const Algorithms: React.FC = () => {
   const navigate = useNavigate();
-  const { checkAuth } = useAuthStore();
 
   const [questions, setQuestions] = useState<RoadmapQuestionItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -52,7 +51,7 @@ export const Algorithms: React.FC = () => {
 
   // Central React Query User Progress & Roadmap Progress Hooks
   const { progress: userProgress, invalidateProgress, isProblemSolved, isProblemBookmarked } = useUserProgress();
-  const { isQuestionCompleted, toggleQuestionCompletion, invalidateRoadmapProgress } = useRoadmapProgress();
+  const { isQuestionCompleted, toggleQuestionCompletion, toggleBookmark, invalidateRoadmapProgress } = useRoadmapProgress();
 
   // Personal Notes Drawer State
   const [activeNotesQuestion, setActiveNotesQuestion] = useState<RoadmapQuestionItem | null>(null);
@@ -132,9 +131,7 @@ export const Algorithms: React.FC = () => {
   // Status & Solved Handler
   const handleStatusChange = async (question: RoadmapQuestionItem, newStatus: StatusType) => {
     const isCompletedType = ['Completed', 'Revision 1', 'Revision 2', 'Mastered'].includes(newStatus);
-    const prevSolved = question.isSolved;
 
-    // Optimistic UI update
     setQuestions(prev => prev.map(q => {
       if (q.id === question.id || q.title === question.title) {
         return {
@@ -146,19 +143,27 @@ export const Algorithms: React.FC = () => {
       return q;
     }));
 
-    try {
-      invalidateProgress();
-      if (isCompletedType && !prevSolved) {
-        checkAuth();
-      }
-    } catch (error) {
-      console.error('Failed to update question status:', error);
-    }
+    toggleQuestionCompletion(question.id, !isCompletedType, newStatus);
+    invalidateProgress();
+    invalidateRoadmapProgress();
   };
 
   const handleToggleSolved = (question: RoadmapQuestionItem) => {
     const isCompleted = isQuestionCompleted(question.id, question.leetcodeNumber) || Boolean(question.isSolved);
-    toggleQuestionCompletion(question.id, Boolean(isCompleted));
+    const nextCompleted = !isCompleted;
+
+    setQuestions(prev => prev.map(q => {
+      if (q.id === question.id || q.title === question.title) {
+        return {
+          ...q,
+          isSolved: nextCompleted,
+          status: nextCompleted ? 'Completed' : 'Not Started',
+        };
+      }
+      return q;
+    }));
+
+    toggleQuestionCompletion(question.id, Boolean(isCompleted), nextCompleted ? 'Completed' : 'Not Started');
     invalidateProgress();
     invalidateRoadmapProgress();
   };
@@ -173,7 +178,9 @@ export const Algorithms: React.FC = () => {
       return q;
     }));
 
-    // Toggle bookmark locally
+    toggleBookmark(question.id);
+    invalidateProgress();
+    invalidateRoadmapProgress();
   };
 
   const openNotesDrawer = async (question: RoadmapQuestionItem) => {

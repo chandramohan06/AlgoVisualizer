@@ -10,6 +10,7 @@ router.get('/summary', ProgressController.getSummary);
 router.get('/recent', ProgressController.getRecentActivity);
 router.get('/dashboard-full', ProgressController.getDashboardFullStats);
 router.get('/', ProgressController.getAll);
+router.post('/toggle', ProgressController.toggleProgress);
+router.post('/save', ProgressController.saveProgress);
 
 export default router;
-
