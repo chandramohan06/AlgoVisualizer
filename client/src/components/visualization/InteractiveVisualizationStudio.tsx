@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Editor from '@monaco-editor/react';
 import {
   STUDIO_TOPICS,
@@ -17,21 +17,15 @@ import {
   Cpu,
   Code2,
   SlidersHorizontal,
-  Activity,
-  GripVertical,
-  GripHorizontal,
-  CheckCircle2,
   Zap,
-  StickyNote,
-  Save,
   Maximize2,
   Minimize2,
   Sparkles,
   Layers,
   ShieldAlert,
   Lightbulb,
-  Split,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const InteractiveVisualizationStudio: React.FC = () => {
   // ── LocalStorage Persistence States ──────────────────────────────────────
@@ -53,18 +47,9 @@ export const InteractiveVisualizationStudio: React.FC = () => {
     return (saved as any) || 'java';
   });
 
-  const [leftWidthPct, setLeftWidthPct] = useState<number>(() => {
-    const saved = localStorage.getItem('visualization_left_width');
-    return saved ? parseFloat(saved) : 55;
-  });
-
-  const [bottomHeightPx, setBottomHeightPx] = useState<number>(() => {
-    const saved = localStorage.getItem('visualization_bottom_height');
-    return saved ? parseInt(saved, 10) : 230;
-  });
-
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
-  const [isCompareMode, setIsCompareMode] = useState<boolean>(false);
+  const [showCodePanel, setShowCodePanel] = useState<boolean>(false);
+  const [isCompareMode] = useState<boolean>(false);
 
   // ── Topic & Method Metadata ──────────────────────────────────────────────
   const activeTopic = useMemo(() => getTopicById(selectedTopicId), [selectedTopicId]);
@@ -86,9 +71,7 @@ export const InteractiveVisualizationStudio: React.FC = () => {
     localStorage.setItem('visualization_method', selectedMethodId);
     localStorage.setItem('visualization_speed', String(playbackSpeed));
     localStorage.setItem('visualization_language', language);
-    localStorage.setItem('visualization_left_width', String(leftWidthPct));
-    localStorage.setItem('visualization_bottom_height', String(bottomHeightPx));
-  }, [selectedTopicId, selectedMethodId, playbackSpeed, language, leftWidthPct, bottomHeightPx]);
+  }, [selectedTopicId, selectedMethodId, playbackSpeed, language]);
 
   // ── Step Generation & Playback ──────────────────────────────────────────
   const steps: IVisualizationStep[] = useMemo(() => {
@@ -101,9 +84,6 @@ export const InteractiveVisualizationStudio: React.FC = () => {
 
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [activeBottomTab, setActiveBottomTab] = useState<'insights' | 'properties' | 'pseudocode' | 'trace' | 'notes'>('insights');
-  const [userNote, setUserNote] = useState<string>('');
-  const [noteSaved, setNoteSaved] = useState<boolean>(false);
 
   // Current active step object & previous step object for comparison
   const currentStep = steps[Math.min(currentStepIndex, steps.length - 1)] || steps[0];
@@ -135,56 +115,6 @@ export const InteractiveVisualizationStudio: React.FC = () => {
     setIsPlaying(false);
   }, [selectedTopicId, selectedMethodId, customInput]);
 
-  // ── Resizing Handlers (Left/Right & Top/Bottom) ──────────────────────────
-  const isDraggingHorizontalRef = useRef(false);
-  const isDraggingVerticalRef = useRef(false);
-
-  const handleMouseDownHorizontal = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isDraggingHorizontalRef.current = true;
-
-    const handleMouseMove = (ev: MouseEvent) => {
-      if (!isDraggingHorizontalRef.current) return;
-      const windowWidth = window.innerWidth;
-      const newPct = (ev.clientX / windowWidth) * 100;
-      if (newPct >= 30 && newPct <= 75) {
-        setLeftWidthPct(Math.round(newPct));
-      }
-    };
-
-    const handleMouseUp = () => {
-      isDraggingHorizontalRef.current = false;
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-  };
-
-  const handleMouseDownVertical = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isDraggingVerticalRef.current = true;
-
-    const handleMouseMove = (ev: MouseEvent) => {
-      if (!isDraggingVerticalRef.current) return;
-      const windowHeight = window.innerHeight;
-      const newPx = windowHeight - ev.clientY;
-      if (newPx >= 120 && newPx <= 500) {
-        setBottomHeightPx(Math.round(newPx));
-      }
-    };
-
-    const handleMouseUp = () => {
-      isDraggingVerticalRef.current = false;
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-  };
-
   // Get active code snippet string
   const getCodeSnippet = () => {
     if (language === 'java') return activeMethod.codeSnippets.java;
@@ -197,17 +127,16 @@ export const InteractiveVisualizationStudio: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen bg-[#07090e] text-slate-100 font-sans flex flex-col ${isFullscreen ? 'fixed inset-0 z-50 overflow-hidden' : ''}`}>
-      {/* ── 1. TOP HEADER & CONTROL STRIP ────────────────────────────────────────── */}
-      <header className="h-16 bg-[#0a0d14] border-b border-white/10 px-4 flex items-center justify-between gap-4 shrink-0 shadow-lg z-30">
-        {/* Left: Brand & Selector Dropdowns */}
+    <div className={`min-h-screen bg-[#06080d] text-slate-100 font-sans flex flex-col ${isFullscreen ? 'fixed inset-0 z-50 overflow-hidden' : ''}`}>
+      {/* ── 1. MINIMALIST APPLE-STYLE FLOATING TOP STRIP ────────────────────────────────────────── */}
+      <header className="h-16 bg-[#090c14]/90 backdrop-blur-md border-b border-white/10 px-6 flex items-center justify-between gap-4 shrink-0 shadow-2xl z-30">
+        {/* Left: Topic & Algorithm Selector */}
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 text-white shadow-md shadow-indigo-500/20">
+          <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/20">
             <Cpu className="w-5 h-5" />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Topic Select */}
+          <div className="flex items-center gap-2">
             <select
               value={selectedTopicId}
               onChange={(e) => {
@@ -216,7 +145,7 @@ export const InteractiveVisualizationStudio: React.FC = () => {
                 const firstMethod = STUDIO_TOPICS.find((t) => t.id === newTopicId)?.methods[0];
                 if (firstMethod) setSelectedMethodId(firstMethod.id);
               }}
-              className="bg-[#121620] border border-white/10 text-white text-xs font-mono font-bold rounded-xl px-3 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
+              className="bg-[#121622] border border-white/10 text-white text-xs font-mono font-bold rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500 cursor-pointer"
             >
               {STUDIO_TOPICS.map((topic) => (
                 <option key={topic.id} value={topic.id}>
@@ -225,11 +154,10 @@ export const InteractiveVisualizationStudio: React.FC = () => {
               ))}
             </select>
 
-            {/* Method Select */}
             <select
               value={selectedMethodId}
               onChange={(e) => setSelectedMethodId(e.target.value)}
-              className="bg-[#121620] border border-white/10 text-white text-xs font-mono font-bold rounded-xl px-3 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
+              className="bg-[#121622] border border-white/10 text-white text-xs font-mono font-bold rounded-xl px-3 py-2 focus:outline-none focus:border-indigo-500 cursor-pointer"
             >
               {activeTopic.methods.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -241,15 +169,15 @@ export const InteractiveVisualizationStudio: React.FC = () => {
         </div>
 
         {/* Center: Dynamic Custom Input Bar ("What if input changes?") */}
-        <div className="hidden md:flex items-center gap-2 bg-[#121620] border border-white/10 rounded-2xl px-3 py-1 text-xs">
-          <SlidersHorizontal className="w-3.5 h-3.5 text-indigo-400" />
-          <span className="font-mono text-[10px] text-slate-400 font-bold uppercase">Input:</span>
+        <div className="hidden lg:flex items-center gap-2 bg-[#121622] border border-white/10 rounded-2xl px-4 py-1.5 text-xs">
+          <SlidersHorizontal className="w-4 h-4 text-indigo-400" />
+          <span className="font-mono text-[10px] text-slate-400 font-bold uppercase">Simulation Input:</span>
           <input
             type="text"
             value={customInput}
             onChange={(e) => setCustomInput(e.target.value)}
             placeholder="Custom Input (e.g. 5, 2, 8, 1, 9)"
-            className="bg-transparent text-xs text-white font-mono focus:outline-none w-48 sm:w-64"
+            className="bg-transparent text-xs text-white font-mono focus:outline-none w-56"
           />
           <button
             onClick={() => setCustomInput(activeMethod.defaultInput)}
@@ -260,27 +188,21 @@ export const InteractiveVisualizationStudio: React.FC = () => {
           </button>
         </div>
 
-        {/* Right: Language Switcher, Speed & Fullscreen */}
+        {/* Right: Code Drawer Toggle, Speed & Fullscreen */}
         <div className="flex items-center gap-3">
-          {/* Language Switcher */}
-          <div className="flex items-center bg-[#121620] p-1 rounded-xl border border-white/10 text-xs font-mono font-bold">
-            {(['java', 'cpp', 'python', 'js', 'pseudocode'] as const).map((lang) => (
-              <button
-                key={lang}
-                onClick={() => setLanguage(lang)}
-                className={`px-2.5 py-1 rounded-lg uppercase transition-all cursor-pointer ${
-                  language === lang
-                    ? 'bg-indigo-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                {lang === 'pseudocode' ? 'Pseudo' : lang}
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={() => setShowCodePanel(!showCodePanel)}
+            className={`px-3 py-2 rounded-xl text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              showCodePanel
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
+                : 'bg-[#121622] text-slate-400 hover:text-white border border-white/10'
+            }`}
+          >
+            <Code2 className="w-4 h-4" /> {showCodePanel ? 'Hide Code' : 'Show Code'}
+          </button>
 
-          {/* Speed Slider */}
-          <div className="hidden lg:flex items-center gap-1.5 bg-[#121620] px-3 py-1.5 rounded-xl border border-white/10 text-xs font-mono">
+          {/* Speed Selector */}
+          <div className="flex items-center gap-1 bg-[#121622] px-3 py-2 rounded-xl border border-white/10 text-xs font-mono">
             <Zap className="w-3.5 h-3.5 text-amber-400" />
             <select
               value={playbackSpeed}
@@ -298,7 +220,7 @@ export const InteractiveVisualizationStudio: React.FC = () => {
 
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-2 rounded-xl bg-[#121620] hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all cursor-pointer"
+            className="p-2.5 rounded-xl bg-[#121622] hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all cursor-pointer"
             title="Toggle Fullscreen"
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -306,50 +228,42 @@ export const InteractiveVisualizationStudio: React.FC = () => {
         </div>
       </header>
 
-      {/* ── 2. MAIN RESIZABLE SPLIT CONTAINER ────────────────────────────────── */}
-      <div className="flex-1 flex flex-col md:flex-row min-h-0 relative overflow-hidden">
-        {/* LEFT COLUMN: Interactive Animation Canvas */}
-        <div
-          className="flex flex-col min-h-0 bg-[#080b11] relative border-b md:border-b-0 md:border-r border-white/10"
-          style={{ width: `${leftWidthPct}%` }}
-        >
-          {/* Canvas Top Bar */}
-          <div className="px-4 py-2 bg-[#0d111a] border-b border-white/5 flex items-center justify-between text-xs font-mono">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span className="font-bold text-white uppercase tracking-wider">{activeMethod.name} Canvas</span>
+      {/* ── 2. HERO VISUALIZATION STAGE (OCCUPIES 70%+ AREA) ────────────────────────────────── */}
+      <div className="flex-1 flex min-h-0 relative overflow-hidden">
+        {/* HERO CANVAS */}
+        <div className="flex-1 flex flex-col min-h-0 bg-[#05070c] relative">
+          {/* Background Micro Grid */}
+          <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-15 pointer-events-none" />
+
+          {/* TOP METRICS BADGES STRIP */}
+          <div className="px-6 py-3 flex items-center justify-between z-10 font-mono text-xs">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="font-black text-white text-sm uppercase tracking-wider">{activeMethod.name}</span>
+              <span className="text-[10px] text-slate-400 font-bold bg-white/5 px-2.5 py-0.5 rounded-full border border-white/10">
+                {activeMethod.difficulty}
+              </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsCompareMode(!isCompareMode)}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase transition-all flex items-center gap-1 cursor-pointer ${
-                  isCompareMode
-                    ? 'bg-purple-600 text-white shadow-md'
-                    : 'bg-white/5 text-slate-400 hover:text-white border border-white/10'
-                }`}
-              >
-                <Split className="w-3 h-3" /> Compare Frames
-              </button>
-
-              <span className="text-[10px] text-slate-400 font-bold bg-white/5 px-2 py-0.5 rounded border border-white/10">
-                Frame #{currentStepIndex + 1} / {steps.length}
-              </span>
+            <div className="flex items-center gap-3">
+              <div className="bg-black/40 px-3 py-1 rounded-full border border-white/10 text-[11px] text-slate-300">
+                Time: <span className="text-emerald-400 font-bold">{activeMethod.timeComplexity.avg}</span>
+              </div>
+              <div className="bg-black/40 px-3 py-1 rounded-full border border-white/10 text-[11px] text-slate-300">
+                Space: <span className="text-cyan-400 font-bold">{activeMethod.spaceComplexity}</span>
+              </div>
             </div>
           </div>
 
-          {/* Graphical Visualization Stage */}
-          <div className="flex-1 overflow-auto p-6 flex flex-col items-center justify-center relative">
-            {/* Background Canvas Grid Overlay */}
-            <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-20 pointer-events-none" />
-
+          {/* MAIN GRAPHICAL ANIMATION ENGINE STAGE */}
+          <div className="flex-1 overflow-auto flex flex-col items-center justify-center p-6 relative">
             {selectedTopicId === 'arrays' ? (
               <ArrayVisualizationStudio />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center space-y-4">
                 {isCompareMode && currentStepIndex > 0 && (
-                  <div className="w-full p-3 rounded-2xl bg-black/40 border border-purple-500/30 text-xs font-mono space-y-1 mb-2">
-                    <span className="text-purple-300 font-bold">Previous Step (# {currentStepIndex}):</span>
+                  <div className="w-full max-w-xl p-3 rounded-2xl bg-black/60 border border-purple-500/30 text-xs font-mono space-y-1 mb-2">
+                    <span className="text-purple-300 font-bold">Previous Frame (# {currentStepIndex}):</span>
                     <p className="text-slate-400">{previousStep?.description}</p>
                   </div>
                 )}
@@ -358,41 +272,39 @@ export const InteractiveVisualizationStudio: React.FC = () => {
             )}
           </div>
 
-          {/* ── INTERACTIVE TIMELINE SCRUBBER CONTROL BAR ── */}
-          <div className="p-4 bg-[#0d111a] border-t border-white/10 space-y-3 shrink-0">
-            {/* Step Explanation Ribbon */}
-            <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-xs font-mono flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <Sparkles className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
-                <p className="text-indigo-200 font-semibold truncate">{currentStep.description}</p>
+          {/* ── EDUCATIONAL STEP INSIGHT OVERLAY CARD ── */}
+          <div className="px-6 py-4 bg-[#090c14]/95 border-t border-white/10 z-20 space-y-3 shrink-0 shadow-2xl">
+            {/* Answer 3 Key Questions: What happened? Why? Invariant? */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 font-sans text-xs">
+              <div className="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 space-y-1">
+                <span className="text-[10px] font-mono font-bold uppercase text-indigo-400 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" /> What Happened?
+                </span>
+                <p className="text-xs text-white font-semibold leading-relaxed">{currentStep.description}</p>
               </div>
-              <span className="text-[10px] text-slate-400 font-bold shrink-0">
-                Step {currentStepIndex + 1} of {steps.length}
-              </span>
-            </div>
 
-            {/* Scrubber Range Slider */}
-            <div className="space-y-1">
-              <input
-                type="range"
-                min={0}
-                max={steps.length - 1}
-                value={currentStepIndex}
-                onChange={(e) => {
-                  setIsPlaying(false);
-                  setCurrentStepIndex(parseInt(e.target.value, 10));
-                }}
-                className="w-full accent-indigo-500 bg-slate-800 rounded-lg h-2 cursor-pointer"
-              />
-              <div className="flex justify-between text-[9px] font-mono text-slate-500 font-bold">
-                <span>0 (Start)</span>
-                <span>Frame {currentStepIndex + 1}</span>
-                <span>{steps.length - 1} (End)</span>
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
+                <span className="text-[10px] font-mono font-bold uppercase text-emerald-400 flex items-center gap-1.5">
+                  <Lightbulb className="w-3.5 h-3.5 text-emerald-400" /> Why &amp; Invariant
+                </span>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Subarray up to current pointer index preserves the sorted invariant state.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 space-y-1">
+                <span className="text-[10px] font-mono font-bold uppercase text-rose-400 flex items-center gap-1.5">
+                  <ShieldAlert className="w-3.5 h-3.5 text-rose-400" /> Interview Tip
+                </span>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Always state space complexity and off-by-one pointer boundaries in technical rounds.
+                </p>
               </div>
             </div>
 
-            {/* Playback Button Strip */}
-            <div className="flex items-center justify-between gap-2">
+            {/* ── TIMELINE SCRUBBER CONTROLS BAR ── */}
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-white/5 font-mono">
+              {/* Playback Button Group */}
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
@@ -400,7 +312,7 @@ export const InteractiveVisualizationStudio: React.FC = () => {
                     setCurrentStepIndex(0);
                   }}
                   className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white transition-all cursor-pointer"
-                  title="Reset to Start"
+                  title="Reset"
                 >
                   <RotateCcw className="w-4 h-4" />
                 </button>
@@ -419,7 +331,7 @@ export const InteractiveVisualizationStudio: React.FC = () => {
 
                 <button
                   onClick={() => setIsPlaying(!isPlaying)}
-                  className={`px-5 py-2.5 rounded-xl font-mono font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer ${
+                  className={`px-6 py-2.5 rounded-xl font-mono font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer ${
                     isPlaying
                       ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-amber-600/30'
                       : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30 active:scale-95'
@@ -449,276 +361,101 @@ export const InteractiveVisualizationStudio: React.FC = () => {
                 </button>
               </div>
 
-              <div className="flex items-center gap-3 text-xs font-mono">
-                <div className="text-slate-400">
-                  Comparisons: <span className="text-amber-400 font-bold">{currentStep.metrics.comparisons}</span>
-                </div>
-                <div className="text-slate-400">
-                  Swaps: <span className="text-rose-400 font-bold">{currentStep.metrics.swaps}</span>
-                </div>
+              {/* Scrubber Range Slider */}
+              <div className="flex-1 w-full sm:w-auto max-w-xl flex items-center gap-3">
+                <span className="text-[10px] text-slate-500">0</span>
+                <input
+                  type="range"
+                  min={0}
+                  max={steps.length - 1}
+                  value={currentStepIndex}
+                  onChange={(e) => {
+                    setIsPlaying(false);
+                    setCurrentStepIndex(parseInt(e.target.value, 10));
+                  }}
+                  className="w-full accent-indigo-500 bg-slate-800 rounded-lg h-2 cursor-pointer"
+                />
+                <span className="text-[10px] text-slate-500">{steps.length - 1}</span>
               </div>
+
+              {/* Frame Indicator */}
+              <span className="text-xs font-bold text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20 shrink-0">
+                Frame #{currentStepIndex + 1} / {steps.length}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* RESIZABLE DIVIDER HANDLER (HORIZONTAL) */}
-        <div
-          onMouseDown={handleMouseDownHorizontal}
-          className="w-1.5 bg-white/5 hover:bg-indigo-500/50 cursor-col-resize flex items-center justify-center transition-colors shrink-0 hidden md:flex"
-        >
-          <GripVertical className="w-3 h-3 text-slate-600" />
-        </div>
+        {/* CONDITIONAL CODE VIEWER DRAWER (RIGHT SIDEBAR) */}
+        {showCodePanel && (
+          <motion.div
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 300 }}
+            transition={{ duration: 0.2 }}
+            className="w-80 sm:w-96 bg-[#090b10] border-l border-white/10 flex flex-col shrink-0 z-20 shadow-2xl"
+          >
+            {/* Header */}
+            <div className="px-4 py-3 bg-[#0d111a] border-b border-white/10 flex items-center justify-between text-xs font-mono shrink-0">
+              <span className="font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                <Code2 className="w-4 h-4 text-purple-400" /> Live Code Execution
+              </span>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as any)}
+                className="bg-white/5 border border-white/10 text-cyan-400 font-mono font-bold text-[10px] uppercase rounded px-2 py-0.5 focus:outline-none cursor-pointer"
+              >
+                <option value="java">Java</option>
+                <option value="cpp">C++</option>
+                <option value="python">Python</option>
+                <option value="js">JS</option>
+                <option value="pseudocode">Pseudo</option>
+              </select>
+            </div>
 
-        {/* RIGHT COLUMN: Synchronized Code Viewer & Live Memory Inspector */}
-        <div className="flex-1 flex flex-col min-h-0 bg-[#090b10]">
-          {/* Header */}
-          <div className="px-4 py-2 bg-[#0d111a] border-b border-white/5 flex items-center justify-between text-xs font-mono shrink-0">
-            <span className="font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-              <Code2 className="w-4 h-4 text-purple-400" /> Live Execution &amp; Memory Inspector
-            </span>
-            <span className="text-[10px] text-cyan-400 font-bold uppercase">Line #{currentStep.lineHighlight}</span>
-          </div>
+            {/* Monaco Editor Code Display */}
+            <div className="h-72 border-b border-white/10 overflow-hidden relative">
+              <Editor
+                height="100%"
+                language={language === 'java' || language === 'cpp' ? 'cpp' : language === 'python' ? 'python' : 'javascript'}
+                theme="vs-dark"
+                value={getCodeSnippet()}
+                options={{
+                  readOnly: true,
+                  minimap: { enabled: false },
+                  fontSize: 12,
+                  scrollBeyondLastLine: false,
+                  lineNumbers: 'on',
+                  folding: false,
+                }}
+              />
+            </div>
 
-          {/* Code Viewer Stage */}
-          <div className="h-64 sm:h-72 border-b border-white/10 overflow-hidden relative">
-            <Editor
-              height="100%"
-              language={language === 'java' || language === 'cpp' ? 'cpp' : language === 'python' ? 'python' : 'javascript'}
-              theme="vs-dark"
-              value={getCodeSnippet()}
-              options={{
-                readOnly: true,
-                minimap: { enabled: false },
-                fontSize: 12,
-                scrollBeyondLastLine: false,
-                lineNumbers: 'on',
-                folding: false,
-              }}
-            />
-          </div>
-
-          {/* Live Variable & Memory Inspection Table */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 font-mono text-xs">
-            <div className="space-y-2">
+            {/* Live Variables & Memory State */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-xs">
               <h4 className="text-[11px] uppercase font-bold text-slate-400 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5 text-indigo-400" /> Visual RAM &amp; Pointer References
+                <Layers className="w-3.5 h-3.5 text-indigo-400" /> Live Pointers &amp; Memory State
               </h4>
 
               <div className="grid grid-cols-2 gap-2">
                 {Object.entries(currentStep.pointerMap || {}).map(([pName, pVal]) => (
                   <div key={pName} className="p-2.5 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between">
-                    <span className="text-amber-300 font-bold uppercase text-[10px]">{pName} Pointer:</span>
+                    <span className="text-amber-300 font-bold uppercase text-[10px]">{pName}:</span>
                     <span className="text-white font-bold">{pVal}</span>
                   </div>
                 ))}
                 <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between">
-                  <span className="text-slate-400 text-[10px]">Operations:</span>
-                  <span className="text-cyan-400 font-bold">{currentStep.metrics.operations}</span>
+                  <span className="text-slate-400 text-[10px]">Comparisons:</span>
+                  <span className="text-amber-400 font-bold">{currentStep.metrics.comparisons}</span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between">
-                  <span className="text-slate-400 text-[10px]">Visited Nodes:</span>
-                  <span className="text-purple-400 font-bold">{currentStep.metrics.visitedNodes}</span>
+                  <span className="text-slate-400 text-[10px]">Swaps:</span>
+                  <span className="text-rose-400 font-bold">{currentStep.metrics.swaps}</span>
                 </div>
               </div>
             </div>
-
-            {/* Recursion / Call Stack */}
-            {currentStep.callStackData && currentStep.callStackData.length > 0 && (
-              <div className="space-y-2 pt-2 border-t border-white/5">
-                <h4 className="text-[11px] uppercase font-bold text-slate-400 flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 text-emerald-400" /> Call Stack Memory Depth
-                </h4>
-                <div className="space-y-1.5">
-                  {currentStep.callStackData.map((frame, idx) => (
-                    <div key={idx} className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-[11px]">
-                      <span className="text-emerald-300 font-bold">{frame.func}({frame.arg})</span>
-                      <span className="text-slate-400">Line {frame.line}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* RESIZABLE DIVIDER HANDLER (VERTICAL) */}
-      <div
-        onMouseDown={handleMouseDownVertical}
-        className="h-1.5 bg-white/5 hover:bg-indigo-500/50 cursor-row-resize flex items-center justify-center transition-colors shrink-0"
-      >
-        <GripHorizontal className="w-3 h-3 text-slate-600" />
-      </div>
-
-      {/* ── 3. BOTTOM EDUCATIONAL INSIGHTS & TELEMETRY DRAWER ────────────────── */}
-      <div
-        className="bg-[#0b0e17] border-t border-white/10 flex flex-col shrink-0 overflow-hidden shadow-2xl"
-        style={{ height: `${bottomHeightPx}px` }}
-      >
-        {/* Bottom Navigation Tabs */}
-        <div className="px-4 py-2 bg-[#0f131f] border-b border-white/10 flex items-center gap-2 text-xs font-mono overflow-x-auto shrink-0 no-scrollbar">
-          {[
-            { key: 'insights', label: 'AI Step Insights', icon: Lightbulb },
-            { key: 'properties', label: 'Telemetry & Invariants', icon: Cpu },
-            { key: 'pseudocode', label: 'Pseudo Code', icon: Code2 },
-            { key: 'trace', label: 'Execution Trace Log', icon: Activity },
-            { key: 'notes', label: 'Study Notes', icon: StickyNote },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeBottomTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveBottomTab(tab.key as any)}
-                className={`px-3 py-1.5 rounded-xl font-mono flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                  isActive
-                    ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-600/30'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5 border border-white/5'
-                }`}
-              >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-indigo-400'}`} /> {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Tab Content Body */}
-        <div className="flex-1 overflow-y-auto p-4 custom-scrollbar text-xs font-sans">
-          {activeBottomTab === 'insights' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 space-y-1.5">
-                <span className="text-[10px] font-mono font-bold uppercase text-indigo-400 flex items-center gap-1">
-                  <Lightbulb className="w-3.5 h-3.5 text-amber-400" /> Why this operation occurred
-                </span>
-                <p className="text-xs text-slate-300 leading-relaxed">{currentStep.description}</p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-1.5">
-                <span className="text-[10px] font-mono font-bold uppercase text-emerald-400 flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" /> Loop Invariant
-                </span>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  Subarray up to current pointer index maintains sorted or processed invariant state.
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-rose-500/5 border border-rose-500/20 space-y-1.5">
-                <span className="text-[10px] font-mono font-bold uppercase text-rose-400 flex items-center gap-1">
-                  <ShieldAlert className="w-3.5 h-3.5 text-rose-400" /> Interview Pitfall
-                </span>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  Always state off-by-one loop boundaries and auxiliary space overhead during technical rounds.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {activeBottomTab === 'properties' && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="bg-[#090a0f] p-3 rounded-2xl border border-white/10">
-                <div className="text-[10px] text-slate-400 uppercase font-bold font-mono">Best Time</div>
-                <div className="text-sm font-black text-emerald-400 font-mono mt-0.5">{activeMethod.timeComplexity.best}</div>
-              </div>
-
-              <div className="bg-[#090a0f] p-3 rounded-2xl border border-white/10">
-                <div className="text-[10px] text-slate-400 uppercase font-bold font-mono">Average Time</div>
-                <div className="text-sm font-black text-amber-400 font-mono mt-0.5">{activeMethod.timeComplexity.avg}</div>
-              </div>
-
-              <div className="bg-[#090a0f] p-3 rounded-2xl border border-white/10">
-                <div className="text-[10px] text-slate-400 uppercase font-bold font-mono">Worst Time</div>
-                <div className="text-sm font-black text-rose-400 font-mono mt-0.5">{activeMethod.timeComplexity.worst}</div>
-              </div>
-
-              <div className="bg-[#090a0f] p-3 rounded-2xl border border-white/10">
-                <div className="text-[10px] text-slate-400 uppercase font-bold font-mono">Space Complexity</div>
-                <div className="text-sm font-black text-cyan-400 font-mono mt-0.5">{activeMethod.spaceComplexity}</div>
-              </div>
-
-              <div className="bg-[#090a0f] p-3 rounded-2xl border border-white/10">
-                <div className="text-[10px] text-slate-400 uppercase font-bold font-mono">Stability</div>
-                <div className="text-sm font-black text-slate-200 font-mono mt-0.5">{activeMethod.stability}</div>
-              </div>
-
-              <div className="bg-[#090a0f] p-3 rounded-2xl border border-white/10">
-                <div className="text-[10px] text-slate-400 uppercase font-bold font-mono">In-Place</div>
-                <div className="text-sm font-black text-slate-200 font-mono mt-0.5">{activeMethod.inPlace}</div>
-              </div>
-
-              <div className="bg-[#090a0f] p-3 rounded-2xl border border-white/10">
-                <div className="text-[10px] text-slate-400 uppercase font-bold font-mono">Recursive</div>
-                <div className="text-sm font-black text-slate-200 font-mono mt-0.5">{activeMethod.recursive}</div>
-              </div>
-
-              <div className="bg-[#090a0f] p-3 rounded-2xl border border-white/10">
-                <div className="text-[10px] text-slate-400 uppercase font-bold font-mono">Difficulty</div>
-                <div className="text-sm font-black text-indigo-400 font-mono mt-0.5">{activeMethod.difficulty}</div>
-              </div>
-            </div>
-          )}
-
-          {activeBottomTab === 'pseudocode' && (
-            <pre className="bg-[#090a0f] p-4 rounded-2xl border border-white/10 font-mono text-xs text-indigo-300 whitespace-pre-wrap leading-relaxed">
-              {activeMethod.pseudoCode}
-            </pre>
-          )}
-
-          {activeBottomTab === 'trace' && (
-            <div className="space-y-1.5 font-mono text-xs max-h-40 overflow-y-auto">
-              {steps.map((s, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => {
-                    setIsPlaying(false);
-                    setCurrentStepIndex(idx);
-                  }}
-                  className={`p-2 rounded-xl border flex items-center justify-between transition-colors cursor-pointer ${
-                    idx === currentStepIndex
-                      ? 'bg-indigo-600/30 border-indigo-400 text-white font-bold'
-                      : 'bg-white/[0.01] border-white/5 text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-500">Step #{idx + 1}</span>
-                    <span>{s.description}</span>
-                  </div>
-                  <span className="text-[10px] text-indigo-400">Line {s.lineHighlight}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {activeBottomTab === 'notes' && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-mono font-bold text-slate-400 uppercase">Personal Study Notes ({activeMethod.name})</label>
-                {noteSaved && (
-                  <span className="text-xs text-emerald-400 font-mono font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Note Saved!
-                  </span>
-                )}
-              </div>
-              <textarea
-                value={userNote}
-                onChange={(e) => setUserNote(e.target.value)}
-                placeholder="Write down personal observations, invariant notes, or interview key points..."
-                className="w-full h-24 bg-[#090a0f] border border-white/10 rounded-2xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
-              />
-              <div className="flex justify-end">
-                <button
-                  onClick={() => {
-                    localStorage.setItem(`visualization_note_${selectedMethodId}`, userNote);
-                    setNoteSaved(true);
-                    setTimeout(() => setNoteSaved(false), 2500);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-mono font-bold text-xs flex items-center gap-2 cursor-pointer shadow-md"
-                >
-                  <Save className="w-3.5 h-3.5" /> Save Note
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+          </motion.div>
+        )}
       </div>
     </div>
   );
