@@ -26,6 +26,8 @@ const Notes = lazy(() => import('@pages/student/Notes'));
 const Leaderboard = lazy(() => import('@pages/student/Leaderboard'));
 const Achievements = lazy(() => import('@pages/student/Achievements'));
 const AnalyticsPage = lazy(() => import('@pages/student/AnalyticsPage'));
+const InterviewHub = lazy(() => import('@pages/student/InterviewHub'));
+const MockInterviewPage = lazy(() => import('@pages/student/MockInterviewPage'));
 const Profile = lazy(() => import('@pages/student/Profile'));
 const AboutDeveloper = lazy(() => import('@pages/student/AboutDeveloper'));
 const Settings = lazy(() => import('@pages/student/Settings'));
@@ -173,6 +175,8 @@ const AppContent: React.FC = () => {
             <Route path={ROUTES.LEADERBOARD} element={<Leaderboard />} />
             <Route path={ROUTES.ACHIEVEMENTS} element={<Achievements />} />
             <Route path={ROUTES.ANALYTICS} element={<AnalyticsPage />} />
+            <Route path={ROUTES.INTERVIEW_HUB} element={<InterviewHub />} />
+            <Route path={ROUTES.MOCK_INTERVIEW} element={<MockInterviewPage />} />
             <Route path={ROUTES.PROFILE} element={<Profile />} />
             <Route path={ROUTES.DEVELOPER} element={<AboutDeveloper />} />
             <Route path={ROUTES.SETTINGS} element={<Settings />} />

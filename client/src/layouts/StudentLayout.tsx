@@ -5,6 +5,7 @@ import { Sidebar } from '@components/layout/Sidebar';
 import { Navbar } from '@components/layout/Navbar';
 import { MobileBottomNav } from '@components/layout/MobileBottomNav';
 import { GlobalSearchModal } from '@components/common/GlobalSearchModal';
+import { AILearningMentor } from '@components/common/AILearningMentor';
 import { useAuthStore } from '@store/authStore';
 import { useUIStore } from '@store/uiStore';
 import { DashboardSkeleton } from '@components/common/Skeleton';
@@ -36,6 +37,7 @@ export const StudentLayout: React.FC = () => {
       </div>
       <MobileBottomNav />
       <GlobalSearchModal />
+      <AILearningMentor />
     </div>
   );
 };
