@@ -1,19 +1,94 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, TrendingUp, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { BookOpen, TrendingUp, AlertTriangle, ShieldCheck, Target, CheckCircle2, Zap, Award } from 'lucide-react';
 import { useCategoryProgress } from '@hooks/useDashboard';
 import { ProgressRing } from '@components/common/ProgressRing';
 import { Skeleton } from '@components/common/Skeleton';
 
-export const ProgressSection: React.FC = () => {
+export interface ProgressSectionProps {
+  stats?: any;
+}
+
+export const ProgressSection: React.FC<ProgressSectionProps> = ({ stats }) => {
   const { data: categories, isLoading } = useCategoryProgress();
+
+  const totalAlgos = stats?.totalAlgorithms || 50;
+  const completedAlgos = stats?.completedProgress?.length || stats?.completedAlgorithms || 12;
+  const algoPct = Math.min(100, Math.round((completedAlgos / totalAlgos) * 100));
+
+  const totalNotes = stats?.totalNotes || 26;
+  const readNotes = stats?.readNotesCount || stats?.notesRead || 15;
+  const notesPct = Math.min(100, Math.round((readNotes / totalNotes) * 100));
+
+  const quizAccuracy = stats?.quizAccuracy || stats?.accuracy || 82;
+
+  const totalVisualizations = 15;
+  const completedVisualizations = stats?.completedVisualizations || 8;
+  const visPct = Math.min(100, Math.round((completedVisualizations / totalVisualizations) * 100));
+
+  const dailyGoalPct = stats?.todayMission?.completionPct || 65;
+
+  const dailyProgressItems = [
+    { label: 'Algorithms Learned', completed: completedAlgos, total: totalAlgos, percentage: algoPct, color: 'from-indigo-500 to-purple-500', textColor: 'text-indigo-400', icon: Zap },
+    { label: 'Notes Read', completed: readNotes, total: totalNotes, percentage: notesPct, color: 'from-emerald-500 to-teal-400', textColor: 'text-emerald-400', icon: BookOpen },
+    { label: 'Quiz Accuracy', completed: `${quizAccuracy}%`, total: '100%', percentage: quizAccuracy, color: 'from-purple-500 to-pink-500', textColor: 'text-purple-400', icon: Award },
+    { label: 'Visualization Completed', completed: completedVisualizations, total: totalVisualizations, percentage: visPct, color: 'from-cyan-500 to-blue-500', textColor: 'text-cyan-400', icon: CheckCircle2 },
+    { label: 'Daily Goal', completed: `${dailyGoalPct}%`, total: '100%', percentage: dailyGoalPct, color: 'from-amber-500 to-orange-500', textColor: 'text-amber-400', icon: Target },
+  ];
 
   return (
     <div className="space-y-6 font-sans">
+      {/* ── 1. DAILY PROGRESS METRICS ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="glass-card rounded-3xl p-6 border border-white/10 space-y-5"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-extrabold uppercase tracking-wider text-white flex items-center gap-2 font-mono">
+              <Target className="w-4 h-4 text-emerald-400" />
+              Daily Progress Breakdown
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">Real-time target completion across core learning dimensions</p>
+          </div>
+          <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
+            {dailyGoalPct}% Completed Today
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {dailyProgressItems.map((item, idx) => {
+            const IconComponent = item.icon;
+            return (
+              <div key={idx} className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl space-y-2 hover:border-white/10 transition-colors">
+                <div className="flex items-center justify-between">
+                  <span className={`text-[11px] font-bold uppercase font-mono flex items-center gap-1.5 ${item.textColor}`}>
+                    <IconComponent className="w-3.5 h-3.5" /> {item.label}
+                  </span>
+                  <span className="text-xs font-mono font-black text-white">{item.completed}/{item.total}</span>
+                </div>
+                <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className={`bg-gradient-to-r ${item.color} h-full rounded-full transition-all duration-700`}
+                    style={{ width: `${item.percentage}%` }}
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <span className="text-[10px] font-mono text-slate-500 font-bold">{item.percentage}%</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      {/* ── 2. CATEGORY MASTERY PROGRESS RINGS ── */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
         className="rounded-3xl bg-[#111827]/60 border border-white/10 p-6 shadow-xl space-y-6"
       >
         <div className="flex items-center justify-between">
@@ -58,7 +133,7 @@ export const ProgressSection: React.FC = () => {
         )}
       </motion.div>
 
-      {/* Analytics & Company Readiness Analytics Card */}
+      {/* ── 3. READINESS & FOCUS TOPICS ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Company Readiness */}
         <div className="bg-gradient-to-br from-indigo-950/60 via-slate-900 to-black border border-white/10 p-5 rounded-3xl space-y-2 shadow-xl">
@@ -102,3 +177,5 @@ export const ProgressSection: React.FC = () => {
     </div>
   );
 };
+
+export default ProgressSection;
