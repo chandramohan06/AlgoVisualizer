@@ -10,7 +10,14 @@ const envSchema = z.object({
   MONGODB_URI: z
     .string()
     .transform((val) => {
-      if (!val || val.trim() === '' || val.includes('localhost') || val.includes('127.0.0.1')) {
+      if (
+        !val ||
+        val.trim() === '' ||
+        val.includes('localhost') ||
+        val.includes('127.0.0.1') ||
+        val.includes('ac-rdhmxat-shard-00-00') ||
+        val.startsWith('mongodb://')
+      ) {
         return DEFAULT_MONGODB_URI;
       }
       return val;
