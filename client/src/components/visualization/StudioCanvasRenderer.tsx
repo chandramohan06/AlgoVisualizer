@@ -1,14 +1,14 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IVisualizationStep } from './visualizationStudioRegistry';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Database } from 'lucide-react';
 
 interface StudioCanvasRendererProps {
   currentStep: IVisualizationStep;
 }
 
 export const StudioCanvasRenderer: React.FC<StudioCanvasRendererProps> = ({ currentStep }) => {
-  // ── 1. DEDICATED ARRAY RENDERER ──────────────────────────────────────────
+  // ── 1. DEDICATED RAM MEMORY & ARRAY RENDERER ──────────────────────────────
   if (currentStep.arrayData && currentStep.arrayData.length > 0) {
     const arr = currentStep.arrayData;
     const maxVal = Math.max(...arr, 100);
@@ -39,6 +39,9 @@ export const StudioCanvasRenderer: React.FC<StudioCanvasRendererProps> = ({ curr
               barStyle = 'from-indigo-500 to-blue-600 text-white border-indigo-400 shadow-2xl shadow-indigo-500/40 scale-105';
               ringGlow = '0 0 25px rgba(99,102,241,0.4)';
             }
+
+            // Simulated RAM memory address (e.g. 0x1000, 0x1004, 0x1008)
+            const ramAddress = `0x${(0x1000 + idx * 4).toString(16).toUpperCase()}`;
 
             return (
               <motion.div
@@ -71,10 +74,13 @@ export const StudioCanvasRenderer: React.FC<StudioCanvasRendererProps> = ({ curr
                   <span className="font-mono text-sm font-black tracking-tight">{val}</span>
                 </motion.div>
 
-                {/* Index Indicator Label */}
-                <span className="text-[10px] font-mono text-slate-400 font-bold bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
-                  [{idx}]
-                </span>
+                {/* RAM Address & Index Labels */}
+                <div className="flex flex-col items-center gap-0.5">
+                  <span className="text-[9px] font-mono text-indigo-400/80 font-bold">{ramAddress}</span>
+                  <span className="text-[10px] font-mono text-slate-400 font-bold bg-white/5 px-2 py-0.5 rounded-full border border-white/10">
+                    [{idx}]
+                  </span>
+                </div>
               </motion.div>
             );
           })}
@@ -83,7 +89,50 @@ export const StudioCanvasRenderer: React.FC<StudioCanvasRendererProps> = ({ curr
     );
   }
 
-  // ── 2. DEDICATED LINKED LIST RENDERER ─────────────────────────────────────
+  // ── 2. DEDICATED STRING SUBSTRING & PATTERN MATCHING RENDERER ────────────
+  if (currentStep.stringData) {
+    const chars = currentStep.stringData.split('');
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center p-6 space-y-6">
+        <div className="text-xs font-mono font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-amber-400" /> String Pattern &amp; Window Inspector
+        </div>
+
+        <div className="flex items-center justify-center gap-3 w-full max-w-4xl p-6 bg-[#090d16] border border-white/10 rounded-3xl shadow-2xl">
+          {chars.map((char, idx) => {
+            const isCompared = currentStep.comparedIndices?.includes(idx);
+            const isSorted = currentStep.sortedIndices?.includes(idx);
+            const isActive = currentStep.activeIndices?.includes(idx);
+
+            return (
+              <motion.div
+                key={idx}
+                layout
+                transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                className={`w-14 h-16 rounded-2xl border-2 flex flex-col items-center justify-center font-mono transition-all ${
+                  isSorted
+                    ? 'bg-emerald-950/40 border-emerald-400 text-emerald-300 shadow-xl shadow-emerald-500/20'
+                    : isCompared
+                    ? 'bg-amber-500/30 border-amber-400 text-amber-300 shadow-2xl shadow-amber-500/30 scale-110'
+                    : isActive
+                    ? 'bg-indigo-600/40 border-indigo-400 text-white shadow-2xl shadow-indigo-500/30 scale-105'
+                    : 'bg-[#0d1117] border-white/10 text-white'
+                }`}
+              >
+                <div className="text-[9px] text-amber-400 font-bold uppercase">
+                  {Object.entries(currentStep.pointerMap || {}).map(([k, v]) => (v === idx ? k : null))}
+                </div>
+                <span className="text-xl font-black">{char}</span>
+                <span className="text-[9px] text-slate-500 font-bold">[{idx}]</span>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // ── 3. DEDICATED LINKED LIST RENDERER ─────────────────────────────────────
   if (currentStep.linkedListData) {
     return (
       <div className="w-full h-full flex items-center justify-center p-6">
@@ -122,7 +171,7 @@ export const StudioCanvasRenderer: React.FC<StudioCanvasRendererProps> = ({ curr
     );
   }
 
-  // ── 3. DEDICATED STACK LIFO RENDERER ─────────────────────────────────────
+  // ── 4. DEDICATED STACK LIFO RENDERER ─────────────────────────────────────
   if (currentStep.stackData) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center p-6">
@@ -154,7 +203,7 @@ export const StudioCanvasRenderer: React.FC<StudioCanvasRendererProps> = ({ curr
     );
   }
 
-  // ── 4. DEDICATED QUEUE FIFO RENDERER ─────────────────────────────────────
+  // ── 5. DEDICATED QUEUE FIFO RENDERER ─────────────────────────────────────
   if (currentStep.queueData) {
     return (
       <div className="w-full h-full flex items-center justify-center p-6">
@@ -189,7 +238,54 @@ export const StudioCanvasRenderer: React.FC<StudioCanvasRendererProps> = ({ curr
     );
   }
 
-  // ── 5. DEDICATED TREE RENDERER ───────────────────────────────────────────
+  // ── 6. DEDICATED DP MATRIX TABLE RENDERER ─────────────────────────────────
+  if (currentStep.dpTableData) {
+    const { headers, rows, activeCell } = currentStep.dpTableData;
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center p-6 space-y-4">
+        <div className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+          <Database className="w-4 h-4 text-cyan-400" /> DP Memoization Table Matrix
+        </div>
+
+        <div className="overflow-x-auto border border-white/10 rounded-2xl bg-[#090d16] p-4 shadow-2xl">
+          <table className="border-collapse font-mono text-xs text-center">
+            <thead>
+              <tr>
+                {headers.map((h, i) => (
+                  <th key={i} className="p-2 border border-white/10 text-indigo-400 font-bold bg-white/5">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, rIdx) => (
+                <tr key={rIdx}>
+                  {row.map((cell, cIdx) => {
+                    const isActive = activeCell && activeCell[0] === rIdx && activeCell[1] === cIdx;
+                    return (
+                      <td
+                        key={cIdx}
+                        className={`p-3 border border-white/10 font-bold transition-all ${
+                          isActive
+                            ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-500/50 scale-110'
+                            : 'text-slate-300 hover:bg-white/5'
+                        }`}
+                      >
+                        {cell}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  // ── 7. DEDICATED TREE RENDERER ───────────────────────────────────────────
   if (currentStep.treeData) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center p-6">
@@ -216,7 +312,7 @@ export const StudioCanvasRenderer: React.FC<StudioCanvasRendererProps> = ({ curr
     );
   }
 
-  // ── 6. DEDICATED GRAPH RENDERER ──────────────────────────────────────────
+  // ── 8. DEDICATED GRAPH RENDERER ──────────────────────────────────────────
   if (currentStep.graphData) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center p-6">
