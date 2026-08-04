@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+const DEFAULT_MONGODB_URI = 'mongodb+srv://chandramohankumarsingh06_db_user:golu26@algovisualizer.td1z1g6.mongodb.net/algovisualizer?retryWrites=true&w=majority&appName=AlgoVisualizer';
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.string().default('3000'),
@@ -9,13 +11,11 @@ const envSchema = z.object({
     .string()
     .transform((val) => {
       if (!val || val.trim() === '' || val.includes('localhost') || val.includes('127.0.0.1')) {
-        return 'mongodb://chandramohankumarsingh06_db_user:golu26@ac-rdhmxat-shard-00-00.td1z1g6.mongodb.net:27017,ac-rdhmxat-shard-00-01.td1z1g6.mongodb.net:27017,ac-rdhmxat-shard-00-02.td1z1g6.mongodb.net:27017/algovisualizer?replicaSet=atlas-rdhmxat-shard-0&ssl=true&authSource=admin';
+        return DEFAULT_MONGODB_URI;
       }
       return val;
     })
-    .default(
-      'mongodb://chandramohankumarsingh06_db_user:golu26@ac-rdhmxat-shard-00-00.td1z1g6.mongodb.net:27017,ac-rdhmxat-shard-00-01.td1z1g6.mongodb.net:27017,ac-rdhmxat-shard-00-02.td1z1g6.mongodb.net:27017/algovisualizer?replicaSet=atlas-rdhmxat-shard-0&ssl=true&authSource=admin',
-    ),
+    .default(DEFAULT_MONGODB_URI),
 
   // JWT
   JWT_ACCESS_SECRET: z
