@@ -7,7 +7,6 @@ import mongoose from 'mongoose';
 import { Category } from '../models/Category.model';
 import { Algorithm } from '../models/Algorithm.model';
 import { QuizQuestion } from '../models/QuizQuestion.model';
-import { PracticeProblem } from '../models/PracticeProblem.model';
 import { User } from '../models/User.model';
 import { MASTER_DSA_CATEGORIES } from '../data/dsaMasterData';
 import { env } from '../config/env';
@@ -27,7 +26,6 @@ import { env } from '../config/env';
   let totalCategories = 0;
   let totalAlgorithms = 0;
   let totalQuizzes = 0;
-  let totalPractice = 0;
 
   console.log(`🚀  Seeding ${MASTER_DSA_CATEGORIES.length} Master DSA Categories …\n`);
 
@@ -104,26 +102,7 @@ import { env } from '../config/env';
         }
       }
 
-      // Seed Practice Problems
-      if (algoData.practiceProblems && algoData.practiceProblems.length > 0) {
-        for (const p of algoData.practiceProblems) {
-          await PracticeProblem.findOneAndUpdate(
-            { algorithmId: algoDoc._id, title: p.title },
-            {
-              algorithmId: algoDoc._id,
-              title: p.title,
-              description: p.description,
-              difficulty: p.difficulty,
-              starterCode: p.starterCode,
-              testCases: p.testCases,
-              solution: p.solution || p.explanation,
-              externalLink: p.externalLink || 'https://leetcode.com',
-            },
-            { upsert: true, new: true },
-          );
-          totalPractice++;
-        }
-      }
+
     }
   }
 
@@ -131,7 +110,6 @@ import { env } from '../config/env';
   console.log(`   - Total Categories Configured: ${totalCategories}`);
   console.log(`   - Total Algorithms Upserted: ${totalAlgorithms}`);
   console.log(`   - Total Quiz Questions Upserted: ${totalQuizzes}`);
-  console.log(`   - Total Practice Problems Upserted: ${totalPractice}`);
 
   await mongoose.disconnect();
   console.log('\n🔌  Disconnected from MongoDB.\n');

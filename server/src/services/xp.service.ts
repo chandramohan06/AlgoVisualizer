@@ -137,7 +137,7 @@ export const recalculateUserStats = async (userId: string | Types.ObjectId) => {
   const quizAccuracy = mcqsAttempted > 0 ? Math.round((mcqsCorrect / mcqsAttempted) * 100) : 0;
   const avgQuizTimeSeconds = quizAttempts.length > 0 ? Math.round(totalQuizTime / quizAttempts.length) : 0;
 
-  // Fetch practice progress
+  // Fetch visualization progress
   const userProgress = await Progress.find({ userId: user._id });
   const completedItems = userProgress.filter((p) => p.isCompleted);
   const questionsSolved = completedItems.length;

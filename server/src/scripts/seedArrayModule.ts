@@ -7,7 +7,6 @@ import mongoose from 'mongoose';
 import { Category } from '../models/Category.model';
 import { Algorithm } from '../models/Algorithm.model';
 import { QuizQuestion } from '../models/QuizQuestion.model';
-import { PracticeProblem } from '../models/PracticeProblem.model';
 import { User } from '../models/User.model';
 import { ARRAY_ALGORITHMS_DATA } from '../data/array.data';
 import { env } from '../config/env';
@@ -51,7 +50,6 @@ import { env } from '../config/env';
 
   let algoCount = 0;
   let quizCount = 0;
-  let practiceCount = 0;
 
   for (const algoData of ARRAY_ALGORITHMS_DATA) {
     const algoDoc = await Algorithm.findOneAndUpdate(
@@ -102,30 +100,12 @@ import { env } from '../config/env';
       quizCount++;
     }
 
-    // Seed Practice Problems
-    for (const p of algoData.practiceProblems) {
-      await PracticeProblem.findOneAndUpdate(
-        { algorithmId: algoDoc._id, title: p.title },
-        {
-          algorithmId: algoDoc._id,
-          title: p.title,
-          description: p.description,
-          difficulty: p.difficulty,
-          starterCode: p.starterCode,
-          testCases: p.testCases,
-          solution: p.solution,
-          externalLink: p.externalLink,
-        },
-        { upsert: true, new: true },
-      );
-      practiceCount++;
-    }
+
   }
 
   console.log(`\n🎉  Seeding Complete! Summary:`);
   console.log(`   - Algorithms Upserted: ${algoCount}`);
   console.log(`   - Quiz Questions Upserted: ${quizCount}`);
-  console.log(`   - Practice Problems Upserted: ${practiceCount}`);
 
   await mongoose.disconnect();
   console.log('\n🔌  Disconnected from MongoDB.\n');

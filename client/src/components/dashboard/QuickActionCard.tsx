@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { BookOpen, Brain, StickyNote, Code2, Compass } from 'lucide-react';
+import { BookOpen, Brain, StickyNote, Compass } from 'lucide-react';
 import { ROUTES } from '@constants/routes';
 
 interface ActionItem {
@@ -26,7 +26,7 @@ const actions: ActionItem[] = [
     title: 'Take Quiz',
     description: 'Test your understanding on active topics',
     icon: Brain,
-    path: ROUTES.ALGORITHMS, // will filter or navigate to list
+    path: ROUTES.QUIZ,
     color: 'from-pink-500 to-rose-600 text-rose-400',
     glow: 'group-hover:shadow-rose-500/20',
   },
@@ -37,14 +37,6 @@ const actions: ActionItem[] = [
     path: ROUTES.NOTES,
     color: 'from-amber-500 to-orange-600 text-orange-400',
     glow: 'group-hover:shadow-orange-500/20',
-  },
-  {
-    title: 'Practice Problems',
-    description: 'Solve coding challenges to earn leaderboard points',
-    icon: Code2,
-    path: ROUTES.PRACTICE,
-    color: 'from-emerald-500 to-teal-600 text-emerald-400',
-    glow: 'group-hover:shadow-emerald-500/20',
   },
 ];
 
@@ -57,7 +49,7 @@ export const QuickActionCard: React.FC = () => {
         <Compass className="w-5 h-5 text-blue-400" />
         Quick Actions
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {actions.map((action, i) => (
           <motion.div
             key={action.title}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, BookOpen, StickyNote, Code2, Folder, ArrowRight, X } from 'lucide-react';
+import { Search, BookOpen, StickyNote, Folder, ArrowRight, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUIStore } from '@store/uiStore';
 import { ROUTES, buildRoute } from '@constants/routes';
@@ -8,7 +8,7 @@ import { ROUTES, buildRoute } from '@constants/routes';
 interface SearchResult {
   id: string;
   title: string;
-  type: 'algorithm' | 'category' | 'note' | 'problem';
+  type: 'algorithm' | 'category' | 'note';
   category?: string;
   path: string;
 }
@@ -23,8 +23,6 @@ const MOCK_DB: SearchResult[] = [
   { id: '6', title: 'Graph Algorithms', type: 'category', path: ROUTES.ALGORITHMS + '?category=graph' },
   { id: '7', title: 'DFS vs BFS comparison notes', type: 'note', path: ROUTES.NOTES },
   { id: '8', title: 'My custom BST insertion notes', type: 'note', path: ROUTES.NOTES },
-  { id: '9', title: 'Two Sum Problem', type: 'problem', path: ROUTES.PRACTICE },
-  { id: '10', title: 'Reverse Linked List Challenge', type: 'problem', path: ROUTES.PRACTICE },
 ];
 
 export const GlobalSearchModal: React.FC = () => {
@@ -82,8 +80,6 @@ export const GlobalSearchModal: React.FC = () => {
         return <Folder className="w-4 h-4 text-indigo-400" />;
       case 'note':
         return <StickyNote className="w-4 h-4 text-amber-400" />;
-      case 'problem':
-        return <Code2 className="w-4 h-4 text-emerald-400" />;
     }
   };
 
@@ -113,7 +109,7 @@ export const GlobalSearchModal: React.FC = () => {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search algorithms, categories, notes, practice problems..."
+                placeholder="Search algorithms, categories, notes..."
                 className="w-full bg-transparent text-sm text-gray-200 placeholder:text-gray-600 focus:outline-none"
               />
               <button

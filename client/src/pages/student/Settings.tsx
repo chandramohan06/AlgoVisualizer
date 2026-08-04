@@ -599,7 +599,7 @@ export const StudentSettings: React.FC = () => {
                 {[
                   { key: 'emailNotifications',       label: 'General Email Notifications', desc: 'Receive important platform announcements and updates.' },
                   { key: 'quizReminder',             label: 'Quiz Study Reminders',       desc: 'Get notified when new quizzes matching your weak topics are ready.' },
-                  { key: 'dailyGoalReminder',        label: 'Daily Practice Goal Alert', desc: 'Alerts if you haven’t met your daily practice target.' },
+                  { key: 'dailyGoalReminder',        label: 'Daily Learning Goal Alert', desc: 'Alerts if you haven’t met your daily study target.' },
                   { key: 'contestReminder',          label: 'Contest & Challenge Alerts',desc: 'Reminders for upcoming coding challenges.' },
                   { key: 'leaderboardUpdates',       label: 'Leaderboard Rank Updates',   desc: 'Get notified when your rank changes on the global board.' },
                   { key: 'achievementNotifications', label: 'Achievement Unlocks',       desc: 'Instant alert when earning new badges and XP.' },

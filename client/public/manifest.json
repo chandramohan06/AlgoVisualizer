@@ -1,7 +1,7 @@
 {
   "name": "AlgoVisualizer - DSA Learning Platform",
   "short_name": "AlgoVisualizer",
-  "description": "Production-grade Data Structures & Algorithms Knowledge Base, Code Practice IDE, Quiz Engine, and Interactive Visualizer Studio.",
+  "description": "Production-grade Data Structures & Algorithms Knowledge Base, Quiz Engine, and Interactive Visualizer Studio.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -42,13 +42,6 @@
       "short_name": "Notes",
       "description": "Read 26-Section DSA Study Material",
       "url": "/notes",
-      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Practice IDE",
-      "short_name": "Practice",
-      "description": "Solve LeetCode/GFG Problems",
-      "url": "/practice",
       "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     },
     {

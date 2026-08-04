@@ -173,7 +173,7 @@ export const LandingPage: React.FC = () => {
 
   const stats = [
     { label: 'Interactive Algorithms', value: '50+' },
-    { label: 'Practice Problems', value: '100+' },
+    { label: 'Comprehensive DSA Notes', value: '26 Sections' },
     { label: 'Daily Active Learners', value: '10k+' },
     { label: 'Visual Learning Rate', value: '99.4%' }
   ];
@@ -181,11 +181,11 @@ export const LandingPage: React.FC = () => {
   const faqs = [
     {
       q: "Which coding languages are supported in the playground?",
-      a: "Our embedded Monaco Editor supports Java, C++, Python, and JavaScript. You can write your solutions in any of these languages and view matching pseudo-code step highlighting."
+      a: "Our embedded Monaco Editor supports Java, C++, Python, and JavaScript. You can write your code in any of these languages and view matching pseudo-code step highlighting."
     },
     {
-      q: "Can I connect this to external platforms like LeetCode?",
-      a: "Yes! Every visualization page comes with linked LeetCode problems, code starters, and official solutions, allowing you to bridge the gap between visualization and hands-on practice."
+      q: "Can I use this for placement preparation?",
+      a: "Yes! Every visualization page comes with structured topic guides, code starters, and official solutions, allowing you to master core data structures and algorithms."
     },
     {
       q: "Is there a dark mode option?",
@@ -193,7 +193,7 @@ export const LandingPage: React.FC = () => {
     },
     {
       q: "How does the gamification work?",
-      a: "You earn XP by completing quiz questions, finishing visualizer modules, and solving practice problems. Maintain a daily streak to multiply your points and climb the global leaderboard!"
+      a: "You earn XP by completing quiz questions and finishing visualizer modules. Maintain a daily streak to multiply your points and climb the global leaderboard!"
     }
   ];
 

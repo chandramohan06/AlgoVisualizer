@@ -2,13 +2,10 @@ import mongoose from 'mongoose';
 import { Category } from '../models/Category.model';
 import { Algorithm } from '../models/Algorithm.model';
 import { QuizQuestion } from '../models/QuizQuestion.model';
-import { PracticeProblem } from '../models/PracticeProblem.model';
 import { User } from '../models/User.model';
 import { DeveloperProfile } from '../models/DeveloperProfile.model';
 import { Difficulty, QuestionType, Role } from '@algovisualizer/shared';
 import bcrypt from 'bcryptjs';
-import { getAllPracticeQuestions } from '../data/allPracticeQuestions.data';
-import { MetadataExtractor } from '../services/judge/utils/MetadataExtractor';
 
 export const seedDatabase = async (): Promise<void> => {
   console.log(`[seeder] Starting seedDatabase. readyState = ${mongoose.connection.readyState}`);
@@ -91,10 +88,8 @@ export const seedDatabase = async (): Promise<void> => {
     }
     const categoryCount = await Category.countDocuments();
     const arrayCategoryExists = await Category.findOne({ slug: 'array' });
-    const practiceProblemCount = await PracticeProblem.countDocuments();
-    
-    if (categoryCount > 0 && arrayCategoryExists && practiceProblemCount >= 200) {
-      console.log(`🌱  Database already seeded (${practiceProblemCount} practice problems). Skipping seeder.`);
+    if (categoryCount > 0 && arrayCategoryExists) {
+      console.log(`🌱  Database already seeded. Skipping seeder.`);
       return;
     }
 
@@ -2365,89 +2360,7 @@ export const seedDatabase = async (): Promise<void> => {
       console.log(`✅  Seeded ${seededQuizzes.length} quiz questions.`);
     }
 
-    // 6. Seed All 250 Practice Problems
-    const allQuestions = getAllPracticeQuestions();
-    const targetCompanies = [
-      'TCS', 'Infosys', 'Wipro', 'Cognizant', 'Accenture', 'Capgemini', 'Deloitte', 'IBM',
-      'Oracle', 'Amazon', 'Microsoft', 'Google', 'Adobe', 'Flipkart', 'Paytm', 'Goldman Sachs',
-      'JP Morgan', 'PhonePe', 'Uber', 'Swiggy', 'Zomato', 'Nvidia', 'Qualcomm', 'Samsung',
-      'Intel', 'VMware', 'Salesforce', 'Atlassian', 'LinkedIn', 'Apple', 'Meta', 'Netflix'
-    ];
 
-    const practiceProblemsData = allQuestions.map((q, idx) => {
-      const codeSnippets = {
-        java: q.starterCodeJava || `class Solution {\n    // Write your Java solution here\n}`,
-        cpp: q.starterCodeCpp || `#include <iostream>\n#include <vector>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Write your C++ solution here\n};`,
-        python: '',
-        pseudo: '',
-      };
-
-      const metadata = MetadataExtractor.extractMetadata(q.starterCodeJava || q.starterCodeCpp || '', null, q.starterCodeJava);
-
-      let testCases = (q.testCases && q.testCases.length > 0) ? q.testCases : [];
-      if (testCases.length === 0 && q.examples && q.examples.length > 0) {
-        testCases = q.examples.map(ex => ({ input: ex.input, expectedOutput: ex.output }));
-      }
-      if (testCases.length === 0 && (q as any).sampleInput) {
-        testCases = [{ input: (q as any).sampleInput, expectedOutput: (q as any).sampleOutput || q.expectedOutput || '' }];
-      }
-
-      let hiddenTestCases = (q.hiddenTestCases && q.hiddenTestCases.length > 0) ? q.hiddenTestCases : [];
-      if (hiddenTestCases.length === 0 && q.examples && q.examples.length > 1) {
-        hiddenTestCases = q.examples.slice(1).map(ex => ({ input: ex.input, expectedOutput: ex.output }));
-      }
-
-      const assignedCompanies = (q.companies && q.companies.length > 0)
-        ? q.companies
-        : [
-            targetCompanies[idx % targetCompanies.length],
-            targetCompanies[(idx + 7) % targetCompanies.length],
-            targetCompanies[(idx + 13) % targetCompanies.length],
-          ];
-
-      const topicName = q.topic || q.category || 'Arrays';
-
-      return {
-        title: q.title,
-        slug: q.slug || q.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-        difficulty: q.difficulty === 'Hard' ? Difficulty.HARD : q.difficulty === 'Medium' ? Difficulty.MEDIUM : Difficulty.EASY,
-        category: topicName,
-        pattern: topicName,
-        topic: topicName,
-        companies: assignedCompanies,
-        overview: q.problemStatement || q.title,
-        hints: q.hints || [],
-        examples: q.examples || [],
-        constraints: q.constraints || [],
-        testCases,
-        hiddenTestCases,
-        codeSnippets,
-        metadata,
-        acceptanceRate: parseFloat(q.acceptanceRate || '65') || 65,
-        totalSubmissions: q.totalSubmissions || (100 + (idx * 37) % 500),
-        totalSolved: q.totalSolved || (50 + (idx * 23) % 300),
-        frequency: 50 + (idx * 17) % 50,
-        complexity: {
-          time: q.timeComplexity || 'O(N)',
-          space: q.spaceComplexity || 'O(1)',
-          explanation: '',
-        },
-        commonMistakes: [],
-        relatedSlugs: [],
-      };
-    });
-
-    const uniqueMap = new Map<string, any>();
-    for (const item of practiceProblemsData) {
-      if (!uniqueMap.has(item.slug)) {
-        uniqueMap.set(item.slug, item);
-      }
-    }
-    const deduplicatedData = Array.from(uniqueMap.values());
-
-    await PracticeProblem.deleteMany({});
-    const seededProblems = await PracticeProblem.insertMany(deduplicatedData);
-    console.log(`✅  Seeded ${seededProblems.length} LeetCode practice problems into MongoDB.`);
   } catch (error) {
     console.error('❌  Error seeding database:', error);
   }

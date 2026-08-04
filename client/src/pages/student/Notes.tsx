@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   Play,
   Code,
+  Compass,
   FileQuestion,
   Printer,
   Download,
@@ -1202,7 +1203,7 @@ export const Notes: React.FC = () => {
                     {activeNote.relatedProblems.map((prob, i) => (
                       <div
                         key={i}
-                        onClick={() => navigate(prob.link || '/practice')}
+                        onClick={() => navigate('/algorithms')}
                         className="p-3 rounded-xl bg-white/[0.02] border border-white/10 hover:border-emerald-500/40 hover:bg-emerald-500/5 cursor-pointer transition-all flex items-center justify-between"
                       >
                         <div>
@@ -1301,27 +1302,27 @@ export const Notes: React.FC = () => {
               </span>
             </div>
 
-            {/* Card 2: Practice Problems */}
+            {/* Card 2: DSA Roadmap */}
             <div
-              onClick={() => navigate('/practice')}
+              onClick={() => navigate('/algorithms')}
               className="glass-card p-4 rounded-xl border border-emerald-500/20 hover:border-emerald-500/50 bg-emerald-500/5 hover:bg-emerald-500/10 cursor-pointer transition-all space-y-3 group"
             >
               <div className="flex items-center justify-between">
                 <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 group-hover:scale-110 transition-transform">
-                  <Code className="w-5 h-5" />
+                  <Compass className="w-5 h-5" />
                 </div>
                 <ChevronRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition-transform" />
               </div>
               <div>
                 <h5 className="text-xs font-bold text-white group-hover:text-emerald-300">
-                  Practice Coding Problems
+                  DSA Roadmap
                 </h5>
                 <p className="text-[11px] text-slate-400 mt-1 leading-snug">
-                  Solve curated LeetCode/GFG coding problems for {activeNote.title} in the IDE.
+                  Explore structured A2Z learning sequence for {activeNote.title}.
                 </p>
               </div>
               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 font-mono">
-                Solve Problems &rarr;
+                Explore Roadmap &rarr;
               </span>
             </div>
 

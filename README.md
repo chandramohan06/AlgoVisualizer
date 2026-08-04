@@ -95,9 +95,9 @@ AlgoVisualizer/
 ├── server/                     # Express.js + Node.js Backend Server
 │   ├── src/
 │   │   ├── config/             # env.ts, db.ts
-│   │   ├── controllers/        # auth, user, note, practice, leaderboard, admin, quiz controllers
+│   │   ├── controllers/        # auth, user, note, leaderboard, admin, quiz controllers
 │   │   ├── middlewares/        # auth, role authorization, rateLimit, error middlewares
-│   │   ├── models/             # User, Note, NoteProgress, PracticeProblem, Leaderboard, AuditLog
+│   │   ├── models/             # User, Note, NoteProgress, Leaderboard, AuditLog
 │   │   └── routes/             # API routing manifests
 │   └── package.json
 └── shared/                     # Shared TypeScript Types & Enums

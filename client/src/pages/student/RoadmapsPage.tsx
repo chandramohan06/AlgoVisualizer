@@ -68,7 +68,7 @@ export const RoadmapsPage: React.FC = () => {
               <div
                 key={idx}
                 className="bg-black/40 border border-white/10 hover:border-cyan-500/50 rounded-2xl p-6 space-y-4 transition-all hover:shadow-xl hover:scale-[1.02] cursor-pointer group flex flex-col justify-between"
-                onClick={() => navigate('/practice')}
+                onClick={() => navigate('/algorithms')}
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -96,7 +96,7 @@ export const RoadmapsPage: React.FC = () => {
 
                 <div className="pt-4 border-t border-white/5 flex items-center justify-between text-xs">
                   <span className="text-[10px] text-cyan-400 font-mono font-bold flex items-center gap-1">
-                    Explore Questions <ArrowRight className="w-3.5 h-3.5" />
+                    Explore Topic <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                   <button className="p-1.5 rounded-lg bg-white/5 group-hover:bg-cyan-600 group-hover:text-white text-slate-400 transition-all">
                     <ChevronRight className="w-4 h-4" />

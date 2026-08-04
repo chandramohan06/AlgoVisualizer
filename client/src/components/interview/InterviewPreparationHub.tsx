@@ -382,10 +382,10 @@ export const InterviewPreparationHub: React.FC = () => {
                 </div>
                 <h4 className="text-sm font-extrabold text-white">{q.title}</h4>
                 <button
-                  onClick={() => navigate(`/interview/${q.category}/${q.id}`)}
+                  onClick={() => navigate('/visualizations')}
                   className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl cursor-pointer"
                 >
-                  Start Practice &rarr;
+                  Explore Topic &rarr;
                 </button>
               </div>
             ))}

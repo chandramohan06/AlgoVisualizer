@@ -6,7 +6,6 @@ import {
   Brain,
   Award,
   Flame,
-  Code2,
   Trophy,
   RefreshCw,
   Search,
@@ -97,7 +96,7 @@ export const Dashboard: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Universal Search (Notes, Algorithms, Practice, Quiz)..."
+            placeholder="Universal Search (Notes, Algorithms, Quiz)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -122,13 +121,6 @@ export const Dashboard: React.FC = () => {
             className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
           >
             <Play className="w-3.5 h-3.5 text-cyan-400" /> Visualizer
-          </button>
-
-          <button
-            onClick={() => navigate('/practice')}
-            className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-300 hover:text-white transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5"
-          >
-            <Code2 className="w-3.5 h-3.5 text-emerald-400" /> Practice
           </button>
 
           <button
@@ -339,15 +331,6 @@ export const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            <div>
-              <div className="flex justify-between text-slate-300 mb-1">
-                <span>Practice Problems Solved</span>
-                <span className="font-mono text-emerald-400 font-bold">{Math.min(100, stats.problemsSolved * 5)}%</span>
-              </div>
-              <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
-                <motion.div className="bg-emerald-500 h-full" initial={{ width: 0 }} animate={{ width: `${Math.min(100, stats.problemsSolved * 5)}%` }} transition={{ duration: 1 }} />
-              </div>
-            </div>
 
             <div>
               <div className="flex justify-between text-slate-300 mb-1">
@@ -436,11 +419,6 @@ export const Dashboard: React.FC = () => {
               <div className="text-[10px] text-slate-400">Weekly Study</div>
             </div>
 
-            <div className="p-3 rounded-xl bg-black/30 border border-white/5 space-y-1">
-              <Code2 className="w-4 h-4 text-emerald-400 mx-auto" />
-              <div className="text-lg font-black text-white font-mono">{stats.problemsSolved}</div>
-              <div className="text-[10px] text-slate-400">Problems Solved</div>
-            </div>
 
             <div className="p-3 rounded-xl bg-black/30 border border-white/5 space-y-1">
               <Brain className="w-4 h-4 text-purple-400 mx-auto" />
@@ -596,12 +574,6 @@ export const Dashboard: React.FC = () => {
                     >
                       Review
                     </button>
-                    <button
-                      onClick={() => navigate('/practice')}
-                      className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[10px] cursor-pointer"
-                    >
-                      Practice
-                    </button>
                   </div>
                 </div>
               ))
@@ -629,11 +601,6 @@ export const Dashboard: React.FC = () => {
               <div className="text-[10px] text-slate-400">26-Section Guides</div>
             </button>
 
-            <button onClick={() => navigate('/practice')} className="min-w-[130px] shrink-0 sm:shrink p-3.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-left space-y-1 cursor-pointer transition-all active:scale-95">
-              <Code2 className="w-5 h-5 text-emerald-400" />
-              <div className="text-xs font-bold text-white">Practice IDE</div>
-              <div className="text-[10px] text-slate-400">Solve Problems</div>
-            </button>
 
             <button onClick={() => navigate('/visualizations')} className="min-w-[130px] shrink-0 sm:shrink p-3.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-left space-y-1 cursor-pointer transition-all active:scale-95">
               <Play className="w-5 h-5 text-cyan-400" />
@@ -780,7 +747,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <p className="text-xs text-slate-400">
             {stats.bookmarksCount > 0
-              ? `You have ${stats.bookmarksCount} saved notes and practice problems ready for revision.`
+              ? `You have ${stats.bookmarksCount} saved notes ready for revision.`
               : 'No bookmarked items yet.'}
           </p>
         </div>

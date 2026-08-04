@@ -24,17 +24,8 @@ export const ARRAYS_CATEGORY_DATA: DSAAlgorithmEntry[] = ARRAY_ALGORITHMS_DATA.m
   leetCodeName: item.title,
   leetCodeDifficulty: item.difficulty === 'easy' ? 'Easy' : item.difficulty === 'medium' ? 'Medium' : 'Hard',
   leetCodePattern: item.topicGroup,
-  leetCodeUrl: item.practiceProblems[0]?.externalLink || 'https://leetcode.com',
+  leetCodeUrl: 'https://leetcode.com',
   sampleInput: item.sampleInput,
   sampleOutput: item.sampleOutput,
   quizzes: item.quizzes,
-  practiceProblems: item.practiceProblems.map((p) => ({
-    ...p,
-    explanation: p.solution,
-    starterCode: {
-      java: p.starterCode.java,
-      cpp: p.starterCode.cpp,
-      python: `def solve():\n    pass`,
-    },
-  })),
 }));

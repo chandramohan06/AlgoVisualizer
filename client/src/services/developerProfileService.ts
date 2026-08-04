@@ -133,7 +133,6 @@ export interface IDeveloperProfileData {
   achievements: IAchievement[];
   codingProfiles: ICodingProfile[];
   algorithmsVisualized?: string;
-  practiceProblems?: string;
   projectsCount?: string;
   usersCount?: string;
   experienceYears?: string;

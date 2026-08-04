@@ -1,65 +1,39 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import practiceService, { IUserProgressResponse } from '../services/practiceService';
+import { useQueryClient } from '@tanstack/react-query';
+
+export interface IUserProgressResponse {
+  solvedProblemIds: string[];
+  attemptedProblemIds: string[];
+  bookmarkedProblemIds: string[];
+  revisionLevels: Record<string, string>;
+}
 
 export const USER_PROGRESS_QUERY_KEY = ['user-progress'];
 
 export const useUserProgress = () => {
   const queryClient = useQueryClient();
 
-  const query = useQuery<IUserProgressResponse>({
-    queryKey: USER_PROGRESS_QUERY_KEY,
-    queryFn: async () => {
-      const data = await practiceService.getUserProgress();
-      return data;
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes cache
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-  });
-
   const invalidateProgress = () => {
     queryClient.invalidateQueries({ queryKey: USER_PROGRESS_QUERY_KEY });
   };
 
-  const solvedSet = new Set<string>(query.data?.solvedProblemIds || []);
-  const attemptedSet = new Set<string>(query.data?.attemptedProblemIds || []);
-  const bookmarkedSet = new Set<string>(query.data?.bookmarkedProblemIds || []);
+  const solvedSet = new Set<string>();
+  const attemptedSet = new Set<string>();
+  const bookmarkedSet = new Set<string>();
 
-  const isProblemSolved = (idOrSlugOrNum?: string | number): boolean => {
-    if (idOrSlugOrNum === undefined || idOrSlugOrNum === null || idOrSlugOrNum === '') return false;
-    const str = String(idOrSlugOrNum);
-    return (
-      solvedSet.has(str) ||
-      solvedSet.has(str.toLowerCase()) ||
-      (str.startsWith('p-') ? solvedSet.has(str.replace(/^p-/i, '')) : solvedSet.has(`p-${str}`))
-    );
-  };
-
-  const isProblemAttempted = (idOrSlugOrNum?: string | number): boolean => {
-    if (idOrSlugOrNum === undefined || idOrSlugOrNum === null || idOrSlugOrNum === '') return false;
-    const str = String(idOrSlugOrNum);
-    return (
-      attemptedSet.has(str) ||
-      attemptedSet.has(str.toLowerCase()) ||
-      (str.startsWith('p-') ? attemptedSet.has(str.replace(/^p-/i, '')) : attemptedSet.has(`p-${str}`))
-    );
-  };
-
-  const isProblemBookmarked = (idOrSlugOrNum?: string | number): boolean => {
-    if (idOrSlugOrNum === undefined || idOrSlugOrNum === null || idOrSlugOrNum === '') return false;
-    const str = String(idOrSlugOrNum);
-    return (
-      bookmarkedSet.has(str) ||
-      bookmarkedSet.has(str.toLowerCase()) ||
-      (str.startsWith('p-') ? bookmarkedSet.has(str.replace(/^p-/i, '')) : bookmarkedSet.has(`p-${str}`))
-    );
-  };
+  const isProblemSolved = (_idOrSlugOrNum?: string | number): boolean => false;
+  const isProblemAttempted = (_idOrSlugOrNum?: string | number): boolean => false;
+  const isProblemBookmarked = (_idOrSlugOrNum?: string | number): boolean => false;
 
   return {
-    progress: query.data,
-    isLoading: query.isLoading,
-    isError: query.isError,
-    refetch: query.refetch,
+    progress: {
+      solvedProblemIds: [],
+      attemptedProblemIds: [],
+      bookmarkedProblemIds: [],
+      revisionLevels: {},
+    } as IUserProgressResponse,
+    isLoading: false,
+    isError: false,
+    refetch: async () => ({}),
     invalidateProgress,
     isProblemSolved,
     isProblemAttempted,

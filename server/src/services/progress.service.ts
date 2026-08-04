@@ -8,7 +8,6 @@ import { Note } from '../models/Note.model';
 import { NoteProgress } from '../models/NoteProgress.model';
 import { QuizAttempt } from '../models/QuizAttempt.model';
 import { Achievement } from '../models/Achievement.model';
-import { PracticeUserProgress } from '../models/PracticeUserProgress.model';
 import { ActivityLog } from '../models/ActivityLog.model';
 
 export const getAll = async (userId: string) => {
@@ -69,7 +68,6 @@ export const getSummary = async (userId: string, type?: string) => {
     bookmarksCount,
     notesCount,
     noteProgressList,
-    practiceRecord,
     attemptsCount,
   ] = await Promise.all([
     Algorithm.countDocuments({ isPublished: true }),
@@ -78,7 +76,6 @@ export const getSummary = async (userId: string, type?: string) => {
     Bookmark.countDocuments({ userId }),
     Note.countDocuments({ published: true }),
     NoteProgress.find({ userId }),
-    PracticeUserProgress.findOne({ userId }),
     QuizAttempt.countDocuments({ userId }),
   ]);
 
@@ -91,7 +88,7 @@ export const getSummary = async (userId: string, type?: string) => {
   const totalPoints = user?.xp ?? leaderboard?.totalPoints ?? 0;
   const quizzesCompleted = attemptsCount;
   const accuracy = quizzesCompleted > 0 ? ((leaderboard as any)?.quizAccuracy ?? 0) : 0;
-  const problemsSolved = practiceRecord?.solvedProblemIds?.length ?? 0;
+  const problemsSolved = 0;
 
   let rank = 0;
   if (leaderboard && totalPoints > 0) {
@@ -218,9 +215,7 @@ export const getDashboardFullStats = async (userId: string) => {
 
   // 3. Smart Insights (Real DB calculations only)
   const insights: string[] = [];
-  if (summary.problemsSolved > 0) {
-    insights.push(`You have solved ${summary.problemsSolved} practice problem(s) so far.`);
-  }
+
   if (summary.readNotesCount > 0) {
     insights.push(`You have completed reading ${summary.readNotesCount} DSA note(s).`);
   }
@@ -291,7 +286,6 @@ export const getDashboardFullStats = async (userId: string) => {
   const tasks = [
     { name: 'Read a DSA Note', isCompleted: hasNoteToday, category: 'Notes', link: '/notes' },
     { name: 'Visualize Algorithm', isCompleted: hasVisualizerToday, category: 'Visualizer', link: '/visualizations' },
-    { name: 'Practice Code Problem', isCompleted: summary.problemsSolved > 0, category: 'Practice', link: '/practice' },
     { name: 'Attempt Quiz', isCompleted: hasQuizToday, category: 'Quiz', link: '/quiz' },
     { name: 'Revise Cheat Sheet', isCompleted: summary.readNotesCount > 0, category: 'Revision', link: '/notes' },
   ];

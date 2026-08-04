@@ -3,11 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   Compass, Search, CheckSquare, Square, Bookmark, ExternalLink,
-  ChevronDown, ChevronRight, Clock, Zap, Code2, StickyNote,
+  ChevronDown, ChevronRight, Clock, Zap, StickyNote,
   X, Save, CheckCircle2, Target, Flame
 } from 'lucide-react';
 import { useAuthStore } from '@store/authStore';
-import practiceService, { IPracticeQuestionItem } from '@services/practiceService';
 import { useUserProgress } from '../../hooks/useUserProgress';
 import { useRoadmapProgress } from '../../hooks/useRoadmapProgress';
 import {
@@ -66,27 +65,12 @@ export const Algorithms: React.FC = () => {
     try {
       setLoading(true);
       const initialQuestions = getMappedRoadmapQuestions();
-      
-      const backendQuestions = await practiceService.getQuestions({ limit: 1000 }).catch(() => []);
-
       const revisionObj = userProgress?.revisionLevels || {};
 
-      const backendMap = new Map<string, IPracticeQuestionItem>();
-      if (backendQuestions && backendQuestions.length > 0) {
-        backendQuestions.forEach(bq => {
-          if (bq.slug) backendMap.set(bq.slug, bq);
-          if (bq._id) backendMap.set(bq._id, bq);
-          if (bq.leetcodeNumber) backendMap.set(String(bq.leetcodeNumber), bq);
-        });
-      }
-
       const merged = initialQuestions.map(q => {
-        const bq = backendMap.get(q.id) || (q.leetcodeNumber ? backendMap.get(String(q.leetcodeNumber)) : undefined);
-        
-        const isSolved = isProblemSolved(q.id) || (q.leetcodeNumber ? isProblemSolved(String(q.leetcodeNumber)) : false) || (bq ? bq.isSolved : false);
-        const isBookmarked = isProblemBookmarked(q.id) || (q.leetcodeNumber ? isProblemBookmarked(String(q.leetcodeNumber)) : false) || (bq ? bq.isBookmarked : false);
-
-        const rLevel = revisionObj[q.id] || (q.leetcodeNumber ? revisionObj[String(q.leetcodeNumber)] : '') || (bq ? bq.revisionLevel : '') || '';
+        const isSolved = isProblemSolved(q.id) || (q.leetcodeNumber ? isProblemSolved(String(q.leetcodeNumber)) : false);
+        const isBookmarked = isProblemBookmarked(q.id) || (q.leetcodeNumber ? isProblemBookmarked(String(q.leetcodeNumber)) : false);
+        const rLevel = revisionObj[q.id] || (q.leetcodeNumber ? revisionObj[String(q.leetcodeNumber)] : '') || '';
 
         let mappedStatus: StatusType = 'Not Started';
         if (isSolved) mappedStatus = 'Completed';
@@ -101,7 +85,6 @@ export const Algorithms: React.FC = () => {
 
         return {
           ...q,
-          id: bq?._id || q.id,
           isSolved,
           isBookmarked,
           status: mappedStatus,
@@ -110,7 +93,6 @@ export const Algorithms: React.FC = () => {
 
       setQuestions(merged);
     } catch (err) {
-      console.warn('Backend questions sync fallback to local dataset:', err);
       setQuestions(getMappedRoadmapQuestions());
     } finally {
       setLoading(false);
@@ -165,17 +147,7 @@ export const Algorithms: React.FC = () => {
     }));
 
     try {
-      let backendStatus = 'not_started';
-      if (newStatus === 'Attempted') backendStatus = 'attempted';
-      else if (newStatus === 'Completed') backendStatus = 'completed';
-      else if (newStatus === 'Revision 1') backendStatus = 'revision-1';
-      else if (newStatus === 'Revision 2') backendStatus = 'revision-2';
-      else if (newStatus === 'Mastered') backendStatus = 'mastered';
-
-      await practiceService.updateStatus(question.id, backendStatus);
       invalidateProgress();
-      
-      // If newly completed, refresh user auth store to update XP in header / profile
       if (isCompletedType && !prevSolved) {
         checkAuth();
       }
@@ -201,11 +173,7 @@ export const Algorithms: React.FC = () => {
       return q;
     }));
 
-    try {
-      await practiceService.toggleBookmark(question.id);
-    } catch (error) {
-      console.error('Failed to toggle bookmark:', error);
-    }
+    // Toggle bookmark locally
   };
 
   const openNotesDrawer = async (question: RoadmapQuestionItem) => {
@@ -213,21 +181,13 @@ export const Algorithms: React.FC = () => {
     setNoteContent('');
     setNoteSaveSuccess(false);
 
-    try {
-      const details = await practiceService.getQuestionBySlug(question.id);
-      if (details && details.personalNote) {
-        setNoteContent(details.personalNote);
-      }
-    } catch {
-      // Fallback
-    }
+    // Notes drawer opened
   };
 
   const handleSaveNote = async () => {
     if (!activeNotesQuestion) return;
     try {
       setSavingNote(true);
-      await practiceService.saveNote(activeNotesQuestion.id, noteContent);
       setNoteSaveSuccess(true);
       setTimeout(() => setNoteSaveSuccess(false), 2500);
     } catch (err) {
@@ -578,8 +538,8 @@ export const Algorithms: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <button onClick={() => navigate(`/interview/${q.category}/${q.id}`)} className="px-3 py-1.5 rounded-xl bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white border border-cyan-500/30 text-xs font-mono font-bold flex items-center gap-1">
-                        <Code2 className="w-3 h-3" /> Practice
+                      <button onClick={() => navigate('/visualizations')} className="px-3 py-1.5 rounded-xl bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white border border-cyan-500/30 text-xs font-mono font-bold flex items-center gap-1">
+                        <Zap className="w-3 h-3" /> Visualizer
                       </button>
 
                       <button onClick={() => openNotesDrawer(q)} className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 text-xs font-mono font-bold flex items-center gap-1">
@@ -802,7 +762,7 @@ export const Algorithms: React.FC = () => {
                                           <div className="space-y-1 min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <span
-                                                onClick={() => navigate(`/interview/${q.category}/${q.id}`)}
+                                                onClick={() => navigate(`/visualizations`)}
                                                 className={`text-sm font-extrabold cursor-pointer transition-colors hover:underline ${
                                                   isSolved ? 'text-slate-400 line-through' : 'text-white group-hover:text-indigo-400'
                                                 }`}
@@ -848,11 +808,11 @@ export const Algorithms: React.FC = () => {
 
                                           {/* Action Buttons */}
                                           <button
-                                            onClick={() => navigate(`/interview/${q.category}/${q.id}`)}
+                                            onClick={() => navigate('/visualizations')}
                                             className="px-2.5 py-1.5 rounded-xl bg-cyan-600/20 hover:bg-cyan-600 text-cyan-300 hover:text-white border border-cyan-500/30 text-[11px] font-mono font-bold flex items-center gap-1 cursor-pointer transition-all"
-                                            title="Open Practice Question"
+                                            title="Open Interactive Visualizer"
                                           >
-                                            <Code2 className="w-3 h-3" /> Practice
+                                            <Zap className="w-3 h-3" /> Visualizer
                                           </button>
 
                                           <button

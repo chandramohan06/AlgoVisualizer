@@ -35,29 +35,11 @@ export const API_ENDPOINTS = {
   PROGRESS_SUMMARY: `${API_BASE}/progress/summary`,
   PROGRESS_DASHBOARD_FULL: `${API_BASE}/progress/dashboard-full`,
 
-  // Practice
-  PRACTICE_CATEGORIES: `${API_BASE}/practice/categories`,
-  PRACTICE_PATTERNS: `${API_BASE}/practice/patterns`,
-  PRACTICE_QUESTIONS: `${API_BASE}/practice/questions`,
-  PRACTICE_USER_PROGRESS: `${API_BASE}/practice/user-progress`,
-  PRACTICE_RUN: `${API_BASE}/practice/run`,
-  PRACTICE_SUBMIT: `${API_BASE}/practice/submit`,
-  PRACTICE_SUBMISSIONS: `${API_BASE}/practice/submissions`,
-  PRACTICE_QUESTION_BY_SLUG: (slug: string) => `${API_BASE}/practice/questions/${slug}`,
-  PRACTICE_QUESTION_SOLVE: (id: string) => `${API_BASE}/practice/questions/${id}/solve`,
-  PRACTICE_QUESTION_BOOKMARK: (id: string) => `${API_BASE}/practice/questions/${id}/bookmark`,
-  PRACTICE_QUESTION_REVISION: (id: string) => `${API_BASE}/practice/questions/${id}/revision`,
-  PRACTICE_QUESTION_NOTE: (id: string) => `${API_BASE}/practice/questions/${id}/note`,
-  PRACTICE_QUESTION_STATUS: (id: string) => `${API_BASE}/practice/questions/${id}/status`,
-  PRACTICE_QUESTION_RUN: (id: string) => `${API_BASE}/practice/questions/${id}/run`,
-  PRACTICE_QUESTION_SUBMIT: (id: string) => `${API_BASE}/practice/questions/${id}/submit`,
-  PRACTICE_QUESTION_SUBMISSIONS: (id: string) => `${API_BASE}/practice/questions/${id}/submissions`,
 
   // Algorithms
   ALGORITHMS: `${API_BASE}/algorithms`,
   ALGORITHM_BY_SLUG: (slug: string) => `${API_BASE}/algorithms/${slug}`,
   ALGORITHM_QUIZ: (slug: string) => `${API_BASE}/algorithms/${slug}/quiz`,
-  ALGORITHM_PRACTICE: (slug: string) => `${API_BASE}/algorithms/${slug}/practice`,
   ALGORITHM_BOOKMARK: (slug: string) => `${API_BASE}/algorithms/${slug}/bookmark`,
   ALGORITHM_COMPLETE: (slug: string) => `${API_BASE}/algorithms/${slug}/complete`,
 
@@ -96,8 +78,6 @@ export const API_ENDPOINTS = {
   ADMIN_STUDENT: (id: string) => `${API_BASE}/admin/students/${id}`,
   ADMIN_STUDENT_BAN: (id: string) => `${API_BASE}/admin/students/${id}/ban`,
   ADMIN_STUDENT_RESET_PROGRESS: (id: string) => `${API_BASE}/admin/students/${id}/reset-progress`,
-  ADMIN_QUESTIONS: `${API_BASE}/admin/questions`,
-  ADMIN_QUESTION_BY_ID: (id: string) => `${API_BASE}/admin/questions/${id}`,
   ADMIN_ALGORITHMS: `${API_BASE}/admin/algorithms`,
   ADMIN_ALGORITHM_BY_ID: (id: string) => `${API_BASE}/admin/algorithms/${id}`,
   ADMIN_QUIZZES: `${API_BASE}/admin/quizzes`,

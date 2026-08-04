@@ -1319,7 +1319,7 @@ export const ArrayVisualizationStudio: React.FC = () => {
 
               {/* Related LeetCode Problems */}
               <div className="bg-[#090a0f] p-3 rounded-xl border border-white/10 space-y-2 font-mono text-xs">
-                <span className="text-indigo-300 font-bold uppercase text-[10px]">Recommended Practice Problems:</span>
+                <span className="text-indigo-300 font-bold uppercase text-[10px]">Recommended Placement Topics:</span>
                 <div className="flex flex-wrap gap-2">
                   {activeAlgo.relatedProblems.map((prob) => (
                     <span key={prob.slug} className="px-2.5 py-1 rounded-lg bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-[11px] font-bold">

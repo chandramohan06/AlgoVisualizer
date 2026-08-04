@@ -1,7 +1,6 @@
 import api from './api';
 import { API_ENDPOINTS } from '@constants/api';
 import { IAlgorithmDocument } from '../../../server/src/models/Algorithm.model';
-import { IPracticeProblemDocument } from '../../../server/src/models/PracticeProblem.model';
 
 export const algorithmService = {
   getAll: async (params?: Record<string, string>): Promise<IAlgorithmDocument[]> => {
@@ -11,11 +10,6 @@ export const algorithmService = {
 
   getBySlug: async (slug: string): Promise<IAlgorithmDocument> => {
     const { data } = await api.get<{ data: IAlgorithmDocument }>(API_ENDPOINTS.ALGORITHM_BY_SLUG(slug));
-    return data.data;
-  },
-
-  getPracticeProblems: async (slug: string): Promise<IPracticeProblemDocument[]> => {
-    const { data } = await api.get<{ data: IPracticeProblemDocument[] }>(API_ENDPOINTS.ALGORITHM_PRACTICE(slug));
     return data.data;
   },
 

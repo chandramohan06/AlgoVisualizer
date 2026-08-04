@@ -2,7 +2,6 @@ import { Algorithm } from '../models/Algorithm.model';
 import { Bookmark } from '../models/Bookmark.model';
 import { Progress } from '../models/Progress.model';
 import { QuizQuestion } from '../models/QuizQuestion.model';
-import { PracticeProblem } from '../models/PracticeProblem.model';
 import { AppError } from '../utils/AppError';
 
 interface GetAllOptions {
@@ -45,12 +44,6 @@ export const getQuizQuestions = async (slug: string) => {
   const algorithm = await Algorithm.findOne({ slug }).select('_id');
   if (!algorithm) throw new AppError('Algorithm not found', 404);
   return QuizQuestion.find({ algorithmId: algorithm._id }).select('-correctAnswer'); // hide answer
-};
-
-export const getPracticeProblems = async (slug: string) => {
-  const algorithm = await Algorithm.findOne({ slug }).select('_id');
-  if (!algorithm) throw new AppError('Algorithm not found', 404);
-  return PracticeProblem.find({ algorithmId: algorithm._id }).select('-solution');
 };
 
 export const toggleBookmark = async (userId: string, slug: string) => {

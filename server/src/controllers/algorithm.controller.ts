@@ -20,11 +20,6 @@ export const getQuizQuestions = asyncHandler(async (req: AuthRequest, res: Respo
   sendSuccess({ res, data: questions });
 });
 
-export const getPracticeProblems = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const problems = await AlgorithmService.getPracticeProblems(req.params.slug as string);
-  sendSuccess({ res, data: problems });
-});
-
 export const toggleBookmark = asyncHandler(async (req: AuthRequest, res: Response) => {
   const result = await AlgorithmService.toggleBookmark(req.user!._id, req.params.slug as string);
   sendSuccess({ res, message: result.bookmarked ? 'Bookmarked' : 'Bookmark removed', data: result });

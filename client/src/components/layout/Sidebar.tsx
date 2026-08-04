@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LayoutDashboard, Code2, Brain, Compass, StickyNote,
+  LayoutDashboard, Brain, Compass, StickyNote,
   Trophy, Award, User, Settings, LogOut, Play,
   ChevronLeft, Sparkles, X, UserCheck
 } from 'lucide-react';
@@ -21,7 +21,6 @@ interface NavItem {
 const mainNav: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.DASHBOARD },
   { label: 'DSA Roadmap', icon: Compass, path: ROUTES.ALGORITHMS, badge: 'A2Z' },
-  { label: 'Practice Problems', icon: Code2, path: ROUTES.PRACTICE, badge: '250 Qs' },
   { label: 'Visualization', icon: Play, path: '/visualizations', badge: 'Interactive' },
   { label: 'Quiz', icon: Brain, path: ROUTES.QUIZ, badge: 'Test' },
   { label: 'Notes', icon: StickyNote, path: ROUTES.NOTES },

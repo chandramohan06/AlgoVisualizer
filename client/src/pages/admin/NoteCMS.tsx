@@ -149,7 +149,7 @@ export const NoteCMS: React.FC = () => {
       companyWiseQuestions: [{ company: 'Amazon', questions: ['Two Sum'] }],
       commonMistakes: ['Off-by-one indexing error'],
       bestPractices: ['Use initial capacity if size is known.'],
-      relatedProblems: [{ title: 'Two Sum', difficulty: 'Easy', link: '/practice' }],
+      relatedProblems: [{ title: 'Two Sum', difficulty: 'Easy', link: '/algorithms' }],
       tags: ['dsa', 'learning'],
       estimatedReadTime: 5,
       revisionNotes: 'Key takeaway revision points...',

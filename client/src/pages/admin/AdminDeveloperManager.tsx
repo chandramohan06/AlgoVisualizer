@@ -1083,10 +1083,6 @@ export const AdminDeveloperManager: React.FC = () => {
                 <input type="text" name="algorithmsVisualized" value={formData.algorithmsVisualized || ''} onChange={handleChange} className="input-premium font-mono text-indigo-400" />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-400 uppercase font-mono">Practice Problems</label>
-                <input type="text" name="practiceProblems" value={formData.practiceProblems || ''} onChange={handleChange} className="input-premium font-mono text-emerald-400" />
-              </div>
-              <div className="space-y-1">
                 <label className="text-[11px] font-bold text-slate-400 uppercase font-mono">API Performance</label>
                 <input type="text" name="apiPerformance" value={formData.apiPerformance || ''} onChange={handleChange} className="input-premium font-mono text-amber-400" />
               </div>

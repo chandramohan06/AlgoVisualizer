@@ -13,9 +13,8 @@ export const ROUTES = {
   // Student Modules
   DASHBOARD: '/dashboard',
   ALGORITHMS: '/algorithms',       // Module 1: Algorithms (Learning & Visualization)
-  PRACTICE: '/practice',           // Module 2: Practice (520 Interview Questions)
-  QUIZ: '/quiz',                   // Module 3: Custom Quiz Builder & Assessment
-  ROADMAPS: '/roadmaps',           // Module 4: Pattern Learning Roadmaps
+  QUIZ: '/quiz',                   // Module 2: Custom Quiz Builder & Assessment
+  ROADMAPS: '/roadmaps',           // Module 3: Pattern Learning Roadmaps
   
   // Student Extras
   ALGORITHM_DETAIL: '/algorithms/:slug',
@@ -28,9 +27,6 @@ export const ROUTES = {
   PUBLIC_PROFILE: '/profile/:userId',
   DEVELOPER: '/developer',
   SETTINGS: '/settings',
-
-  // Question Details Page
-  QUESTION_DETAIL: '/practice/question/:slug',
 
   // Visualizer Engine
   VISUALIZER_DYNAMIC: '/visualizer/:category/:slug',

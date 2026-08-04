@@ -11,7 +11,6 @@ router.use(authenticate);
 router.get('/', AlgorithmController.getAll);
 router.get('/:slug', AlgorithmController.getBySlug);
 router.get('/:slug/quiz', AlgorithmController.getQuizQuestions);
-router.get('/:slug/practice', AlgorithmController.getPracticeProblems);
 router.post('/:slug/bookmark', AlgorithmController.toggleBookmark);
 router.post('/:slug/complete', AlgorithmController.markComplete);
 

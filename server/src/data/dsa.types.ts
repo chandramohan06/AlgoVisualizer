@@ -35,23 +35,6 @@ export interface DSAQuizQuestion {
   points: number;
 }
 
-export interface DSAPracticeProblem {
-  title: string;
-  description: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  pattern?: string;
-  starterCode: {
-    java: string;
-    cpp: string;
-    python: string;
-  };
-  testCases: Array<{ input: string; expectedOutput: string }>;
-  hints?: string[];
-  explanation?: string;
-  solution?: string;
-  externalLink?: string;
-}
-
 export interface DSAAlgorithmEntry {
   slug: string;
   title: string;
@@ -80,5 +63,5 @@ export interface DSAAlgorithmEntry {
   sampleInput?: any;
   sampleOutput?: string;
   quizzes: DSAQuizQuestion[];
-  practiceProblems: DSAPracticeProblem[];
+  practiceProblems?: any[];
 }

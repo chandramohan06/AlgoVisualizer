@@ -9,16 +9,11 @@ export interface ArrayQuizItem {
 }
 
 export interface ArrayPracticeItem {
-  title: string;
-  description: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  starterCode: {
-    java: string;
-    cpp: string;
-  };
-  testCases: Array<{ input: string; expectedOutput: string }>;
-  solution: string;
-  externalLink: string;
+  title?: string;
+  description?: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  solution?: string;
+  externalLink?: string;
 }
 
 export interface ArrayAlgorithmData {
@@ -38,5 +33,5 @@ export interface ArrayAlgorithmData {
   sampleInput: any;
   sampleOutput: string;
   quizzes: ArrayQuizItem[];
-  practiceProblems: ArrayPracticeItem[];
+  practiceProblems?: any[];
 }

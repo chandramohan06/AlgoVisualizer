@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, StickyNote, Code2, Play, User } from 'lucide-react';
+import { LayoutDashboard, StickyNote, Play, User } from 'lucide-react';
 import { cn } from '@utils/index';
 import { ROUTES } from '@constants/routes';
 
@@ -13,7 +13,6 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.DASHBOARD },
   { label: 'Notes', icon: StickyNote, path: ROUTES.NOTES },
-  { label: 'Practice', icon: Code2, path: ROUTES.PRACTICE },
   { label: 'Visualizer', icon: Play, path: '/visualizations' },
   { label: 'Profile', icon: User, path: ROUTES.PROFILE },
 ];

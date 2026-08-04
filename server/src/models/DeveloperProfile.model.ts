@@ -131,7 +131,6 @@ export interface IDeveloperProfile extends Document {
   achievements: IAchievement[];
   codingProfiles: ICodingProfile[];
   algorithmsVisualized: string;
-  practiceProblems: string;
   projectsCount: string;
   usersCount: string;
   experienceYears: string;
@@ -374,7 +373,7 @@ const DeveloperProfileSchema: Schema = new Schema(
       type: [ProjectMetricSchema],
       default: [
         { label: 'Algorithms Visualized', value: '85+', sub: 'Interactive step-by-step', color: 'text-indigo-400' },
-        { label: 'Practice Problems', value: '250', sub: 'Easy & Medium DSA questions', color: 'text-emerald-400' },
+        { label: 'DSA Study Notes', value: '26', sub: 'Comprehensive placement guides', color: 'text-emerald-400' },
         { label: 'API Response Time', value: '< 50ms', sub: 'Non-blocking async backend', color: 'text-amber-400' },
         { label: 'Tech Stack', value: 'React + Node', sub: 'MongoDB Atlas + Docker', color: 'text-purple-400' },
       ],
@@ -385,7 +384,7 @@ const DeveloperProfileSchema: Schema = new Schema(
         { year: '2021', title: 'Enrolled at Lovely Professional University', subtitle: 'B.Tech in Computer Science Engineering', description: 'Started computer science engineering journey learning programming fundamentals in C++ and Java.', badge: 'Education', category: 'Academics' },
         { year: '2022', title: 'C++ & DSA Foundations', subtitle: 'Core Problem Solving', description: 'Mastered C++ programming and completed Programming in C++ certification.', badge: 'Certification', category: 'Skills' },
         { year: '2023', title: 'Data Science, Systems & DSA Training', subtitle: 'Board Infinity & Projects', description: 'Completed Board Infinity DSA Training, Python for Data Science certification, Mobile Sales Analysis, and Real-Time Process Monitoring System.', badge: 'Training', category: 'Projects & Training' },
-        { year: '2024 - 2025', title: 'AlgoVisualizer SaaS Platform', subtitle: 'Full-Stack Architecture', description: 'Engineered AlgoVisualizer SaaS platform with 85+ interactive algorithm visualizers and practice problem sandbox.', badge: 'Product', category: 'Engineering' },
+        { year: '2024 - 2025', title: 'AlgoVisualizer SaaS Platform', subtitle: 'Full-Stack Architecture', description: 'Engineered AlgoVisualizer SaaS platform with 85+ interactive algorithm visualizers and DSA study notes.', badge: 'Product', category: 'Engineering' },
       ],
     },
     achievements: { type: [AchievementSchema], default: [] },
@@ -397,7 +396,6 @@ const DeveloperProfileSchema: Schema = new Schema(
       ],
     },
     algorithmsVisualized: { type: String, default: '85+' },
-    practiceProblems: { type: String, default: '250' },
     projectsCount: { type: String, default: '3+' },
     usersCount: { type: String, default: '1,000+' },
     experienceYears: { type: String, default: '3+ Years' },

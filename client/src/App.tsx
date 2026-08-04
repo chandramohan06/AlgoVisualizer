@@ -28,8 +28,6 @@ const Achievements = lazy(() => import('@pages/student/Achievements'));
 const Profile = lazy(() => import('@pages/student/Profile'));
 const AboutDeveloper = lazy(() => import('@pages/student/AboutDeveloper'));
 const Settings = lazy(() => import('@pages/student/Settings'));
-const PracticeList = lazy(() => import('@pages/student/PracticeList'));
-const ProblemIDE = lazy(() => import('@pages/student/ProblemIDE'));
 
 // Lazy Loaded Visualizers
 const GenericVisualizer = lazy(() => import('@pages/student/Visualizer/GenericVisualizer'));
@@ -109,7 +107,6 @@ const AdminReports = lazy(() => import('@pages/admin/AdminReports'));
 const AdminAuditLogs = lazy(() => import('@pages/admin/AdminAuditLogs'));
 const AdminSettings = lazy(() => import('@pages/admin/Settings'));
 const AdminDeveloperManager = lazy(() => import('@pages/admin/AdminDeveloperManager'));
-const AdminPracticeManager = lazy(() => import('@pages/admin/AdminPracticeManager'));
 
 import NotFound from '@pages/common/NotFound';
 import Forbidden from '@pages/common/Forbidden';
@@ -166,7 +163,6 @@ const AppContent: React.FC = () => {
           <Route element={<StudentLayout />}>
             <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
             <Route path={ROUTES.ALGORITHMS} element={<Algorithms />} />
-            <Route path={ROUTES.PRACTICE} element={<PracticeList />} />
             <Route path="/visualizations" element={<Visualization />} />
             <Route path={ROUTES.QUIZ} element={<QuizPage />} />
             <Route path={ROUTES.ROADMAPS} element={<RoadmapsPage />} />
@@ -178,8 +174,6 @@ const AppContent: React.FC = () => {
             <Route path={ROUTES.PROFILE} element={<Profile />} />
             <Route path={ROUTES.DEVELOPER} element={<AboutDeveloper />} />
             <Route path={ROUTES.SETTINGS} element={<Settings />} />
-            <Route path="/practice/question/:slug" element={<ProblemIDE />} />
-            <Route path="/question/:id" element={<ProblemIDE />} />
           </Route>
 
           {/* Dynamic Universal Visualizer Route */}
@@ -263,7 +257,6 @@ const AppContent: React.FC = () => {
             <Route path="/admin/reports" element={<AdminReports />} />
             <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/admin/practice" element={<AdminPracticeManager />} />
             <Route path={ROUTES.ADMIN_DEVELOPER_MANAGER} element={<AdminDeveloperManager />} />
           </Route>
 

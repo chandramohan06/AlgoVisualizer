@@ -60,7 +60,7 @@ export const AboutDeveloper: React.FC = () => {
     education, skills, projects, certifications, trainings, projectMetrics, timeline, achievements, codingProfiles,
     twitterUrl, instagramUrl, youtubeUrl, mediumUrl, devtoUrl, hashnodeUrl,
     leetcodeUrl, gfgUrl, codingNinjasUrl, codechefUrl, codeforcesUrl, hackerrankUrl,
-    algorithmsVisualized, practiceProblems, projectsCount, usersCount, experienceYears,
+    algorithmsVisualized, projectsCount, usersCount, experienceYears,
     githubStars, downloadsCount, apiPerformance
   } = profile;
 
@@ -568,15 +568,6 @@ export const AboutDeveloper: React.FC = () => {
             <div className="text-[11px] text-slate-500">Interactive step-by-step</div>
           </div>
 
-          <div className="glass-card rounded-2xl p-5 space-y-2">
-            <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
-              Practice Problems
-            </div>
-            <div className="text-2xl md:text-3xl font-black font-mono text-emerald-400">
-              {practiceProblems || '250+'}
-            </div>
-            <div className="text-[11px] text-slate-500">LeetCode-style problems</div>
-          </div>
 
           <div className="glass-card rounded-2xl p-5 space-y-2">
             <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider font-mono">
@@ -770,7 +761,7 @@ export const AboutDeveloper: React.FC = () => {
             {leetcodeUrl && !codingProfiles?.some(p => p.platform.toLowerCase().includes('leetcode')) && (
               <a href={leetcodeUrl} target="_blank" rel="noreferrer" className="glass-card rounded-2xl p-5 border border-white/5 hover:border-amber-500/30 transition-all">
                 <h3 className="text-sm font-bold text-amber-400">LeetCode</h3>
-                <p className="text-xs text-slate-400 mt-1">View LeetCode Submissions</p>
+                <p className="text-xs text-slate-400 mt-1">View LeetCode Profile</p>
               </a>
             )}
             {gfgUrl && !codingProfiles?.some(p => p.platform.toLowerCase().includes('geeks')) && (
