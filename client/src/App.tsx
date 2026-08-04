@@ -25,6 +25,7 @@ const RoadmapsPage = lazy(() => import('@pages/student/RoadmapsPage'));
 const Notes = lazy(() => import('@pages/student/Notes'));
 const Leaderboard = lazy(() => import('@pages/student/Leaderboard'));
 const Achievements = lazy(() => import('@pages/student/Achievements'));
+const AnalyticsPage = lazy(() => import('@pages/student/AnalyticsPage'));
 const Profile = lazy(() => import('@pages/student/Profile'));
 const AboutDeveloper = lazy(() => import('@pages/student/AboutDeveloper'));
 const Settings = lazy(() => import('@pages/student/Settings'));
@@ -171,6 +172,7 @@ const AppContent: React.FC = () => {
             <Route path={ROUTES.NOTES} element={<Notes />} />
             <Route path={ROUTES.LEADERBOARD} element={<Leaderboard />} />
             <Route path={ROUTES.ACHIEVEMENTS} element={<Achievements />} />
+            <Route path={ROUTES.ANALYTICS} element={<AnalyticsPage />} />
             <Route path={ROUTES.PROFILE} element={<Profile />} />
             <Route path={ROUTES.DEVELOPER} element={<AboutDeveloper />} />
             <Route path={ROUTES.SETTINGS} element={<Settings />} />

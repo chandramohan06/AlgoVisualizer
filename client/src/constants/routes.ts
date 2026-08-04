@@ -21,6 +21,7 @@ export const ROUTES = {
   ALGORITHM_QUIZ: '/algorithms/:slug/quiz',
   LEADERBOARD: '/leaderboard',
   ACHIEVEMENTS: '/achievements',
+  ANALYTICS: '/analytics',
   NOTES: '/notes',
   NOTE_DETAIL: '/notes/:id',
   PROFILE: '/profile',
