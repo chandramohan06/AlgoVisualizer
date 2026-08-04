@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Brain, Compass, StickyNote,
   Trophy, Award, User, Settings, LogOut, Play,
-  ChevronLeft, Sparkles, X, UserCheck, TrendingUp, Briefcase
+  ChevronLeft, Sparkles, X, UserCheck, TrendingUp
 } from 'lucide-react';
 import { cn } from '@utils/index';
 import { useAuthStore } from '@store/authStore';
@@ -20,7 +20,6 @@ interface NavItem {
 
 const mainNav: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, path: ROUTES.DASHBOARD },
-  { label: 'Interview Hub', icon: Briefcase, path: ROUTES.INTERVIEW_HUB, badge: 'Placement' },
   { label: 'Mock Interview', icon: Brain, path: ROUTES.MOCK_INTERVIEW, badge: 'AI Mock' },
   { label: 'Analytics', icon: TrendingUp, path: ROUTES.ANALYTICS, badge: 'Insights' },
   { label: 'DSA Roadmap', icon: Compass, path: ROUTES.ALGORITHMS, badge: 'A2Z' },

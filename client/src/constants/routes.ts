@@ -22,7 +22,6 @@ export const ROUTES = {
   LEADERBOARD: '/leaderboard',
   ACHIEVEMENTS: '/achievements',
   ANALYTICS: '/analytics',
-  INTERVIEW_HUB: '/interview',
   MOCK_INTERVIEW: '/mock-interview',
   NOTES: '/notes',
   NOTE_DETAIL: '/notes/:id',

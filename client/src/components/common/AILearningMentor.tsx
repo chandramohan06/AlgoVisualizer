@@ -32,7 +32,6 @@ export const AILearningMentor: React.FC = () => {
     if (path.includes('notes')) return 'DSA Study Notes';
     if (path.includes('quiz')) return 'Quiz Assessment';
     if (path.includes('algorithms')) return 'DSA Roadmap';
-    if (path.includes('interview')) return 'Interview Preparation Hub';
     if (path.includes('mock-interview')) return 'Mock Interview Simulator';
     if (path.includes('analytics')) return 'Performance Analytics';
     return 'Dashboard Learning Center';

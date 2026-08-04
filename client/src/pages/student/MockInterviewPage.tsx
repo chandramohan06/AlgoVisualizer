@@ -326,10 +326,10 @@ export const MockInterviewPage: React.FC = () => {
             </button>
 
             <button
-              onClick={() => navigate('/interview')}
+              onClick={() => navigate('/dashboard')}
               className="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-mono font-bold text-xs flex items-center gap-2 cursor-pointer shadow-lg shadow-purple-600/30"
             >
-              View Interview Hub <ArrowRight className="w-4 h-4" />
+              Return to Dashboard <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
